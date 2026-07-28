@@ -1,0 +1,189 @@
+# Исключения и предупреждения
+
+[← К разделу Python](../python.md)
+
+## Содержание
+
+- [Как устроена иерархия исключений?](#как-устроена-иерархия-исключений)
+- [Как работают try, except, else и finally?](#как-работают-try-except-else-и-finally)
+- [Почему нужно ловить конкретные исключения?](#почему-нужно-ловить-конкретные-исключения)
+- [Как повторно возбудить исключение?](#как-повторно-возбудить-исключение)
+- [Что такое сцепление исключений?](#что-такое-сцепление-исключений)
+- [Как создать собственное исключение?](#как-создать-собственное-исключение)
+- [Можно ли обработать SyntaxError?](#можно-ли-обработать-syntaxerror)
+- [Что такое ExceptionGroup и except*?](#что-такое-exceptiongroup-и-except)
+- [Чем предупреждение отличается от исключения?](#чем-предупреждение-отличается-от-исключения)
+
+---
+
+## Как устроена иерархия исключений?
+
+Корень иерархии — `BaseException`.
+
+```text
+BaseException
+├── SystemExit
+├── KeyboardInterrupt
+├── GeneratorExit
+└── Exception
+    ├── ArithmeticError
+    ├── LookupError
+    │   ├── IndexError
+    │   └── KeyError
+    ├── OSError
+    ├── RuntimeError
+    ├── TypeError
+    └── ValueError
+```
+
+Прикладные ошибки обычно наследуют от `Exception`, а не от `BaseException`. Поэтому `except Exception` не перехватывает штатное завершение процесса, `Ctrl+C` и закрытие генератора.
+
+## Как работают `try`, `except`, `else` и `finally`?
+
+```python
+try:
+    value = int(raw_value)
+except ValueError:
+    handle_invalid_value()
+else:
+    save(value)
+finally:
+    close_resource()
+```
+
+- `try` содержит потенциально ошибочную операцию;
+- `except` выполняется при совпавшем исключении;
+- `else` выполняется, если в `try` не было исключения;
+- `finally` выполняется почти всегда: при успехе, ошибке, `return` и `break`.
+
+`else` позволяет не помещать под `except` код, ошибки которого перехватывать не планировалось.
+
+`try/finally` без `except` применяют для гарантированной очистки, когда ошибка должна продолжить распространяться.
+
+## Почему нужно ловить конкретные исключения?
+
+Слишком широкий обработчик скрывает программные ошибки:
+
+```python
+# Плохо
+try:
+    process()
+except Exception:
+    pass
+```
+
+Лучше перехватывать ожидаемую проблему:
+
+```python
+try:
+    user = users[user_id]
+except KeyError:
+    raise UserNotFound(user_id)
+```
+
+Пустой `except:` ловит даже `KeyboardInterrupt` и `SystemExit`, поэтому почти никогда не нужен.
+
+Несколько типов можно объединить:
+
+```python
+except (TypeError, ValueError) as error:
+    ...
+```
+
+Порядок обработчиков идёт от частного к общему.
+
+## Как повторно возбудить исключение?
+
+Оператор `raise` без аргумента внутри `except` повторно возбуждает текущую ошибку и сохраняет traceback:
+
+```python
+try:
+    process()
+except ValueError:
+    logger.exception("Invalid value")
+    raise
+```
+
+`raise error` обычно добавляет лишний кадр и может ухудшить traceback, поэтому для той же ошибки предпочитают просто `raise`.
+
+## Что такое сцепление исключений?
+
+Новую ошибку можно связать с исходной через `raise ... from ...`:
+
+```python
+try:
+    value = int(raw_value)
+except ValueError as error:
+    raise ConfigurationError("Invalid port") from error
+```
+
+Исходная ошибка доступна через `__cause__`. Без явного `from` Python обычно сохраняет её в `__context__`.
+
+Если внутреннюю техническую причину намеренно не нужно показывать:
+
+```python
+raise UserNotFound(user_id) from None
+```
+
+## Как создать собственное исключение?
+
+```python
+class ApiError(Exception):
+    """Базовая ошибка API-клиента."""
+
+
+class ResponseValidationError(ApiError):
+    def __init__(self, field, value):
+        super().__init__(f"Invalid {field}: {value!r}")
+        self.field = field
+        self.value = value
+```
+
+Имена классов исключений обычно заканчиваются на `Error`. Свои классы позволяют вызывающему коду ловить ошибки предметной области, не привязываясь к деталям реализации.
+
+## Можно ли обработать `SyntaxError`?
+
+Если синтаксическая ошибка находится в самом загружаемом файле, он не сможет нормально начать выполнение. Но `SyntaxError` можно перехватить, когда код компилируется или импортируется динамически:
+
+```python
+try:
+    compile("if True print('x')", "<input>", "exec")
+except SyntaxError as error:
+    print(error)
+```
+
+## Что такое `ExceptionGroup` и `except*`?
+
+`ExceptionGroup` объединяет несколько независимых исключений, например ошибки параллельных задач. Конструкция `except*` выбирает из группы ошибки подходящего типа.
+
+```python
+try:
+    raise ExceptionGroup(
+        "validation failed",
+        [ValueError("age"), TypeError("name")],
+    )
+except* ValueError as errors:
+    handle_value_errors(errors)
+except* TypeError as errors:
+    handle_type_errors(errors)
+```
+
+Обычный `except` обрабатывает исключение как один объект-группу, а `except*` разделяет её по типам. Группы исключений и `except*` появились в Python 3.11.
+
+## Чем предупреждение отличается от исключения?
+
+Предупреждение сообщает о подозрительной или устаревающей ситуации, но по умолчанию не останавливает выполнение.
+
+```python
+import warnings
+
+warnings.warn(
+    "old_api() is deprecated",
+    DeprecationWarning,
+    stacklevel=2,
+)
+```
+
+Модуль `warnings` позволяет фильтровать, скрывать, показывать повторно или превращать предупреждения в исключения. В тестах полезно проверять предупреждения явно, например через `pytest.warns`.
+
+

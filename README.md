@@ -42,3 +42,4 @@
 
 Шаблон новой записи находится в [templates/question.md](templates/question.md).
 
+
