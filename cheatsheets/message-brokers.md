@@ -1,6 +1,6 @@
 # Брокеры сообщений — быстрый повтор
 
-[← Все шпаргалки](README.md)
+[← Все шпаргалки](README.md) · [Подробный раздел](../questions/api-http/message-brokers.md)
 
 ## Что такое брокер
 
@@ -267,5 +267,3 @@ Outbox решает её так:
 
 - [Apache Kafka](https://kafka.apache.org/documentation/)
 - [RabbitMQ queues and acknowledgements](https://www.rabbitmq.com/docs/queues)
-
-
