@@ -8,6 +8,8 @@
 |---|---|---|
 | Python | [Полный конспект](python.md) | [Шпаргалка](../cheatsheets/python.md) |
 | Pytest | [Полный конспект](pytest.md) | [Шпаргалка](../cheatsheets/pytest.md) |
+| API-автоматизация на Python | [Полный конспект](api-testing.md) | [Шпаргалка](../cheatsheets/api-testing.md) |
+| Web и UI | [Полный конспект](web-ui.md) | [Шпаргалка](../cheatsheets/web-ui.md) |
 | Сети и HTTP | [Полный конспект](networks.md) | [Шпаргалка](../cheatsheets/networks.md) |
 | Брокеры сообщений | [Полный конспект](message-brokers.md) | [Шпаргалка](../cheatsheets/message-brokers.md) |
 | SQL | [Полный конспект](sql.md) | [Шпаргалка](../cheatsheets/sql.md) |
