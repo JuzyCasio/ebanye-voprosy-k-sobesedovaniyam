@@ -4,2070 +4,2579 @@
 
 Полный материал из присланного конспекта. Сохранены подробные объяснения, примеры, практические сценарии и вопросы для собеседования.
 
-## 2. Базовые типы данных
+> **Как пользоваться конспектом**
+>
+> Выбери тему в навигации, прочитай объяснение и затем проговори выделенный короткий ответ своими словами. Код и команды оформлены отдельными блоками, чтобы их можно было быстро найти и скопировать.
 
-Основные типы  
-x: int = 10  
-price: float = 12.5  
-name: str = "Alex"  
-is_active: bool = True  
-nothing: None = None  
-Коллекции  
-numbers: list[int] = [1, 2, 3]  
-point: tuple[int, int] = (10, 20)  
-unique_ids: set[int] = {1, 2, 3}  
-user: dict[str, str | int] = {"name": "Alex", "age": 30}  
-Изменяемые и неизменяемые типы  
-Неизменяемые  
+## Навигация по разделу
 
-int, float, bool, str, tuple, frozenset, None  
+- [Типы данных и коллекции](#типы-данных-и-коллекции) — вопросы 2–10
+- [Функции, исключения и протоколы](#функции-исключения-и-протоколы) — вопросы 11–21
+- [ООП и модель данных](#ооп-и-модель-данных) — вопросы 22–30
+- [Стандартная библиотека и данные](#стандартная-библиотека-и-данные) — вопросы 31–34
+- [Конкурентное выполнение](#конкурентное-выполнение) — вопросы 35–40
+- [Проектирование и алгоритмы](#проектирование-и-алгоритмы) — вопросы 41–46
+- [Собеседование и практика](#собеседование-и-практика) — вопросы 47–55
 
-text = "hello"  
-text.upper()  
+## Типы данных и коллекции
 
-print(text)  # "hello", строка не изменилась  
-Изменяемые  
+### 2. Базовые типы данных
 
-list, dict, set, объекты классов  
+**Основные типы**
 
-items = [1, 2, 3]  
-items.append(4)  
+```python
+x: int = 10
+price: float = 12.5
+name: str = "Alex"
+is_active: bool = True
+nothing: None = None
+```
 
-print(items)  # [1, 2, 3, 4]  
+**Коллекции**
 
-### На собеседовании важно сказать:
+```python
+numbers: list[int] = [1, 2, 3]
+point: tuple[int, int] = (10, 20)
+unique_ids: set[int] = {1, 2, 3}
+user: dict[str, str | int] = {"name": "Alex", "age": 30}
+```
 
-В Python переменная хранит ссылку на объект. Некоторые объекты изменяемые, некоторые нет. Поэтому при передаче списка в функцию можно изменить исходный список.  
+#### Изменяемые и неизменяемые типы
 
-### Пример:
+**Неизменяемые:** `int`, `float`, `complex`, `bool`, `str`, `tuple`, `bytes`, `frozenset`, `NoneType`.
 
-def add_item(items: list[int]) -> None:  
-    items.append(100)  
+Неизменяемый объект нельзя изменить после создания. Операция, которая выглядит как изменение, создаёт новый объект.
 
-numbers = [1, 2, 3]  
-add_item(numbers)  
+```python
+text = "hello"
+text.upper()
 
-print(numbers)  # [1, 2, 3, 100]  
+print(text)  # "hello", строка не изменилась
+```
 
-## 3. is и ==
+**Изменяемые:** `list`, `dict`, `set`, `bytearray`, а также большинство экземпляров пользовательских классов.
 
-==  
+Изменяемый объект можно изменить после создания, сохранив тот же объект в памяти.
 
-Сравнивает значения.  
+```python
+items = [1, 2, 3]
+items.append(4)
 
-a = [1, 2]  
-b = [1, 2]  
+print(items)  # [1, 2, 3, 4]
+```
 
-print(a == b)  # True  
-is  
+Важно: сам `tuple` неизменяемый, но он может содержать ссылку на изменяемый объект, например список. Тогда список внутри кортежа можно изменить.
 
-Сравнивает, один ли это объект в памяти.  
+> **Короткий ответ для собеседования**
+>
+> В Python переменная хранит ссылку на объект. Некоторые объекты изменяемые, некоторые нет. Поэтому при передаче списка в функцию можно изменить исходный список.
 
-a = [1, 2]  
-b = [1, 2]  
+#### Пример:
 
-print(a is b)  # False  
+```python
+def add_item(items: list[int]) -> None:
+    items.append(100)
 
-Правильное использование:  
+numbers = [1, 2, 3]
+add_item(numbers)
 
-if value is None:  
-    print("Нет значения")  
+print(numbers)  # [1, 2, 3, 100]
+```
 
-### На собеседовании:
+### 3. is и ==
 
-== проверяет равенство значений, а is проверяет идентичность объектов. Для None правильно использовать is None.  
+**`==`**
 
-## 4. Списки
+Сравнивает значения.
 
-Создание  
-numbers = [1, 2, 3, 4, 5]  
-Основные операции  
-numbers.append(6)  
-numbers.extend([7, 8])  
-numbers.insert(0, 100)  
-numbers.remove(3)  
-last = numbers.pop()  
-Срезы  
-items = [10, 20, 30, 40, 50]  
+```python
+a = [1, 2]
+b = [1, 2]
 
-print(items[0])      # 10  
-print(items[-1])     # 50  
-print(items[1:4])    # [20, 30, 40]  
-print(items[::-1])   # [50, 40, 30, 20, 10]  
-Частая ошибка  
-items = [1, 2, 3]  
-result = items.append(4)  
+print(a == b)  # True
+```
 
-print(result)  # None  
+**is**
 
-append() меняет список на месте и возвращает None.  
+Сравнивает, один ли это объект в памяти.
 
-## 5. Кортежи
+```python
+a = [1, 2]
+b = [1, 2]
 
-Кортеж — неизменяемая последовательность.  
+print(a is b)  # False
+```
 
-point = (10, 20)  
-x, y = point  
+**Правильное использование**
 
-Используется, когда нужно зафиксировать набор значений.  
+```python
+if value is None:
+    print("Нет значения")
+```
 
-def get_user() -> tuple[int, str]:  
-    return 1, "Alex"  
+> **Короткий ответ для собеседования**
+>
+> == проверяет равенство значений, а is проверяет идентичность объектов. Для None правильно использовать is None.
 
-user_id, username = get_user()  
+### 4. Списки
 
-### Важно:
+**Создание**
 
-single = (1,)  
+```python
+numbers = [1, 2, 3, 4, 5]
+```
 
-Без запятой это будет не кортеж:  
+**Основные операции**
 
-not_tuple = (1)  
-print(type(not_tuple))  # int  
+```python
+numbers.append(6)
+numbers.extend([7, 8])
+numbers.insert(0, 100)
+numbers.remove(3)
+last = numbers.pop()
+```
 
-## 6. Словари
+**Срезы**
 
-Создание  
-user = {  
-    "id": 1,  
-    "name": "Alex",  
-    "role": "QA",  
-}  
-Доступ  
-print(user["name"])  
+```python
+items = [10, 20, 30, 40, 50]
 
-Если ключа нет, будет KeyError.  
+print(items[0])      # 10
+print(items[-1])     # 50
+print(items[1:4])    # [20, 30, 40]
+print(items[::-1])   # [50, 40, 30, 20, 10]
+```
 
-Безопаснее:  
+**Частая ошибка**
 
-print(user.get("email"))  
-print(user.get("email", "unknown"))  
-Обход  
-for key in user:  
-    print(key)  
+```python
+items = [1, 2, 3]
+result = items.append(4)
 
-for key, value in user.items():  
-    print(key, value)  
+print(result)  # None
+```
 
-for value in user.values():  
-    print(value)  
-Проверка ключа  
-if "name" in user:  
-    print(user["name"])  
-Объединение словарей  
-a = {"x": 1}  
-b = {"y": 2}  
+append() меняет список на месте и возвращает None.
 
-result = a | b  
-print(result)  # {'x': 1, 'y': 2}  
+### 5. Кортежи
 
-Или старый способ:  
+Кортеж — неизменяемая последовательность.
 
-result = {**a, **b}  
+```python
+point = (10, 20)
+x, y = point
+```
 
-## 7. Множества
+Используется, когда нужно зафиксировать набор значений.
 
-Множество хранит уникальные элементы.  
+```python
+def get_user() -> tuple[int, str]:
+    return 1, "Alex"
 
-ids = {1, 2, 3, 3}  
-print(ids)  # {1, 2, 3}  
-Операции  
-a = {1, 2, 3}  
-b = {3, 4, 5}  
+user_id, username = get_user()
+```
 
-print(a | b)  # объединение: {1, 2, 3, 4, 5}  
-print(a & b)  # пересечение: {3}  
-print(a - b)  # разность: {1, 2}  
-print(a ^ b)  # симметричная разность: {1, 2, 4, 5}  
+#### Важно:
 
-### Где применимо в тестировании:
+```python
+single = (1,)
+```
 
-expected_ids = {1, 2, 3}  
-actual_ids = {2, 3, 4}  
+Без запятой это будет не кортеж:
 
-missing = expected_ids - actual_ids  
-extra = actual_ids - expected_ids  
+```python
+not_tuple = (1)
+print(type(not_tuple))  # int
+```
 
-print(missing)  # {1}  
-print(extra)    # {4}  
+### 6. Словари
 
-## 8. Hashable / unhashable
+**Создание**
 
-Хешируемые объекты можно использовать как ключи словаря или элементы множества.  
+```python
+user = {
+    "id": 1,
+    "name": "Alex",
+    "role": "QA",
+}
+```
 
-Можно:  
+**Доступ**
 
-data = {  
-    "name": "Alex",  
-    1: "one",  
-    (1, 2): "point",  
-}  
+```python
+print(user["name"])
+```
 
-Нельзя:  
+Если ключа нет, будет KeyError.
 
-data = {  
-    [1, 2]: "bad"  
-}  
+**Безопаснее**
 
-Будет ошибка:  
+```python
+print(user.get("email"))
+print(user.get("email", "unknown"))
+```
 
-TypeError: unhashable type: 'list'  
+**Обход**
 
-### На собеседовании:
+```python
+for key in user:
+    print(key)
 
-Ключ словаря должен быть hashable, то есть иметь стабильный hash и корректное сравнение. Списки и словари изменяемые, поэтому они не могут быть ключами.  
+for key, value in user.items():
+    print(key, value)
 
-## 9. List comprehension
+for value in user.values():
+    print(value)
+```
 
-Обычный цикл:  
+**Проверка ключа**
 
-result = []  
+```python
+if "name" in user:
+    print(user["name"])
+```
 
-for number in range(10):  
-    if number % 2 == 0:  
-        result.append(number * number)  
+**Объединение словарей**
 
-Через comprehension:  
+```python
+a = {"x": 1}
+b = {"y": 2}
 
-result = [number * number for number in range(10) if number % 2 == 0]  
+result = a | b
+print(result)  # {'x': 1, 'y': 2}
+```
 
-### Пример:
+**Или старый способ**
 
-users = [  
-    {"id": 1, "active": True},  
-    {"id": 2, "active": False},  
-    {"id": 3, "active": True},  
-]  
+```python
+result = {**a, **b}
+```
 
-active_ids = [user["id"] for user in users if user["active"]]  
+### 7. Множества
 
-print(active_ids)  # [1, 3]  
+Множество хранит уникальные элементы.
 
-## 10. Dict comprehension
+```python
+ids = {1, 2, 3, 3}
+print(ids)  # {1, 2, 3}
+```
 
-users = [  
-    {"id": 1, "name": "Alex"},  
-    {"id": 2, "name": "Ivan"},  
-]  
+**Операции**
 
-users_by_id = {user["id"]: user for user in users}  
+```python
+a = {1, 2, 3}
+b = {3, 4, 5}
 
-print(users_by_id)  
+print(a | b)  # объединение: {1, 2, 3, 4, 5}
+print(a & b)  # пересечение: {3}
+print(a - b)  # разность: {1, 2}
+print(a ^ b)  # симметричная разность: {1, 2, 4, 5}
+```
 
-Результат:  
+#### Где применимо в тестировании:
 
-{  
-    1: {"id": 1, "name": "Alex"},  
-    2: {"id": 2, "name": "Ivan"},  
-}  
+```python
+expected_ids = {1, 2, 3}
+actual_ids = {2, 3, 4}
 
-Очень частая задача на собеседовании.  
+missing = expected_ids - actual_ids
+extra = actual_ids - expected_ids
 
-## 11. Функции
+print(missing)  # {1}
+print(extra)    # {4}
+```
 
-Простая функция  
-def add(a: int, b: int) -> int:  
-    return a + b  
-Значения по умолчанию  
-def greet(name: str = "Guest") -> str:  
-    return f"Hello, {name}"  
-Важная ошибка с mutable default argument  
+### 8. Hashable / unhashable
 
-### Плохо:
+Хешируемые объекты можно использовать как ключи словаря или элементы множества.
 
-def add_item(item: str, items: list[str] = []) -> list[str]:  
-    items.append(item)  
-    return items  
+**Можно**
 
-### Проблема:
+```python
+data = {
+    "name": "Alex",
+    1: "one",
+    (1, 2): "point",
+}
+```
 
-print(add_item("a"))  # ['a']  
-print(add_item("b"))  # ['a', 'b']  
+**Нельзя**
 
-Правильно:  
+```python
+data = {
+    [1, 2]: "bad"
+}
+```
 
-def add_item(item: str, items: list[str] | None = None) -> list[str]:  
-    if items is None:  
-        items = []  
+**Будет ошибка**
 
-    items.append(item)  
-    return items  
+**TypeError: unhashable type: 'list'**
 
-### На собеседовании:
+> **Короткий ответ для собеседования**
+>
+> Ключ словаря должен быть hashable, то есть иметь стабильный hash и корректное сравнение. Списки и словари изменяемые, поэтому они не могут быть ключами.
 
-Значения по умолчанию вычисляются один раз при создании функции, а не при каждом вызове. Поэтому изменяемые значения по умолчанию могут привести к неожиданному поведению.  
+### 9. List comprehension
 
-## 12. *args и **kwargs
+**Обычный цикл**
 
-def func(*args: int, **kwargs: str) -> None:  
-    print(args)  
-    print(kwargs)  
+```python
+result = []
 
-func(1, 2, 3, name="Alex", role="QA")  
+for number in range(10):
+    if number % 2 == 0:
+        result.append(number * number)
+```
 
-Результат:  
+**Через comprehension**
 
-(1, 2, 3)  
-{'name': 'Alex', 'role': 'QA'}  
-Когда использовать  
+```python
+result = [number * number for number in range(10) if number % 2 == 0]
+```
 
-*args — когда неизвестно количество позиционных аргументов.  
+#### Пример:
 
-**kwargs — когда неизвестно количество именованных аргументов.  
+```python
+users = [
+    {"id": 1, "active": True},
+    {"id": 2, "active": False},
+    {"id": 3, "active": True},
+]
 
-### Пример:
+active_ids = [user["id"] for user in users if user["active"]]
 
-def make_request(method: str, url: str, **kwargs: object) -> None:  
-    print(method)  
-    print(url)  
-    print(kwargs)  
+print(active_ids)  # [1, 3]
+```
 
-make_request(  
-    "GET",  
-    "https://example.com/users",  
-    timeout=5,  
-    headers={"Authorization": "token"},  
-)  
+### 10. Dict comprehension
 
-## 13. Области видимости LEGB
+```python
+users = [
+    {"id": 1, "name": "Alex"},
+    {"id": 2, "name": "Ivan"},
+]
 
-Python ищет переменные в порядке:  
+users_by_id = {user["id"]: user for user in users}
 
-Local — локальная область функции.  
-Enclosing — область внешней функции.  
-Global — глобальная область модуля.  
-Built-in — встроенные имена.  
+print(users_by_id)
+```
 
-### Пример:
+**Результат**
 
-name = "global"  
+```text
+{
+    1: {"id": 1, "name": "Alex"},
+    2: {"id": 2, "name": "Ivan"},
+}
+```
 
-def outer() -> None:  
-    name = "outer"  
+Очень частая задача на собеседовании.
 
-    def inner() -> None:  
-        name = "inner"  
-        print(name)  
+## Функции, исключения и протоколы
 
-    inner()  
+### 11. Функции
 
-outer()  # inner  
-global  
-counter = 0  
+**Простая функция**
 
-def increment() -> None:  
-    global counter  
-    counter += 1  
-nonlocal  
-def make_counter() -> callable:  
-    count = 0  
+```python
+def add(a: int, b: int) -> int:
+    return a + b
+```
 
-    def increment() -> int:  
-        nonlocal count  
-        count += 1  
-        return count  
+**Значения по умолчанию**
 
-    return increment  
+```python
+def greet(name: str = "Guest") -> str:
+    return f"Hello, {name}"
+```
 
-counter = make_counter()  
+Важная ошибка с mutable default argument
 
-print(counter())  # 1  
-print(counter())  # 2  
+#### Плохо:
 
-## 14. Lambda
+```python
+def add_item(item: str, items: list[str] = []) -> list[str]:
+    items.append(item)
+    return items
+```
 
-users = [  
-    {"name": "Alex", "age": 30},  
-    {"name": "Ivan", "age": 25},  
-]  
+#### Проблема:
 
-users.sort(key=lambda user: user["age"])  
+```python
+print(add_item("a"))  # ['a']
+print(add_item("b"))  # ['a', 'b']
+```
 
-### На собеседовании:
+**Правильно**
 
-lambda — это короткая анонимная функция. Часто используется как key для сортировки, фильтрации или маппинга.  
+```python
+def add_item(item: str, items: list[str] | None = None) -> list[str]:
+    if items is None:
+        items = []
 
-## 15. Сортировка
+    items.append(item)
+    return items
+```
 
-sorted()  
+> **Короткий ответ для собеседования**
+>
+> Значения по умолчанию вычисляются один раз при создании функции, а не при каждом вызове. Поэтому изменяемые значения по умолчанию могут привести к неожиданному поведению.
 
-Возвращает новый список.  
+### 12. *args и **kwargs
 
-numbers = [3, 1, 2]  
+```python
+def func(*args: int, **kwargs: str) -> None:
+    print(args)
+    print(kwargs)
 
-result = sorted(numbers)  
+func(1, 2, 3, name="Alex", role="QA")
+```
 
-print(result)   # [1, 2, 3]  
-print(numbers)  # [3, 1, 2]  
-.sort()  
+**Результат**
 
-Меняет список на месте.  
+(1, 2, 3)
 
-numbers = [3, 1, 2]  
-numbers.sort()  
+```text
+{'name': 'Alex', 'role': 'QA'}
+```
 
-print(numbers)  # [1, 2, 3]  
-Сортировка списка словарей  
-users = [  
-    {"name": "Alex", "age": 30},  
-    {"name": "Ivan", "age": 25},  
-    {"name": "Petr", "age": 35},  
-]  
+**Когда использовать**
 
-users_sorted = sorted(users, key=lambda user: user["age"])  
-Сортировка по нескольким полям  
-users = [  
-    {"name": "Bob", "age": 30},  
-    {"name": "Alex", "age": 30},  
-    {"name": "Ivan", "age": 25},  
-]  
+*args — когда неизвестно количество позиционных аргументов.
 
-result = sorted(users, key=lambda user: (user["age"], user["name"]))  
+**kwargs — когда неизвестно количество именованных аргументов.
 
-## 16. Копирование объектов
+#### Пример:
 
-Поверхностная копия  
-from copy import copy  
+```python
+def make_request(method: str, url: str, **kwargs: object) -> None:
+    print(method)
+    print(url)
+    print(kwargs)
+```
 
-a = [[1, 2], [3, 4]]  
-b = copy(a)  
+**make_request(**
 
-b[0].append(100)  
+```python
+    "GET",
+    "https://example.com/users",
+    timeout=5,
+    headers={"Authorization": "token"},
+)
+```
 
-print(a)  # [[1, 2, 100], [3, 4]]  
+### 13. Области видимости LEGB
 
-Скопировался внешний список, но вложенные списки остались общими.  
+Python ищет переменные в порядке:
 
-Глубокая копия  
-from copy import deepcopy  
+- Local — локальная область функции
+- Enclosing — область внешней функции
+- Global — глобальная область модуля
+- Built-in — встроенные имена
 
-a = [[1, 2], [3, 4]]  
-b = deepcopy(a)  
+#### Пример:
 
-b[0].append(100)  
+```python
+name = "global"
 
-print(a)  # [[1, 2], [3, 4]]  
-print(b)  # [[1, 2, 100], [3, 4]]  
+def outer() -> None:
+    name = "outer"
 
-### На собеседовании:
+    def inner() -> None:
+        name = "inner"
+        print(name)
 
-copy копирует только внешний объект, deepcopy рекурсивно копирует вложенные объекты.  
+    inner()
 
-## 17. Исключения
+outer()  # inner
+```
 
-Базовый пример  
-try:  
-    result = 10 / 0  
-except ZeroDivisionError:  
-    print("Деление на ноль")  
-Несколько исключений  
-try:  
-    value = int("abc")  
-except ValueError:  
-    print("Ошибка преобразования")  
-except TypeError:  
-    print("Неверный тип")  
-else  
+**global**
 
-Выполняется, если исключения не было.  
+```python
+counter = 0
 
-try:  
-    value = int("123")  
-except ValueError:  
-    print("Ошибка")  
-else:  
-    print("Успешно")  
-finally  
+def increment() -> None:
+    global counter
+    counter += 1
+```
 
-Выполняется всегда.  
+**nonlocal**
 
-try:  
-    file = open("data.txt")  
-except FileNotFoundError:  
-    print("Файл не найден")  
-finally:  
-    print("Завершение")  
-Создание своего исключения  
-class UserNotFoundError(Exception):  
-    pass  
+```python
+def make_counter() -> callable:
+    count = 0
 
-def get_user(user_id: int) -> dict[str, object]:  
-    if user_id <= 0:  
-        raise UserNotFoundError(f"User with id={user_id} not found")  
+    def increment() -> int:
+        nonlocal count
+        count += 1
+        return count
 
-    return {"id": user_id}  
+    return increment
 
-### На собеседовании:
+counter = make_counter()
 
-Исключения нужны для обработки ошибочных сценариев. В тестовом фреймворке я бы создавал собственные исключения для понятных ошибок: пользователь не создан, стенд недоступен, некорректный ответ API.  
+print(counter())  # 1
+print(counter())  # 2
+```
 
-## 18. Контекстный менеджер with
+### 14. Lambda
 
-Контекстный менеджер управляет ресурсом: открыть/закрыть файл, соединение, lock, сессию.  
+```python
+users = [
+    {"name": "Alex", "age": 30},
+    {"name": "Ivan", "age": 25},
+]
 
-with open("data.txt", "r", encoding="utf-8") as file:  
-    content = file.read()  
+users.sort(key=lambda user: user["age"])
+```
 
-Файл закроется автоматически.  
+> **Короткий ответ для собеседования**
+>
+> lambda — это короткая анонимная функция. Часто используется как key для сортировки, фильтрации или маппинга.
 
-Свой контекстный менеджер через класс  
-class FileManager:  
-    def __init__(self, path: str) -> None:  
-        self.path = path  
-        self.file = None  
+### 15. Сортировка
 
-    def __enter__(self):  
-        self.file = open(self.path, "r", encoding="utf-8")  
-        return self.file  
+```python
+sorted()
+```
 
-    def __exit__(self, exc_type, exc_value, traceback) -> None:  
-        if self.file:  
-            self.file.close()  
+Возвращает новый список.
 
-with FileManager("data.txt") as file:  
-    print(file.read())  
-Через contextmanager  
-from collections.abc import Generator  
-from contextlib import contextmanager  
+```python
+numbers = [3, 1, 2]
 
-@contextmanager  
-def open_file(path: str) -> Generator:  
-    file = open(path, "r", encoding="utf-8")  
-    try:  
-        yield file  
-    finally:  
-        file.close()  
+result = sorted(numbers)
 
-Использование:  
+print(result)   # [1, 2, 3]
+print(numbers)  # [3, 1, 2]
+```
 
-with open_file("data.txt") as file:  
-    print(file.read())  
+.sort()
 
-### На собеседовании:
+Меняет список на месте.
 
-with гарантирует корректное освобождение ресурса даже при ошибке внутри блока.  
+```python
+numbers = [3, 1, 2]
+numbers.sort()
 
-## 19. Декораторы
+print(numbers)  # [1, 2, 3]
+```
 
-Декоратор — функция, которая принимает функцию и возвращает новую функцию.  
+**Сортировка списка словарей**
 
-Простой пример  
-from collections.abc import Callable  
-from functools import wraps  
+```python
+users = [
+    {"name": "Alex", "age": 30},
+    {"name": "Ivan", "age": 25},
+    {"name": "Petr", "age": 35},
+]
 
-def log_call(func: Callable) -> Callable:  
-    @wraps(func)  
-    def wrapper(*args, **kwargs):  
-        print(f"Вызов функции: {func.__name__}")  
-        return func(*args, **kwargs)  
+users_sorted = sorted(users, key=lambda user: user["age"])
+```
 
-    return wrapper  
+**Сортировка по нескольким полям**
 
-@log_call  
-def add(a: int, b: int) -> int:  
-    return a + b  
+```python
+users = [
+    {"name": "Bob", "age": 30},
+    {"name": "Alex", "age": 30},
+    {"name": "Ivan", "age": 25},
+]
 
-print(add(2, 3))  
-Что происходит на самом деле  
-@log_call  
-def add(a: int, b: int) -> int:  
-    return a + b  
+result = sorted(users, key=lambda user: (user["age"], user["name"]))
+```
 
-То же самое, что:  
+### 16. Копирование объектов
 
-def add(a: int, b: int) -> int:  
-    return a + b  
+**Поверхностная копия**
 
-add = log_call(add)  
-Зачем нужен functools.wraps  
+```python
+from copy import copy
 
-Без wraps у функции потеряется имя, docstring и часть метаданных.  
+a = [[1, 2], [3, 4]]
+b = copy(a)
+```
 
-from functools import wraps  
+b[0].append(100)
 
-### На собеседовании:
+```python
+print(a)  # [[1, 2, 100], [3, 4]]
+```
 
-Декораторы удобно использовать для логирования, ретраев, замера времени, авторизации, обёртки API-клиентов, фиксации шагов в отчётах.  
+Скопировался внешний список, но вложенные списки остались общими.
 
-Декоратор retry  
-from collections.abc import Callable  
-from functools import wraps  
-from time import sleep  
+**Глубокая копия**
 
-def retry(attempts: int = 3, delay: float = 1.0) -> Callable:  
-    def decorator(func: Callable) -> Callable:  
-        @wraps(func)  
-        def wrapper(*args, **kwargs):  
-            last_error: Exception | None = None  
+```python
+from copy import deepcopy
 
-            for _ in range(attempts):  
-                try:  
-                    return func(*args, **kwargs)  
-                except Exception as error:  
-                    last_error = error  
-                    sleep(delay)  
+a = [[1, 2], [3, 4]]
+b = deepcopy(a)
+```
 
-            raise last_error  
+b[0].append(100)
 
-        return wrapper  
+```python
+print(a)  # [[1, 2], [3, 4]]
+print(b)  # [[1, 2, 100], [3, 4]]
+```
 
-    return decorator  
+> **Короткий ответ для собеседования**
+>
+> copy копирует только внешний объект, deepcopy рекурсивно копирует вложенные объекты.
 
-Использование:  
+### 17. Исключения
 
-@retry(attempts=3, delay=0.5)  
-def unstable_request() -> str:  
-    return "ok"  
+**Базовый пример**
 
-## 20. Итераторы и генераторы
+```python
+try:
+    result = 10 / 0
+except ZeroDivisionError:
+    print("Деление на ноль")
+```
 
-Итератор  
+**Несколько исключений**
 
-Итератор — объект, у которого есть методы:  
+```python
+try:
+    value = int("abc")
+except ValueError:
+    print("Ошибка преобразования")
+except TypeError:
+    print("Неверный тип")
+```
 
-__iter__()  
-__next__()  
+**else**
 
-### Пример:
+Выполняется, если исключения не было.
 
-numbers = [1, 2, 3]  
+```python
+try:
+    value = int("123")
+except ValueError:
+    print("Ошибка")
+else:
+    print("Успешно")
+```
 
-iterator = iter(numbers)  
+**finally**
 
-print(next(iterator))  # 1  
-print(next(iterator))  # 2  
-print(next(iterator))  # 3  
+Выполняется всегда.
 
-После окончания будет:  
+```python
+try:
+    file = open("data.txt")
+except FileNotFoundError:
+    print("Файл не найден")
+finally:
+    print("Завершение")
+```
 
-StopIteration  
-Генератор  
+**Создание своего исключения**
 
-Генератор создаётся функцией с yield.  
+```python
+class UserNotFoundError(Exception):
+    pass
 
-from collections.abc import Generator  
+def get_user(user_id: int) -> dict[str, object]:
+    if user_id <= 0:
+        raise UserNotFoundError(f"User with id={user_id} not found")
 
-def count_up_to(limit: int) -> Generator[int, None, None]:  
-    current = 1  
+    return {"id": user_id}
+```
 
-    while current <= limit:  
-        yield current  
-        current += 1  
+> **Короткий ответ для собеседования**
+>
+> Исключения нужны для обработки ошибочных сценариев. В тестовом фреймворке я бы создавал собственные исключения для понятных ошибок: пользователь не создан, стенд недоступен, некорректный ответ API.
 
-for number in count_up_to(3):  
-    print(number)  
+### 18. Контекстный менеджер with
 
-Результат:  
+Контекстный менеджер управляет ресурсом: открыть/закрыть файл, соединение, lock, сессию.
 
-1  
-2  
-3  
+```python
+with open("data.txt", "r", encoding="utf-8") as file:
+    content = file.read()
+```
 
-### На собеседовании:
+Файл закроется автоматически.
 
-Генератор не хранит все значения в памяти, а выдаёт их по одному. Это полезно для больших файлов, потоков данных, пагинации API.  
+Свой контекстный менеджер через класс
 
-Пример чтения большого файла  
-from collections.abc import Generator  
+```python
+class FileManager:
+    def __init__(self, path: str) -> None:
+        self.path = path
+        self.file = None
 
-def read_lines(path: str) -> Generator[str, None, None]:  
-    with open(path, "r", encoding="utf-8") as file:  
-        for line in file:  
-            yield line.strip()  
+    def __enter__(self):
+        self.file = open(self.path, "r", encoding="utf-8")
+        return self.file
 
-## 21. yield vs return
+    def __exit__(self, exc_type, exc_value, traceback) -> None:
+        if self.file:
+            self.file.close()
 
-return завершает функцию и возвращает значение.  
+with FileManager("data.txt") as file:
+    print(file.read())
+```
 
-def get_numbers() -> list[int]:  
-    return [1, 2, 3]  
+**Через contextmanager**
 
-yield превращает функцию в генератор.  
+```python
+from collections.abc import Generator
+from contextlib import contextmanager
 
-def get_numbers():  
-    yield 1  
-    yield 2  
-    yield 3  
+@contextmanager
+def open_file(path: str) -> Generator:
+    file = open(path, "r", encoding="utf-8")
+    try:
+        yield file
+    finally:
+        file.close()
+```
 
-## 22. ООП в Python
+**Использование**
 
-Класс и объект  
-class User:  
-    def __init__(self, user_id: int, name: str) -> None:  
-        self.user_id = user_id  
-        self.name = name  
+```python
+with open_file("data.txt") as file:
+    print(file.read())
+```
 
-    def greet(self) -> str:  
-        return f"Hello, {self.name}"  
+> **Короткий ответ для собеседования**
+>
+> `with` гарантирует корректное освобождение ресурса даже при ошибке внутри блока.
 
-user = User(1, "Alex")  
+### 19. Декораторы
 
-print(user.greet())  
-self  
+Декоратор — функция, которая принимает функцию и возвращает новую функцию.
 
-self — ссылка на текущий объект.  
+**Простой пример**
 
-class Counter:  
-    def __init__(self) -> None:  
-        self.value = 0  
+```python
+from collections.abc import Callable
+from functools import wraps
 
-    def increment(self) -> None:  
-        self.value += 1  
+def log_call(func: Callable) -> Callable:
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        print(f"Вызов функции: {func.__name__}")
+        return func(*args, **kwargs)
 
-### На собеседовании:
+    return wrapper
 
-self нужен, чтобы обращаться к состоянию конкретного экземпляра класса.  
+@log_call
+def add(a: int, b: int) -> int:
+    return a + b
 
-## 23. Инкапсуляция
+print(add(2, 3))
+```
 
-В Python нет настоящих private-полей, но есть соглашения.  
+Что происходит на самом деле
 
-class User:  
-    def __init__(self, name: str) -> None:  
-        self.name = name          # public  
-        self._token = "secret"    # protected by convention  
-        self.__password = "123"   # name mangling  
-property  
-class User:  
-    def __init__(self, age: int) -> None:  
-        self._age = age  
+```python
+@log_call
+def add(a: int, b: int) -> int:
+    return a + b
+```
 
-    @property  
-    def age(self) -> int:  
-        return self._age  
+**То же самое, что**
 
-    @age.setter  
-    def age(self, value: int) -> None:  
-        if value < 0:  
-            raise ValueError("Age cannot be negative")  
+```python
+def add(a: int, b: int) -> int:
+    return a + b
 
-        self._age = value  
+add = log_call(add)
+```
 
-Использование:  
+**Зачем нужен functools.wraps**
 
-user = User(30)  
-user.age = 31  
+Без wraps у функции потеряется имя, docstring и часть метаданных.
 
-### На собеседовании:
+```python
+from functools import wraps
+```
 
-В Python инкапсуляция чаще строится через соглашения, свойства property и контроль доступа к данным через методы.  
+> **Короткий ответ для собеседования**
+>
+> Декораторы удобно использовать для логирования, ретраев, замера времени, авторизации, обёртки API-клиентов, фиксации шагов в отчётах.
 
-## 24. Наследование
+**Декоратор retry**
 
-class Animal:  
-    def speak(self) -> str:  
-        return "Some sound"  
+```python
+from collections.abc import Callable
+from functools import wraps
+from time import sleep
 
-class Dog(Animal):  
-    def speak(self) -> str:  
-        return "Woof"  
+def retry(attempts: int = 3, delay: float = 1.0) -> Callable:
+    def decorator(func: Callable) -> Callable:
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            last_error: Exception | None = None
 
-dog = Dog()  
-print(dog.speak())  # Woof  
-super()  
-class BaseClient:  
-    def __init__(self, base_url: str) -> None:  
-        self.base_url = base_url  
+            for _ in range(attempts):
+                try:
+                    return func(*args, **kwargs)
+                except Exception as error:
+                    last_error = error
+                    sleep(delay)
 
-class UserClient(BaseClient):  
-    def __init__(self, base_url: str, token: str) -> None:  
-        super().__init__(base_url)  
-        self.token = token  
+            raise last_error
 
-### На собеседовании:
+        return wrapper
 
-super() вызывает метод родительского класса. Чаще всего используется в __init__, чтобы переиспользовать инициализацию родителя.  
+    return decorator
+```
 
-## 25. Полиморфизм
+**Использование**
 
-Полиморфизм — возможность работать с разными объектами через общий интерфейс.  
+```python
+@retry(attempts=3, delay=0.5)
+def unstable_request() -> str:
+    return "ok"
+```
 
-class JsonReporter:  
-    def report(self) -> str:  
-        return "json report"  
+### 20. Итераторы и генераторы
 
-class HtmlReporter:  
-    def report(self) -> str:  
-        return "html report"  
+**Итератор**
 
-def generate_report(reporter) -> str:  
-    return reporter.report()  
+Итератор — объект, у которого есть методы:
 
-### На собеседовании:
+```python
+__iter__()
+__next__()
+```
 
-### Главное не то, какой конкретно класс передали, а то, что у объекта есть нужный метод.
+#### Пример:
 
-## 26. Абстрактные классы
+```python
+numbers = [1, 2, 3]
 
-from abc import ABC, abstractmethod  
+iterator = iter(numbers)
 
-class BaseApiClient(ABC):  
-    @abstractmethod  
-    def get(self, path: str) -> dict:  
-        pass  
+print(next(iterator))  # 1
+print(next(iterator))  # 2
+print(next(iterator))  # 3
+```
 
-    @abstractmethod  
-    def post(self, path: str, json: dict) -> dict:  
-        pass  
+**После окончания будет**
 
-Реализация:  
+**StopIteration**
+Генератор
 
-class UserApiClient(BaseApiClient):  
-    def get(self, path: str) -> dict:  
-        return {"method": "GET", "path": path}  
+Генератор создаётся функцией с yield.
 
-    def post(self, path: str, json: dict) -> dict:  
-        return {"method": "POST", "path": path, "json": json}  
+```python
+from collections.abc import Generator
 
-### На собеседовании:
+def count_up_to(limit: int) -> Generator[int, None, None]:
+    current = 1
 
-Абстрактный класс задаёт контракт. Его нельзя нормально использовать без реализации абстрактных методов в дочернем классе.  
+    while current <= limit:
+        yield current
+        current += 1
 
-## 27. staticmethod, classmethod, обычный метод
+for number in count_up_to(3):
+    print(number)
+```
 
-Обычный метод  
+**Результат**
 
-Получает self.  
+1
+2
+3
 
-class User:  
-    def __init__(self, name: str) -> None:  
-        self.name = name  
+> **Короткий ответ для собеседования**
+>
+> Генератор не хранит все значения в памяти, а выдаёт их по одному. Это полезно для больших файлов, потоков данных, пагинации API.
 
-    def get_name(self) -> str:  
-        return self.name  
-staticmethod  
+**Пример чтения большого файла**
 
-Не получает ни self, ни cls.  
+```python
+from collections.abc import Generator
 
-class Validator:  
-    @staticmethod  
-    def is_valid_email(email: str) -> bool:  
-        return "@" in email  
-classmethod  
+def read_lines(path: str) -> Generator[str, None, None]:
+    with open(path, "r", encoding="utf-8") as file:
+        for line in file:
+            yield line.strip()
+```
 
-Получает cls.  
+### 21. yield vs return
 
-class User:  
-    def __init__(self, name: str) -> None:  
-        self.name = name  
+```python
+return завершает функцию и возвращает значение.
 
-    @classmethod  
-    def from_dict(cls, data: dict[str, str]) -> "User":  
-        return cls(name=data["name"])  
+def get_numbers() -> list[int]:
+    return [1, 2, 3]
 
-### На собеседовании:
+yield превращает функцию в генератор.
 
-Обычный метод работает с объектом, classmethod — с классом, staticmethod — просто функция внутри класса, логически связанная с ним.  
+def get_numbers():
+    yield 1
+    yield 2
+    yield 3
+```
 
-## 28. Магические методы
+## ООП и модель данных
 
-__str__  
+### 22. ООП в Python
 
-Для человекочитаемого вывода.  
+**Класс и объект**
 
-class User:  
-    def __init__(self, name: str) -> None:  
-        self.name = name  
+```python
+class User:
+    def __init__(self, user_id: int, name: str) -> None:
+        self.user_id = user_id
+        self.name = name
 
-    def __str__(self) -> str:  
-        return f"User: {self.name}"  
-__repr__  
+    def greet(self) -> str:
+        return f"Hello, {self.name}"
 
-Для отладки.  
+user = User(1, "Alex")
 
-class User:  
-    def __init__(self, name: str) -> None:  
-        self.name = name  
+print(user.greet())
+```
 
-    def __repr__(self) -> str:  
-        return f"User(name={self.name!r})"  
-__eq__  
-class User:  
-    def __init__(self, user_id: int) -> None:  
-        self.user_id = user_id  
+**self**
 
-    def __eq__(self, other: object) -> bool:  
-        if not isinstance(other, User):  
-            return False  
+self — ссылка на текущий объект.
 
-        return self.user_id == other.user_id  
-__len__  
-class Cart:  
-    def __init__(self) -> None:  
-        self.items: list[str] = []  
+```python
+class Counter:
+    def __init__(self) -> None:
+        self.value = 0
 
-    def __len__(self) -> int:  
-        return len(self.items)  
+    def increment(self) -> None:
+        self.value += 1
+```
 
-## 29. Dataclass
+> **Короткий ответ для собеседования**
+>
+> self нужен, чтобы обращаться к состоянию конкретного экземпляра класса.
 
-dataclass удобен для классов-структур данных.  
+### 23. Инкапсуляция
 
-from dataclasses import dataclass  
+В Python нет настоящих private-полей, но есть соглашения.
 
-@dataclass  
-class User:  
-    user_id: int  
-    name: str  
-    email: str  
+```python
+class User:
+    def __init__(self, name: str) -> None:
+        self.name = name          # public
+        self._token = "secret"    # protected by convention
+        self.__password = "123"   # name mangling
+```
 
-Использование:  
+**property**
 
-user = User(user_id=1, name="Alex", email="alex@example.com")  
+```python
+class User:
+    def __init__(self, age: int) -> None:
+        self._age = age
 
-print(user)  
+    @property
+    def age(self) -> int:
+        return self._age
 
-Dataclass автоматически создаёт:  
+    @age.setter
+    def age(self, value: int) -> None:
+        if value < 0:
+            raise ValueError("Age cannot be negative")
 
-__init__  
-__repr__  
-__eq__  
-Значение по умолчанию  
-from dataclasses import dataclass, field  
+        self._age = value
+```
 
-@dataclass  
-class User:  
-    user_id: int  
-    name: str  
-    roles: list[str] = field(default_factory=list)  
+**Использование**
 
-### Важно:
+```python
+user = User(30)
+user.age = 31
+```
 
-Для изменяемых значений в dataclass нужно использовать default_factory.  
+> **Короткий ответ для собеседования**
+>
+> В Python инкапсуляция чаще строится через соглашения, свойства property и контроль доступа к данным через методы.
 
-## 30. Типизация
+### 24. Наследование
 
-Базовая типизация  
-def add(a: int, b: int) -> int:  
-    return a + b  
-Списки, словари, множества  
-def get_names(users: list[dict[str, str]]) -> list[str]:  
-    return [user["name"] for user in users]  
-Union  
-def parse_id(value: int | str) -> int:  
-    return int(value)  
-Optional  
-def find_user(user_id: int) -> dict | None:  
-    if user_id <= 0:  
-        return None  
+```python
+class Animal:
+    def speak(self) -> str:
+        return "Some sound"
 
-    return {"id": user_id}  
-Type alias  
-UserData = dict[str, str | int]  
+class Dog(Animal):
+    def speak(self) -> str:
+        return "Woof"
 
-def create_user(data: UserData) -> UserData:  
-    return data  
-Protocol  
+dog = Dog()
+print(dog.speak())  # Woof
+super()
+class BaseClient:
+    def __init__(self, base_url: str) -> None:
+        self.base_url = base_url
 
-Полезно, когда важен не конкретный класс, а набор методов.  
+class UserClient(BaseClient):
+    def __init__(self, base_url: str, token: str) -> None:
+        super().__init__(base_url)
+        self.token = token
+```
 
-from typing import Protocol  
+> **Короткий ответ для собеседования**
+>
+> super() вызывает метод родительского класса. Чаще всего используется в __init__, чтобы переиспользовать инициализацию родителя.
 
-class Reporter(Protocol):  
-    def report(self) -> str:  
-        ...  
+### 25. Полиморфизм
 
-class JsonReporter:  
-    def report(self) -> str:  
-        return "json"  
+Полиморфизм — возможность работать с разными объектами через общий интерфейс.
 
-def generate_report(reporter: Reporter) -> str:  
-    return reporter.report()  
+```python
+class JsonReporter:
+    def report(self) -> str:
+        return "json report"
 
-### На собеседовании:
+class HtmlReporter:
+    def report(self) -> str:
+        return "html report"
 
-Типизация в Python не влияет на выполнение кода напрямую, но помогает IDE, mypy, читаемости и поддержке проекта.  
+def generate_report(reporter) -> str:
+    return reporter.report()
+```
 
-## 31. collections
+#### Главное не то, какой конкретно класс передали, а то, что у объекта есть нужный метод.
 
-defaultdict  
+### 26. Абстрактные классы
 
-### Часто используется для группировки.
+```python
+from abc import ABC, abstractmethod
 
-from collections import defaultdict  
+class BaseApiClient(ABC):
+    @abstractmethod
+    def get(self, path: str) -> dict:
+        pass
 
-orders = [  
-    {"user_id": 1, "amount": 100},  
-    {"user_id": 2, "amount": 200},  
-    {"user_id": 1, "amount": 300},  
-]  
+    @abstractmethod
+    def post(self, path: str, json: dict) -> dict:
+        pass
+```
 
-result: dict[int, int] = defaultdict(int)  
+**Реализация**
 
-for order in orders:  
-    result[order["user_id"]] += order["amount"]  
+```python
+class UserApiClient(BaseApiClient):
+    def get(self, path: str) -> dict:
+        return {"method": "GET", "path": path}
 
-print(dict(result))  # {1: 400, 2: 200}  
-Counter  
+    def post(self, path: str, json: dict) -> dict:
+        return {"method": "POST", "path": path, "json": json}
+```
 
-Подсчёт элементов.  
+> **Короткий ответ для собеседования**
+>
+> Абстрактный класс задаёт контракт. Его нельзя нормально использовать без реализации абстрактных методов в дочернем классе.
 
-from collections import Counter  
+### 27. staticmethod, classmethod, обычный метод
 
-text = "aabbc"  
+**Обычный метод**
 
-counter = Counter(text)  
+Получает self.
 
-print(counter)  # Counter({'a': 2, 'b': 2, 'c': 1})  
+```python
+class User:
+    def __init__(self, name: str) -> None:
+        self.name = name
 
-### Частая задача:
+    def get_name(self) -> str:
+        return self.name
+```
 
-from collections import Counter  
+**staticmethod**
 
-def first_unique_char(text: str) -> str | None:  
-    counter = Counter(text)  
+Не получает ни self, ни cls.
 
-    for char in text:  
-        if counter[char] == 1:  
-            return char  
+```python
+class Validator:
+    @staticmethod
+    def is_valid_email(email: str) -> bool:
+        return "@" in email
+```
 
-    return None  
-deque  
+**classmethod**
 
-Очередь с быстрым добавлением и удалением с двух сторон.  
+Получает cls.
 
-from collections import deque  
+```python
+class User:
+    def __init__(self, name: str) -> None:
+        self.name = name
 
-queue = deque()  
+    @classmethod
+    def from_dict(cls, data: dict[str, str]) -> "User":
+        return cls(name=data["name"])
+```
 
-queue.append("task1")  
-queue.append("task2")  
+> **Короткий ответ для собеседования**
+>
+> Обычный метод работает с объектом, classmethod — с классом, staticmethod — просто функция внутри класса, логически связанная с ним.
 
-print(queue.popleft())  # task1  
+### 28. Магические методы
 
-## 32. Работа с файлами
+__str__
 
-Чтение файла  
-from pathlib import Path  
+Для человекочитаемого вывода.
 
-path = Path("data.txt")  
+```python
+class User:
+    def __init__(self, name: str) -> None:
+        self.name = name
 
-content = path.read_text(encoding="utf-8")  
-Запись файла  
-from pathlib import Path  
+    def __str__(self) -> str:
+        return f"User: {self.name}"
+```
 
-path = Path("result.txt")  
+__repr__
 
-path.write_text("Hello", encoding="utf-8")  
-Построчное чтение  
-from pathlib import Path  
+Для отладки.
 
-path = Path("logs.txt")  
+```python
+class User:
+    def __init__(self, name: str) -> None:
+        self.name = name
 
-with path.open("r", encoding="utf-8") as file:  
-    for line in file:  
-        print(line.strip())  
+    def __repr__(self) -> str:
+        return f"User(name={self.name!r})"
+```
 
-## 33. Работа с JSON
+__eq__
 
-import json  
+```python
+class User:
+    def __init__(self, user_id: int) -> None:
+        self.user_id = user_id
 
-data = {  
-    "id": 1,  
-    "name": "Alex",  
-}  
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, User):
+            return False
 
-json_string = json.dumps(data, ensure_ascii=False, indent=2)  
-print(json_string)  
+        return self.user_id == other.user_id
+```
 
-Обратно:  
+__len__
 
-data = json.loads(json_string)  
+```python
+class Cart:
+    def __init__(self) -> None:
+        self.items: list[str] = []
 
-Файл:  
+    def __len__(self) -> int:
+        return len(self.items)
+```
 
-from pathlib import Path  
-import json  
+### 29. Dataclass
 
-path = Path("user.json")  
+dataclass удобен для классов-структур данных.
 
-data = {  
-    "id": 1,  
-    "name": "Alex",  
-}  
+```python
+from dataclasses import dataclass
 
-path.write_text(  
-    json.dumps(data, ensure_ascii=False, indent=2),  
-    encoding="utf-8",  
-)  
+@dataclass
+class User:
+    user_id: int
+    name: str
+    email: str
+```
 
-## 34. Работа с датой и временем
+**Использование**
 
-from datetime import datetime, timedelta, timezone  
+```python
+user = User(user_id=1, name="Alex", email="alex@example.com")
 
-now = datetime.now(timezone.utc)  
-tomorrow = now + timedelta(days=1)  
+print(user)
+```
 
-print(now.isoformat())  
-print(tomorrow.isoformat())  
+**Dataclass автоматически создаёт**
 
-Парсинг:  
+__init__
+__repr__
+__eq__
+Значение по умолчанию
 
-from datetime import datetime  
+```python
+from dataclasses import dataclass, field
 
-value = "2026-07-08 12:30:00"  
+@dataclass
+class User:
+    user_id: int
+    name: str
+    roles: list[str] = field(default_factory=list)
+```
 
-dt = datetime.strptime(value, "%Y-%m-%d %H:%M:%S")  
+#### Важно:
 
-Форматирование:  
+Для изменяемых значений в dataclass нужно использовать default_factory.
 
-text = dt.strftime("%d.%m.%Y %H:%M")  
+### 30. Типизация
 
-## 35. GIL
+**Базовая типизация**
 
-GIL — Global Interpreter Lock.  
+```python
+def add(a: int, b: int) -> int:
+    return a + b
+```
 
-### На собеседовании коротко:
+**Списки, словари, множества**
 
-GIL — это механизм CPython, который не даёт нескольким потокам одновременно выполнять Python bytecode. Поэтому потоки не ускоряют CPU-bound задачи, но хорошо подходят для IO-bound задач: сетевые запросы, работа с файлами, ожидание БД.  
+```python
+def get_names(users: list[dict[str, str]]) -> list[str]:
+    return [user["name"] for user in users]
+Union
+def parse_id(value: int | str) -> int:
+    return int(value)
+```
 
-CPU-bound  
+**Optional**
 
-Например:  
+```python
+def find_user(user_id: int) -> dict | None:
+    if user_id <= 0:
+        return None
 
-вычисления  
-обработка больших данных  
-сжатие  
-парсинг огромных структур  
+    return {"id": user_id}
+```
 
-Лучше использовать:  
+**Type alias**
 
-multiprocessing  
-IO-bound  
+```python
+UserData = dict[str, str | int]
 
-Например:  
+def create_user(data: UserData) -> UserData:
+    return data
+```
 
-HTTP-запросы  
-БД  
-файлы  
-ожидание ответа сервиса  
+**Protocol**
 
-Можно использовать:  
+Полезно, когда важен не конкретный класс, а набор методов.
 
-threading  
-asyncio  
+```python
+from typing import Protocol
 
-## 36. Threading
+class Reporter(Protocol):
+    def report(self) -> str:
+        ...
 
-from threading import Thread  
-from time import sleep  
+class JsonReporter:
+    def report(self) -> str:
+        return "json"
 
-def worker(name: str) -> None:  
-    print(f"Start {name}")  
-    sleep(1)  
-    print(f"End {name}")  
+def generate_report(reporter: Reporter) -> str:
+    return reporter.report()
+```
 
-threads = [  
-    Thread(target=worker, args=(f"worker-{i}",))  
-    for i in range(3)  
-]  
+> **Короткий ответ для собеседования**
+>
+> Типизация в Python не влияет на выполнение кода напрямую, но помогает IDE, mypy, читаемости и поддержке проекта.
 
-for thread in threads:  
-    thread.start()  
+## Стандартная библиотека и данные
 
-for thread in threads:  
-    thread.join()  
+### 31. collections
 
-### На собеседовании:
+**defaultdict**
 
-threading подходит для задач, где много ожидания: API-запросы, работа с сетью, файлами, БД.  
+#### Часто используется для группировки.
 
-## 37. Race condition и Lock
+```python
+from collections import defaultdict
 
-### Проблема:
+orders = [
+    {"user_id": 1, "amount": 100},
+    {"user_id": 2, "amount": 200},
+    {"user_id": 1, "amount": 300},
+]
 
-from threading import Thread  
+result: dict[int, int] = defaultdict(int)
 
-counter = 0  
+for order in orders:
+    result[order["user_id"]] += order["amount"]
 
-def increment() -> None:  
-    global counter  
+print(dict(result))  # {1: 400, 2: 200}
+```
 
-    for _ in range(100_000):  
-        counter += 1  
+**Counter**
 
-threads = [Thread(target=increment) for _ in range(5)]  
+Подсчёт элементов.
 
-for thread in threads:  
-    thread.start()  
+```python
+from collections import Counter
 
-for thread in threads:  
-    thread.join()  
+text = "aabbc"
 
-print(counter)  
+counter = Counter(text)
 
-Может быть не тот результат.  
+print(counter)  # Counter({'a': 2, 'b': 2, 'c': 1})
+```
 
-С Lock:  
+#### Частая задача:
 
-from threading import Lock, Thread  
+```python
+from collections import Counter
 
-counter = 0  
-lock = Lock()  
+def first_unique_char(text: str) -> str | None:
+    counter = Counter(text)
 
-def increment() -> None:  
-    global counter  
+    for char in text:
+        if counter[char] == 1:
+            return char
 
-    for _ in range(100_000):  
-        with lock:  
-            counter += 1  
+    return None
+```
 
-### На собеседовании:
+**deque**
 
-Race condition возникает, когда несколько потоков одновременно меняют общий ресурс. Для защиты используют Lock, Semaphore, Queue и другие синхронизационные примитивы.  
+Очередь с быстрым добавлением и удалением с двух сторон.
 
-## 38. Multiprocessing
+```python
+from collections import deque
 
-from multiprocessing import Process  
+queue = deque()
 
-def worker(number: int) -> None:  
-    print(number * number)  
+queue.append("task1")
+queue.append("task2")
 
-processes = [  
-    Process(target=worker, args=(i,))  
-    for i in range(5)  
-]  
+print(queue.popleft())  # task1
+```
 
-for process in processes:  
-    process.start()  
+### 32. Работа с файлами
 
-for process in processes:  
-    process.join()  
+**Чтение файла**
 
-### На собеседовании:
+```python
+from pathlib import Path
 
-multiprocessing создаёт отдельные процессы, у каждого свой интерпретатор и память. Это помогает обходить ограничения GIL для CPU-bound задач.  
+path = Path("data.txt")
 
-## 39. Asyncio
+content = path.read_text(encoding="utf-8")
+```
 
-Асинхронность полезна для большого количества IO-операций.  
+**Запись файла**
 
-import asyncio  
+```python
+from pathlib import Path
 
-async def fetch_data(name: str) -> str:  
-    print(f"Start {name}")  
-    await asyncio.sleep(1)  
-    print(f"End {name}")  
-    return name  
+path = Path("result.txt")
 
-async def main() -> None:  
-    results = await asyncio.gather(  
-        fetch_data("task-1"),  
-        fetch_data("task-2"),  
-        fetch_data("task-3"),  
-    )  
+path.write_text("Hello", encoding="utf-8")
+```
 
-    print(results)  
+**Построчное чтение**
 
-asyncio.run(main())  
+```python
+from pathlib import Path
 
-### На собеседовании:
+path = Path("logs.txt")
 
-asyncio не делает код параллельным на уровне CPU. Он позволяет эффективно переключаться между задачами, пока одна задача ждёт IO.  
+with path.open("r", encoding="utf-8") as file:
+    for line in file:
+        print(line.strip())
+```
 
-## 40. Threading vs Multiprocessing vs Asyncio
+### 33. Работа с JSON
 
-Threading  
+```python
+import json
 
-Используем для IO-bound задач.  
+data = {
+    "id": 1,
+    "name": "Alex",
+}
 
-### Примеры:
+json_string = json.dumps(data, ensure_ascii=False, indent=2)
+print(json_string)
+```
 
-несколько HTTP-запросов  
-чтение файлов  
-запросы в БД  
-Multiprocessing  
+**Обратно**
 
-Используем для CPU-bound задач.  
+```python
+data = json.loads(json_string)
+```
 
-### Примеры:
+**Файл**
 
-вычисления  
-обработка больших объёмов данных  
-парсинг больших файлов  
-Asyncio  
+```python
+from pathlib import Path
+import json
 
-Используем для большого количества IO-bound задач, если библиотеки поддерживают async.  
+path = Path("user.json")
 
-### Примеры:
+data = {
+    "id": 1,
+    "name": "Alex",
+}
+```
 
-aiohttp  
-asyncpg  
-асинхронные клиенты  
+**path.write_text(**
 
-### Короткий ответ:
+```python
+    json.dumps(data, ensure_ascii=False, indent=2),
+    encoding="utf-8",
+)
+```
 
-Если задача ждёт сеть или БД — threading или asyncio. Если задача грузит CPU — multiprocessing.  
+### 34. Работа с датой и временем
 
-## 41. Работа с API-клиентом
+```python
+from datetime import datetime, timedelta, timezone
 
-### Пример простого API-клиента:
+now = datetime.now(timezone.utc)
+tomorrow = now + timedelta(days=1)
 
-from typing import Any  
+print(now.isoformat())
+print(tomorrow.isoformat())
+```
 
-import requests  
+**Парсинг**
 
-class ApiClient:  
-    def __init__(self, base_url: str, timeout: float = 5.0) -> None:  
-        self.base_url = base_url.rstrip("/")  
-        self.timeout = timeout  
+```python
+from datetime import datetime
 
-    def get(self, path: str) -> dict[str, Any]:  
-        response = requests.get(  
-            url=f"{self.base_url}/{path.lstrip('/')}",  
-            timeout=self.timeout,  
-        )  
-        response.raise_for_status()  
-        return response.json()  
+value = "2026-07-08 12:30:00"
 
-    def post(self, path: str, json: dict[str, Any]) -> dict[str, Any]:  
-        response = requests.post(  
-            url=f"{self.base_url}/{path.lstrip('/')}",  
-            json=json,  
-            timeout=self.timeout,  
-        )  
-        response.raise_for_status()  
-        return response.json()  
+dt = datetime.strptime(value, "%Y-%m-%d %H:%M:%S")
+```
 
-### На собеседовании можно сказать:
+**Форматирование**
 
-Я стараюсь выносить работу с API в отдельный клиент, чтобы тесты были читаемыми и не дублировали низкоуровневые вызовы requests.  
+```python
+text = dt.strftime("%d.%m.%Y %H:%M")
+```
 
-## 42. Чистые функции
+## Конкурентное выполнение
 
-Чистая функция:  
+### 35. GIL
 
-зависит только от входных данных;  
-не меняет внешнее состояние;  
-не имеет побочных эффектов.  
-def calculate_total(prices: list[int]) -> int:  
-    return sum(prices)  
+GIL — Global Interpreter Lock.
 
-Не чистая:  
+> **Короткий ответ для собеседования**
+>
+> GIL — это механизм CPython, который не даёт нескольким потокам одновременно выполнять Python bytecode. Поэтому потоки не ускоряют CPU-bound задачи, но хорошо подходят для IO-bound задач: сетевые запросы, работа с файлами, ожидание БД.
 
-total = 0  
+**CPU-bound**
 
-def add_to_total(value: int) -> None:  
-    global total  
-    total += value  
+**Например**
 
-### На собеседовании:
+**вычисления**
+обработка больших данных
+сжатие
+парсинг огромных структур
 
-Чистые функции проще тестировать, потому что у них предсказуемый результат.  
+**Лучше использовать**
 
-## 43. SOLID коротко для Python
+**multiprocessing**
+IO-bound
 
-S — Single Responsibility  
+**Например**
 
-Класс должен иметь одну ответственность.  
+**HTTP-запросы**
+БД
+файлы
+ожидание ответа сервиса
 
-### Плохо:
+**Можно использовать**
 
-class UserService:  
-    def create_user(self):  
-        ...  
+**threading**
+asyncio
 
-    def send_email(self):  
-        ...  
+### 36. Threading
 
-    def write_log(self):  
-        ...  
+```python
+from threading import Thread
+from time import sleep
 
-Лучше:  
+def worker(name: str) -> None:
+    print(f"Start {name}")
+    sleep(1)
+    print(f"End {name}")
 
-class UserService:  
-    def create_user(self):  
-        ...  
+threads = [
+    Thread(target=worker, args=(f"worker-{i}",))
+    for i in range(3)
+]
 
-class EmailService:  
-    def send_email(self):  
-        ...  
+for thread in threads:
+    thread.start()
 
-class Logger:  
-    def write_log(self):  
-        ...  
-O — Open/Closed  
+for thread in threads:
+    thread.join()
+```
 
-Код должен быть открыт для расширения, но закрыт для изменения.  
+> **Короткий ответ для собеседования**
+>
+> threading подходит для задач, где много ожидания: API-запросы, работа с сетью, файлами, БД.
 
-### Пример через Strategy:
+### 37. Race condition и Lock
 
-from typing import Protocol  
+#### Проблема:
 
-class AuthStrategy(Protocol):  
-    def get_headers(self) -> dict[str, str]:  
-        ...  
+```python
+from threading import Thread
 
-class TokenAuth:  
-    def __init__(self, token: str) -> None:  
-        self.token = token  
+counter = 0
 
-    def get_headers(self) -> dict[str, str]:  
-        return {"Authorization": f"Bearer {self.token}"}  
+def increment() -> None:
+    global counter
 
-class ApiClient:  
-    def __init__(self, auth: AuthStrategy) -> None:  
-        self.auth = auth  
-L — Liskov Substitution  
+    for _ in range(100_000):
+        counter += 1
 
-Дочерний класс должен быть заменяемым вместо родительского.  
+threads = [Thread(target=increment) for _ in range(5)]
 
-I — Interface Segregation  
+for thread in threads:
+    thread.start()
 
-Лучше несколько маленьких интерфейсов, чем один большой.  
+for thread in threads:
+    thread.join()
 
-D — Dependency Inversion  
+print(counter)
+```
 
-Зависеть лучше от абстракций, а не от конкретных реализаций.  
+Может быть не тот результат.
 
-## 44. Частые паттерны
+**С Lock**
 
-Page Object  
+```python
+from threading import Lock, Thread
 
-Для UI-автотестов.  
+counter = 0
+lock = Lock()
 
-from selenium.webdriver.remote.webdriver import WebDriver  
-from selenium.webdriver.common.by import By  
+def increment() -> None:
+    global counter
 
-class LoginPage:  
-    USERNAME_INPUT = (By.ID, "username")  
-    PASSWORD_INPUT = (By.ID, "password")  
-    LOGIN_BUTTON = (By.ID, "login")  
+    for _ in range(100_000):
+        with lock:
+            counter += 1
+```
 
-    def __init__(self, driver: WebDriver) -> None:  
-        self.driver = driver  
+> **Короткий ответ для собеседования**
+>
+> Race condition возникает, когда несколько потоков одновременно меняют общий ресурс. Для защиты используют Lock, Semaphore, Queue и другие синхронизационные примитивы.
 
-    def open(self) -> None:  
-        self.driver.get("https://example.com/login")  
+### 38. Multiprocessing
 
-    def login(self, username: str, password: str) -> None:  
-        self.driver.find_element(*self.USERNAME_INPUT).send_keys(username)  
-        self.driver.find_element(*self.PASSWORD_INPUT).send_keys(password)  
-        self.driver.find_element(*self.LOGIN_BUTTON).click()  
-Factory  
+```python
+from multiprocessing import Process
 
-Создание объектов.  
+def worker(number: int) -> None:
+    print(number * number)
 
-from dataclasses import dataclass  
+processes = [
+    Process(target=worker, args=(i,))
+    for i in range(5)
+]
 
-@dataclass  
-class User:  
-    name: str  
-    email: str  
+for process in processes:
+    process.start()
 
-class UserFactory:  
-    @staticmethod  
-    def create_user(name: str = "Alex") -> User:  
-        return User(  
-            name=name,  
-            email=f"{name.lower()}@example.com",  
-        )  
-Builder  
+for process in processes:
+    process.join()
+```
 
-### Когда объект сложный.
+> **Короткий ответ для собеседования**
+>
+> multiprocessing создаёт отдельные процессы, у каждого свой интерпретатор и память. Это помогает обходить ограничения GIL для CPU-bound задач.
 
-class UserBuilder:  
-    def __init__(self) -> None:  
-        self.data = {  
-            "name": "Alex",  
-            "age": 30,  
-            "role": "user",  
-        }  
+### 39. Asyncio
 
-    def with_name(self, name: str) -> "UserBuilder":  
-        self.data["name"] = name  
-        return self  
+Асинхронность полезна для большого количества IO-операций.
 
-    def with_role(self, role: str) -> "UserBuilder":  
-        self.data["role"] = role  
-        return self  
+```python
+import asyncio
 
-    def build(self) -> dict[str, object]:  
-        return self.data  
+async def fetch_data(name: str) -> str:
+    print(f"Start {name}")
+    await asyncio.sleep(1)
+    print(f"End {name}")
+    return name
 
-Использование:  
+async def main() -> None:
+    results = await asyncio.gather(
+        fetch_data("task-1"),
+        fetch_data("task-2"),
+        fetch_data("task-3"),
+    )
 
-user = (  
-    UserBuilder()  
-    .with_name("Ivan")  
-    .with_role("admin")  
-    .build()  
-)  
-Strategy  
+    print(results)
 
-### Когда нужно подставлять разные алгоритмы.
+asyncio.run(main())
+```
 
-from typing import Protocol  
+> **Короткий ответ для собеседования**
+>
+> asyncio не делает код параллельным на уровне CPU. Он позволяет эффективно переключаться между задачами, пока одна задача ждёт IO.
 
-class PaymentStrategy(Protocol):  
-    def pay(self, amount: int) -> str:  
-        ...  
+### 40. Threading vs Multiprocessing vs Asyncio
 
-class CardPayment:  
-    def pay(self, amount: int) -> str:  
-        return f"Paid {amount} by card"  
+**Threading**
 
-class CashPayment:  
-    def pay(self, amount: int) -> str:  
-        return f"Paid {amount} by cash"  
+Используем для IO-bound задач.
 
-class PaymentService:  
-    def __init__(self, strategy: PaymentStrategy) -> None:  
-        self.strategy = strategy  
+#### Примеры:
 
-    def process(self, amount: int) -> str:  
-        return self.strategy.pay(amount)  
+**несколько HTTP-запросов**
+чтение файлов
+запросы в БД
+Multiprocessing
 
-## 45. Частые задачи на лайвкодинге
+Используем для CPU-bound задач.
 
-1. Удалить дубликаты с сохранением порядка  
-def remove_duplicates(items: list[int]) -> list[int]:  
-    seen = set()  
-    result = []  
+#### Примеры:
 
-    for item in items:  
-        if item not in seen:  
-            seen.add(item)  
-            result.append(item)  
+**вычисления**
+обработка больших объёмов данных
+парсинг больших файлов
+Asyncio
 
-    return result  
+Используем для большого количества IO-bound задач, если библиотеки поддерживают async.
 
-### Пример:
+#### Примеры:
 
-print(remove_duplicates([1, 2, 1, 3, 2]))  # [1, 2, 3]  
-2. Первый неповторяющийся символ  
-from collections import Counter  
+**aiohttp**
+asyncpg
+асинхронные клиенты
 
-def first_unique_char(text: str) -> str | None:  
-    counter = Counter(text)  
+#### Короткий ответ:
 
-    for char in text:  
-        if counter[char] == 1:  
-            return char  
+Если задача ждёт сеть или БД — threading или asyncio. Если задача грузит CPU — multiprocessing.
 
-    return None  
-3. Развернуть строку  
-def reverse_string(text: str) -> str:  
-    return text[::-1]  
-4. Проверить палиндром  
-def is_palindrome(text: str) -> bool:  
-    normalized = text.lower().replace(" ", "")  
-    return normalized == normalized[::-1]  
-5. Посчитать частоту слов  
-from collections import Counter  
+## Проектирование и алгоритмы
 
-def count_words(text: str) -> dict[str, int]:  
-    words = text.lower().split()  
-    return dict(Counter(words))  
-6. Сгруппировать заказы по пользователю  
-from collections import defaultdict  
+### 41. Работа с API-клиентом
 
-def group_orders_by_user(  
-    orders: list[dict[str, int]],  
-) -> dict[int, int]:  
-    result = defaultdict(int)  
+#### Пример простого API-клиента:
 
-    for order in orders:  
-        result[order["user_id"]] += order["amount"]  
+```python
+from typing import Any
 
-    return dict(result)  
-7. Найти top-N частых элементов  
-from collections import Counter  
+import requests
 
-def top_n(items: list[str], n: int) -> list[str]:  
-    counter = Counter(items)  
-    return [item for item, _ in counter.most_common(n)]  
+class ApiClient:
+    def __init__(self, base_url: str, timeout: float = 5.0) -> None:
+        self.base_url = base_url.rstrip("/")
+        self.timeout = timeout
 
-### Пример:
+    def get(self, path: str) -> dict[str, Any]:
+        response = requests.get(
+            url=f"{self.base_url}/{path.lstrip('/')}",
+            timeout=self.timeout,
+        )
+        response.raise_for_status()
+        return response.json()
 
-items = ["a", "b", "a", "c", "b", "a"]  
+    def post(self, path: str, json: dict[str, Any]) -> dict[str, Any]:
+        response = requests.post(
+            url=f"{self.base_url}/{path.lstrip('/')}",
+            json=json,
+            timeout=self.timeout,
+        )
+        response.raise_for_status()
+        return response.json()
+```
 
-print(top_n(items, 2))  # ['a', 'b']  
-8. Инвертировать словарь  
+> **Короткий ответ для собеседования**
+>
+> Я стараюсь выносить работу с API в отдельный клиент, чтобы тесты были читаемыми и не дублировали низкоуровневые вызовы requests.
 
-Простой случай, когда значения уникальны:  
+### 42. Чистые функции
 
-def invert_dict(data: dict[str, int]) -> dict[int, str]:  
-    return {value: key for key, value in data.items()}  
+**Чистая функция**
 
-Если значения не уникальны:  
+зависит только от входных данных;
+не меняет внешнее состояние;
+не имеет побочных эффектов.
 
-from collections import defaultdict  
+```python
+def calculate_total(prices: list[int]) -> int:
+    return sum(prices)
+```
 
-def invert_dict_grouped(data: dict[str, int]) -> dict[int, list[str]]:  
-    result = defaultdict(list)  
+**Не чистая**
 
-    for key, value in data.items():  
-        result[value].append(key)  
+```python
+total = 0
 
-    return dict(result)  
-9. Сравнить два списка  
-def compare_lists(expected: list[int], actual: list[int]) -> dict[str, set[int]]:  
-    expected_set = set(expected)  
-    actual_set = set(actual)  
+def add_to_total(value: int) -> None:
+    global total
+    total += value
+```
 
-    return {  
-        "missing": expected_set - actual_set,  
-        "extra": actual_set - expected_set,  
-        "common": expected_set & actual_set,  
-    }  
-10. Найти разницу между двумя словарями  
-from typing import Any  
+> **Короткий ответ для собеседования**
+>
+> Чистые функции проще тестировать, потому что у них предсказуемый результат.
 
-def dict_diff(  
-    before: dict[str, Any],  
-    after: dict[str, Any],  
-) -> dict[str, tuple[Any, Any]]:  
-    result = {}  
+### 43. SOLID коротко для Python
 
-    all_keys = before.keys() | after.keys()  
+**S — Single Responsibility**
 
-    for key in all_keys:  
-        before_value = before.get(key)  
-        after_value = after.get(key)  
+Класс должен иметь одну ответственность.
 
-        if before_value != after_value:  
-            result[key] = (before_value, after_value)  
+#### Плохо:
 
-    return result  
-11. Проверить пароль  
+```python
+class UserService:
+    def create_user(self):
+        ...
 
-Условия:  
+    def send_email(self):
+        ...
 
-минимум 8 символов;  
-есть цифра;  
-есть заглавная буква.  
-def is_valid_password(password: str) -> bool:  
-    if len(password) < 8:  
-        return False  
+    def write_log(self):
+        ...
+```
 
-    if not any(char.isdigit() for char in password):  
-        return False  
+**Лучше**
 
-    if not any(char.isupper() for char in password):  
-        return False  
+```python
+class UserService:
+    def create_user(self):
+        ...
 
-    return True  
-12. Объединить два отсортированных списка  
-def merge_sorted(left: list[int], right: list[int]) -> list[int]:  
-    result = []  
-    i = 0  
-    j = 0  
+class EmailService:
+    def send_email(self):
+        ...
 
-    while i < len(left) and j < len(right):  
-        if left[i] <= right[j]:  
-            result.append(left[i])  
-            i += 1  
-        else:  
-            result.append(right[j])  
-            j += 1  
+class Logger:
+    def write_log(self):
+        ...
+```
 
-    result.extend(left[i:])  
-    result.extend(right[j:])  
+O — Open/Closed
 
-    return result  
+Код должен быть открыт для расширения, но закрыт для изменения.
 
-## 46. Сложность алгоритмов
+#### Пример через Strategy:
 
-Основные обозначения  
-Сложность	Что значит  
-O(1)	Константное время  
-O(log n)	Логарифмическое  
-O(n)	Линейное  
-O(n log n)	Часто сортировка  
-O(n²)	Два вложенных цикла  
-O(2ⁿ)	Экспоненциальное  
-Примеры  
-items = [1, 2, 3, 4, 5]  
+```python
+from typing import Protocol
 
-print(items[0])  # O(1)  
-for item in items:  
-    print(item)  # O(n)  
-for a in items:  
-    for b in items:  
-        print(a, b)  # O(n²)  
-Словарь  
+class AuthStrategy(Protocol):
+    def get_headers(self) -> dict[str, str]:
+        ...
 
-В среднем:  
+class TokenAuth:
+    def __init__(self, token: str) -> None:
+        self.token = token
 
-data[key]  
+    def get_headers(self) -> dict[str, str]:
+        return {"Authorization": f"Bearer {self.token}"}
 
-Это O(1).  
+class ApiClient:
+    def __init__(self, auth: AuthStrategy) -> None:
+        self.auth = auth
+```
 
-Но важно:  
+**L — Liskov Substitution**
 
-В худшем случае операции со словарём могут деградировать, но в нормальных условиях доступ по ключу считается O(1).  
+Дочерний класс должен быть заменяемым вместо родительского.
 
-## 47. Частые вопросы и хорошие ответы
+**I — Interface Segregation**
 
-Что такое Python?  
+Лучше несколько маленьких интерфейсов, чем один большой.
 
-Python — высокоуровневый интерпретируемый язык с динамической типизацией. Он поддерживает ООП, функциональный стиль, имеет богатую стандартную библиотеку и часто используется для автоматизации, backend, data processing, тестирования и скриптов.  
+**D — Dependency Inversion**
 
-Python компилируемый или интерпретируемый?  
+Зависеть лучше от абстракций, а не от конкретных реализаций.
 
-Обычно говорят, что Python интерпретируемый, но точнее: исходный код сначала компилируется в байткод .pyc, а затем выполняется виртуальной машиной Python.  
+### 44. Частые паттерны
 
-### Что такое динамическая типизация?
+**Page Object**
 
-Тип принадлежит объекту, а не переменной. Одна и та же переменная может ссылаться на объекты разных типов.  
+Для UI-автотестов.
 
-value = 10  
-value = "hello"  
-Что такое строгая типизация?  
+```python
+from selenium.webdriver.remote.webdriver import WebDriver
+from selenium.webdriver.common.by import By
 
-Python не выполняет неявные опасные преобразования типов.  
+class LoginPage:
+    USERNAME_INPUT = (By.ID, "username")
+    PASSWORD_INPUT = (By.ID, "password")
+    LOGIN_BUTTON = (By.ID, "login")
 
-print("1" + 1)  
+    def __init__(self, driver: WebDriver) -> None:
+        self.driver = driver
 
-Будет ошибка:  
+    def open(self) -> None:
+        self.driver.get("https://example.com/login")
 
-TypeError  
-Чем list отличается от tuple?  
+    def login(self, username: str, password: str) -> None:
+        self.driver.find_element(*self.USERNAME_INPUT).send_keys(username)
+        self.driver.find_element(*self.PASSWORD_INPUT).send_keys(password)
+        self.driver.find_element(*self.LOGIN_BUTTON).click()
+```
 
-list изменяемый, tuple неизменяемый. Список используют для динамических наборов данных, кортеж — для фиксированной структуры.  
+**Factory**
 
-Чем list отличается от set?  
+Создание объектов.
 
-list хранит порядок и допускает дубликаты. set хранит только уникальные элементы и быстрее для проверки вхождения.  
+```python
+from dataclasses import dataclass
 
-Чем dict отличается от list?  
+@dataclass
+class User:
+    name: str
+    email: str
 
-list — индексированная последовательность. dict — структура ключ-значение, где доступ идёт по ключу.  
+class UserFactory:
+    @staticmethod
+    def create_user(name: str = "Alex") -> User:
+        return User(
+            name=name,
+            email=f"{name.lower()}@example.com",
+        )
+```
 
-### Что такое shallow copy и deep copy?
+**Builder**
 
-Shallow copy копирует только внешний объект, а вложенные объекты остаются общими. Deep copy рекурсивно копирует вложенные объекты.  
+#### Когда объект сложный.
 
-### Что такое генератор?
+```python
+class UserBuilder:
+    def __init__(self) -> None:
+        self.data = {
+            "name": "Alex",
+            "age": 30,
+            "role": "user",
+        }
 
-Генератор — объект, который лениво выдаёт значения по одному. Он создаётся функцией с yield и экономит память.  
+    def with_name(self, name: str) -> "UserBuilder":
+        self.data["name"] = name
+        return self
 
-### Что такое декоратор?
+    def with_role(self, role: str) -> "UserBuilder":
+        self.data["role"] = role
+        return self
 
-Декоратор — функция, которая оборачивает другую функцию и расширяет её поведение без изменения исходного кода.  
+    def build(self) -> dict[str, object]:
+        return self.data
+```
 
-### Что такое контекстный менеджер?
+**Использование**
 
-Объект, который управляет входом и выходом из блока with. Обычно используется для безопасной работы с ресурсами.  
+```python
+user = (
+    UserBuilder()
+    .with_name("Ivan")
+    .with_role("admin")
+    .build()
+)
+```
 
-### Что такое GIL?
+**Strategy**
 
-GIL — блокировка в CPython, из-за которой только один поток одновременно выполняет Python bytecode. Он ограничивает CPU-bound многопоточность, но не мешает использовать потоки для IO-bound задач.  
+#### Когда нужно подставлять разные алгоритмы.
 
-### Что лучше: threading, multiprocessing или asyncio?
+```python
+from typing import Protocol
 
-Для IO-bound задач — threading или asyncio. Для CPU-bound задач — multiprocessing. Asyncio хорошо подходит для большого количества сетевых операций, если используемые библиотеки асинхронные.  
+class PaymentStrategy(Protocol):
+    def pay(self, amount: int) -> str:
+        ...
 
-## 48. Что могут спросить у QA Automation
+class CardPayment:
+    def pay(self, amount: int) -> str:
+        return f"Paid {amount} by card"
 
-Как бы ты построил API-клиент?  
+class CashPayment:
+    def pay(self, amount: int) -> str:
+        return f"Paid {amount} by cash"
 
-Ответ:  
+class PaymentService:
+    def __init__(self, strategy: PaymentStrategy) -> None:
+        self.strategy = strategy
 
-Я бы вынес работу с HTTP в отдельный клиент: base_url, timeout, headers, авторизация, методы get/post/put/delete, обработка ошибок и логирование. В тестах оставил бы только бизнес-действия и проверки.  
+    def process(self, amount: int) -> str:
+        return self.strategy.pay(amount)
+```
 
-### Почему плохо писать requests прямо в тестах?
+### 45. Частые задачи на лайвкодинге
 
-Потому что появляется дублирование, тесты становятся менее читаемыми, сложнее менять авторизацию, base_url, таймауты и обработку ошибок. Лучше иметь слой клиента.  
+#### 1. Удалить дубликаты с сохранением порядка
 
-### Как бы ты тестировал функцию?
+```python
+def remove_duplicates(items: list[int]) -> list[int]:
+    seen = set()
+    result = []
 
-### Пример:
+    for item in items:
+        if item not in seen:
+            seen.add(item)
+            result.append(item)
 
-def is_valid_password(password: str) -> bool:  
-    ...  
+    return result
+```
 
-Тестовые данные:  
+#### Пример:
 
-Пароль	Ожидаем  
-Password1	True  
-pass	False  
-password1	False  
-PASSWORD	False  
-Password	False  
-12345678	False  
-Pass1234	True  
-Как бы ты обрабатывал нестабильные тесты?  
+```python
+print(remove_duplicates([1, 2, 1, 3, 2]))  # [1, 2, 3]
+```
 
-Сначала выяснил бы причину: ожидания, данные, окружение, сетевые проблемы, race condition. Не стал бы просто добавлять sleep. Лучше использовать явные ожидания, ретраи только на инфраструктурные ошибки, изоляцию данных и нормальную диагностику.  
+#### 2. Первый неповторяющийся символ
 
-### Как бы ты ускорял автотесты?
+```python
+from collections import Counter
 
-Параллельный запуск, разделение тестов по уровням, уменьшение UI-тестов, переиспользование фикстур, подготовка данных через API/БД, маркировка тестов, запуск только затронутых областей, анализ самых долгих тестов.  
+def first_unique_char(text: str) -> str | None:
+    counter = Counter(text)
 
-## 49. Типичные ошибки на собеседовании
+    for char in text:
+        if counter[char] == 1:
+            return char
 
-1. Использовать mutable default argument  
+    return None
+```
 
-### Плохо:
+#### 3. Развернуть строку
 
-def func(items=[]):  
-    ...  
+```python
+def reverse_string(text: str) -> str:
+    return text[::-1]
+```
 
-### Хорошо:
+#### 4. Проверить палиндром
 
-def func(items: list[int] | None = None) -> None:  
-    if items is None:  
-        items = []  
-2. Путать is и ==  
+```python
+def is_palindrome(text: str) -> bool:
+    normalized = text.lower().replace(" ", "")
+    return normalized == normalized[::-1]
+```
 
-### Плохо:
+#### 5. Посчитать частоту слов
 
-if value == None:  
-    ...  
+```python
+from collections import Counter
 
-### Хорошо:
+def count_words(text: str) -> dict[str, int]:
+    words = text.lower().split()
+    return dict(Counter(words))
+```
 
-if value is None:  
-    ...  
-3. Думать, что append возвращает список  
+#### 6. Сгруппировать заказы по пользователю
 
-### Плохо:
+```python
+from collections import defaultdict
 
-items = [1, 2]  
-items = items.append(3)  
+def group_orders_by_user(
+    orders: list[dict[str, int]],
+) -> dict[int, int]:
+    result = defaultdict(int)
 
-После этого:  
+    for order in orders:
+        result[order["user_id"]] += order["amount"]
 
-items is None  
-4. Изменять список во время обхода  
+    return dict(result)
+```
 
-### Плохо:
+#### 7. Найти top-N частых элементов
 
-items = [1, 2, 3, 4]  
+```python
+from collections import Counter
 
-for item in items:  
-    if item % 2 == 0:  
-        items.remove(item)  
+def top_n(items: list[str], n: int) -> list[str]:
+    counter = Counter(items)
+    return [item for item, _ in counter.most_common(n)]
+```
 
-Лучше:  
+#### Пример:
 
-items = [item for item in items if item % 2 != 0]  
-5. Ловить все исключения без причины  
+```python
+items = ["a", "b", "a", "c", "b", "a"]
 
-### Плохо:
+print(top_n(items, 2))  # ['a', 'b']
+```
 
-try:  
-    ...  
-except Exception:  
-    pass  
+#### 8. Инвертировать словарь
 
-Лучше:  
+Простой случай, когда значения уникальны:
 
-try:  
-    ...  
-except ValueError as error:  
-    print(error)  
+```python
+def invert_dict(data: dict[str, int]) -> dict[int, str]:
+    return {value: key for key, value in data.items()}
+```
 
-## 50. Мини-шпаргалка по синтаксису
+**Если значения не уникальны**
 
-# Условие  
-if value > 10:  
-    print("big")  
-elif value == 10:  
-    print("ten")  
-else:  
-    print("small")  
+```python
+from collections import defaultdict
 
-# Цикл for  
-for item in items:  
-    print(item)  
+def invert_dict_grouped(data: dict[str, int]) -> dict[int, list[str]]:
+    result = defaultdict(list)
 
-# Цикл while  
-while condition:  
-    ...  
+    for key, value in data.items():
+        result[value].append(key)
 
-# Функция  
-def func(a: int, b: int) -> int:  
-    return a + b  
+    return dict(result)
+```
 
-# Класс  
-class User:  
-    def __init__(self, name: str) -> None:  
-        self.name = name  
+#### 9. Сравнить два списка
 
-# Исключения  
-try:  
-    ...  
-except ValueError:  
-    ...  
-finally:  
-    ...  
+```python
+def compare_lists(expected: list[int], actual: list[int]) -> dict[str, set[int]]:
+    expected_set = set(expected)
+    actual_set = set(actual)
 
-# Контекстный менеджер  
-with open("file.txt", "r", encoding="utf-8") as file:  
-    content = file.read()  
+    return {
+        "missing": expected_set - actual_set,
+        "extra": actual_set - expected_set,
+        "common": expected_set & actual_set,
+    }
+```
 
-# List comprehension  
-squares = [x * x for x in range(10)]  
+#### 10. Найти разницу между двумя словарями
 
-# Dict comprehension  
-data = {x: x * x for x in range(10)}  
+```python
+from typing import Any
 
-# Lambda  
-items.sort(key=lambda item: item["id"])  
+def dict_diff(
+    before: dict[str, Any],
+    after: dict[str, Any],
+) -> dict[str, tuple[Any, Any]]:
+    result = {}
 
-## 51. Что повторить перед собеседованием в первую очередь
+    all_keys = before.keys() | after.keys()
 
-Самое важное:  
+    for key in all_keys:
+        before_value = before.get(key)
+        after_value = after.get(key)
 
-list, dict, set, tuple.  
-is vs ==.  
-Изменяемые и неизменяемые типы.  
-Функции, *args, **kwargs.  
-Mutable default argument.  
-Исключения.  
-Контекстные менеджеры.  
-Декораторы.  
-Генераторы.  
-ООП: self, наследование, super, staticmethod, classmethod, property.  
-Typing.  
-Counter, defaultdict.  
-threading, multiprocessing, asyncio, GIL.  
-Простые задачи на строки, списки и словари.  
-Сложность O(n) и O(n²).  
+        if before_value != after_value:
+            result[key] = (before_value, after_value)
 
-## 52. Как отвечать, если не знаешь глубоко
+    return result
+```
 
-### Хорошая формулировка:
+#### 11. Проверить пароль
 
-Я не буду придумывать. В работе я с этим сталкивался на базовом уровне. Понимаю общую идею: например, GIL ограничивает выполнение Python bytecode в нескольких потоках, поэтому для CPU-bound лучше multiprocessing, а для IO-bound можно использовать threading или asyncio. В деталях реализации могу подсмотреть документацию, но практический смысл понимаю.  
+**Условия**
 
-Это звучит лучше, чем пытаться уверенно сказать ерунду.  
+минимум 8 символов;
+есть цифра;
+есть заглавная буква.
 
-## 53. Очень короткая версия для повторения за 5 минут
+```python
+def is_valid_password(password: str) -> bool:
+    if len(password) < 8:
+        return False
 
-Python — динамически и строго типизированный язык. Переменные хранят ссылки на объекты.  
+    if not any(char.isdigit() for char in password):
+        return False
 
-list — изменяемый, хранит порядок и дубликаты.  
-tuple — неизменяемый.  
-set — уникальные элементы, быстрый in.  
-dict — ключ-значение, доступ по ключу в среднем O(1).  
+    if not any(char.isupper() for char in password):
+        return False
 
-== сравнивает значения.  
-is сравнивает идентичность объектов.  
-None проверяем через is None.  
+    return True
+```
 
-Mutable default argument — частая ошибка:  
+#### 12. Объединить два отсортированных списка
 
-def func(items=[]):  
-    ...  
+```python
+def merge_sorted(left: list[int], right: list[int]) -> list[int]:
+    result = []
+    i = 0
+    j = 0
 
-Правильно:  
+    while i < len(left) and j < len(right):
+        if left[i] <= right[j]:
+            result.append(left[i])
+            i += 1
+        else:
+            result.append(right[j])
+            j += 1
 
-def func(items=None):  
-    if items is None:  
-        items = []  
+    result.extend(left[i:])
+    result.extend(right[j:])
 
-Генератор использует yield и лениво отдаёт значения.  
+    return result
+```
 
-Декоратор оборачивает функцию.  
+### 46. Сложность алгоритмов
 
-Контекстный менеджер управляет ресурсом через with.  
+**Основные обозначения**
+| Сложность | Что значит |
+|---|---|
+| O(1) | Константное время |
+| O(log n) | Логарифмическое |
+| O(n) | Линейное |
+| O(n log n) | Часто сортировка |
+| O(n²) | Два вложенных цикла |
+| O(2ⁿ) | Экспоненциальное |
 
-GIL мешает потокам параллельно выполнять Python bytecode, поэтому:  
+**Примеры**
 
-IO-bound — threading / asyncio;  
-CPU-bound — multiprocessing.  
+```python
+items = [1, 2, 3, 4, 5]
 
-ООП:  
+print(items[0])  # O(1)
+for item in items:
+    print(item)  # O(n)
+for a in items:
+    for b in items:
+        print(a, b)  # O(n²)
+```
 
-self — текущий объект;  
-classmethod получает cls;  
-staticmethod не получает ни self, ни cls;  
-property управляет доступом к атрибуту;  
-super() вызывает родительскую реализацию.  
+**Словарь**
 
-## 54. Мини-набор задач, которые стоит уметь писать быстро
+**В среднем**
 
-from collections import Counter, defaultdict  
-from typing import Any  
+**data[key]**
 
-def remove_duplicates(items: list[int]) -> list[int]:  
-    seen = set()  
-    result = []  
+Это O(1).
 
-    for item in items:  
-        if item not in seen:  
-            seen.add(item)  
-            result.append(item)  
+**Но важно**
 
-    return result  
+В худшем случае операции со словарём могут деградировать, но в нормальных условиях доступ по ключу считается O(1).
 
-def first_unique_char(text: str) -> str | None:  
-    counter = Counter(text)  
+## Собеседование и практика
 
-    for char in text:  
-        if counter[char] == 1:  
-            return char  
+### 47. Частые вопросы и хорошие ответы
 
-    return None  
+Что такое Python?
 
-def group_by_user(orders: list[dict[str, int]]) -> dict[int, int]:  
-    result = defaultdict(int)  
+Python — высокоуровневый интерпретируемый язык с динамической типизацией. Он поддерживает ООП, функциональный стиль, имеет богатую стандартную библиотеку и часто используется для автоматизации, backend, data processing, тестирования и скриптов.
 
-    for order in orders:  
-        result[order["user_id"]] += order["amount"]  
+Python компилируемый или интерпретируемый?
 
-    return dict(result)  
+Обычно говорят, что Python интерпретируемый, но точнее: исходный код сначала компилируется в байткод .pyc, а затем выполняется виртуальной машиной Python.
 
-def dict_diff(  
-    before: dict[str, Any],  
-    after: dict[str, Any],  
-) -> dict[str, tuple[Any, Any]]:  
-    result = {}  
+#### Что такое динамическая типизация?
 
-    for key in before.keys() | after.keys():  
-        before_value = before.get(key)  
-        after_value = after.get(key)  
+Тип принадлежит объекту, а не переменной. Одна и та же переменная может ссылаться на объекты разных типов.
 
-        if before_value != after_value:  
-            result[key] = (before_value, after_value)  
+```python
+value = 10
+value = "hello"
+```
 
-    return result  
+Что такое строгая типизация?
 
-def is_valid_password(password: str) -> bool:  
-    return (  
-        len(password) >= 8  
-        and any(char.isdigit() for char in password)  
-        and any(char.isupper() for char in password)  
-    )  
+Python не выполняет неявные опасные преобразования типов.
 
-## 55. Самое важное для Senior QA Automation
+```python
+print("1" + 1)
+```
 
-Тебя могут оценивать не только по знанию синтаксиса, а по тому, как ты рассуждаешь.  
+**Будет ошибка**
 
-### Хорошо говорить так:
+**TypeError**
+Чем list отличается от tuple?
 
-Я стараюсь не писать всю логику прямо в тесте. Обычно разделяю код на API-клиенты, фикстуры, модели данных, builders/factories, helpers и assertions. В тесте должна быть видна бизнес-суть: подготовка данных, действие, проверка результата. Низкоуровневые детали лучше держать отдельно.  
+list изменяемый, tuple неизменяемый. Список используют для динамических наборов данных, кортеж — для фиксированной структуры.
 
-### Пример хорошего тестового подхода:
+Чем list отличается от set?
 
-def test_user_can_be_created(user_client, user_factory) -> None:  
-    payload = user_factory.build()  
+list хранит порядок и допускает дубликаты. set хранит только уникальные элементы и быстрее для проверки вхождения.
 
-    created_user = user_client.create_user(payload)  
+Чем dict отличается от list?
 
-    assert created_user["id"] is not None  
-    assert created_user["username"] == payload["username"]  
+list — индексированная последовательность. dict — структура ключ-значение, где доступ идёт по ключу.
 
-### Плохой подход:
+#### Что такое shallow copy и deep copy?
 
-def test_user_can_be_created() -> None:  
-    response = requests.post(  
-        "http://host/api/users",  
-        json={"username": "alex", "password": "Password1"},  
-    )  
+Shallow copy копирует только внешний объект, а вложенные объекты остаются общими. Deep copy рекурсивно копирует вложенные объекты.
 
-    assert response.status_code == 201  
+#### Что такое генератор?
 
-### Почему первый лучше:
+Генератор — объект, который лениво выдаёт значения по одному. Он создаётся функцией с yield и экономит память.
 
-тест читается как сценарий;  
-меньше дублирования;  
-проще менять API;  
-проще переиспользовать подготовку данных;  
-проще поддерживать большой проект.  
+#### Что такое декоратор?
 
-Эту шпаргалку можно дальше развернуть в формат “вопрос → короткий ответ как на собеседовании → пример кода”. Это будет удобнее именно для тренировки перед интервью.  
+Декоратор — функция, которая оборачивает другую функцию и расширяет её поведение без изменения исходного кода.
+
+#### Что такое контекстный менеджер?
+
+Объект, который управляет входом и выходом из блока with. Обычно используется для безопасной работы с ресурсами.
+
+#### Что такое GIL?
+
+GIL — блокировка в CPython, из-за которой только один поток одновременно выполняет Python bytecode. Он ограничивает CPU-bound многопоточность, но не мешает использовать потоки для IO-bound задач.
+
+#### Что лучше: threading, multiprocessing или asyncio?
+
+Для IO-bound задач — threading или asyncio. Для CPU-bound задач — multiprocessing. Asyncio хорошо подходит для большого количества сетевых операций, если используемые библиотеки асинхронные.
+
+### 48. Что могут спросить у QA Automation
+
+Как бы ты построил API-клиент?
+
+**Ответ**
+
+Я бы вынес работу с HTTP в отдельный клиент: base_url, timeout, headers, авторизация, методы get/post/put/delete, обработка ошибок и логирование. В тестах оставил бы только бизнес-действия и проверки.
+
+#### Почему плохо писать requests прямо в тестах?
+
+Потому что появляется дублирование, тесты становятся менее читаемыми, сложнее менять авторизацию, base_url, таймауты и обработку ошибок. Лучше иметь слой клиента.
+
+#### Как бы ты тестировал функцию?
+
+#### Пример:
+
+```python
+def is_valid_password(password: str) -> bool:
+    ...
+```
+
+**Тестовые данные**
+
+| Пароль | Ожидаем |
+|---|---|
+| Password1 | True |
+| pass | False |
+| password1 | False |
+| PASSWORD | False |
+| Password | False |
+| 12345678 | False |
+| Pass1234 | True |
+
+Как бы ты обрабатывал нестабильные тесты?
+
+Сначала выяснил бы причину: ожидания, данные, окружение, сетевые проблемы, race condition. Не стал бы просто добавлять sleep. Лучше использовать явные ожидания, ретраи только на инфраструктурные ошибки, изоляцию данных и нормальную диагностику.
+
+#### Как бы ты ускорял автотесты?
+
+Параллельный запуск, разделение тестов по уровням, уменьшение UI-тестов, переиспользование фикстур, подготовка данных через API/БД, маркировка тестов, запуск только затронутых областей, анализ самых долгих тестов.
+
+### 49. Типичные ошибки на собеседовании
+
+#### 1. Использовать mutable default argument
+
+#### Плохо:
+
+```python
+def func(items=[]):
+    ...
+```
+
+#### Хорошо:
+
+```python
+def func(items: list[int] | None = None) -> None:
+    if items is None:
+        items = []
+```
+
+#### 2. Путать is и ==
+
+#### Плохо:
+
+```python
+if value == None:
+    ...
+```
+
+#### Хорошо:
+
+```python
+if value is None:
+    ...
+```
+
+#### 3. Думать, что append возвращает список
+
+#### Плохо:
+
+```python
+items = [1, 2]
+items = items.append(3)
+```
+
+**После этого**
+
+**items is None**
+
+#### 4. Изменять список во время обхода
+
+#### Плохо:
+
+```python
+items = [1, 2, 3, 4]
+
+for item in items:
+    if item % 2 == 0:
+        items.remove(item)
+```
+
+**Лучше**
+
+```python
+items = [item for item in items if item % 2 != 0]
+```
+
+#### 5. Ловить все исключения без причины
+
+#### Плохо:
+
+```python
+try:
+    ...
+except Exception:
+    pass
+```
+
+**Лучше**
+
+```python
+try:
+    ...
+except ValueError as error:
+    print(error)
+```
+
+### 50. Мини-шпаргалка по синтаксису
+
+#### Условие
+
+```python
+if value > 10:
+    print("big")
+elif value == 10:
+    print("ten")
+else:
+    print("small")
+```
+
+#### Цикл `for`
+
+```python
+for item in items:
+    print(item)
+```
+
+#### Цикл `while`
+
+```text
+while condition:
+    ...
+```
+
+#### Функция
+
+```python
+def func(a: int, b: int) -> int:
+    return a + b
+```
+
+#### Класс
+
+```python
+class User:
+    def __init__(self, name: str) -> None:
+        self.name = name
+```
+
+#### Исключения
+
+```python
+try:
+    ...
+except ValueError:
+    ...
+finally:
+    ...
+```
+
+#### Контекстный менеджер
+
+```python
+with open("file.txt", "r", encoding="utf-8") as file:
+    content = file.read()
+```
+
+#### List comprehension
+
+```python
+squares = [x * x for x in range(10)]
+```
+
+#### Dict comprehension
+
+```python
+data = {x: x * x for x in range(10)}
+```
+
+#### Lambda
+
+```python
+items.sort(key=lambda item: item["id"])
+```
+
+### 51. Что повторить перед собеседованием в первую очередь
+
+**Самое важное**
+
+list, dict, set, tuple.
+
+```python
+is vs ==.
+```
+
+Изменяемые и неизменяемые типы.
+Функции, *args, **kwargs.
+Mutable default argument.
+Исключения.
+Контекстные менеджеры.
+Декораторы.
+Генераторы.
+ООП: self, наследование, super, staticmethod, classmethod, property.
+Typing.
+Counter, defaultdict.
+threading, multiprocessing, asyncio, GIL.
+Простые задачи на строки, списки и словари.
+Сложность O(n) и O(n²).
+
+### 52. Как отвечать, если не знаешь глубоко
+
+#### Хорошая формулировка:
+
+Я не буду придумывать. В работе я с этим сталкивался на базовом уровне. Понимаю общую идею: например, GIL ограничивает выполнение Python bytecode в нескольких потоках, поэтому для CPU-bound лучше multiprocessing, а для IO-bound можно использовать threading или asyncio. В деталях реализации могу подсмотреть документацию, но практический смысл понимаю.
+
+Это звучит лучше, чем пытаться уверенно сказать ерунду.
+
+### 53. Очень короткая версия для повторения за 5 минут
+
+- Python использует динамическую типизацию: тип принадлежит объекту, а переменная хранит ссылку на него.
+- `list` — изменяемая последовательность, хранит порядок и дубликаты.
+- `tuple` — неизменяемая последовательность.
+- `set` — изменяемое множество уникальных элементов, проверка `in` в среднем работает за O(1).
+- `dict` — изменяемая структура «ключ — значение», доступ по ключу в среднем работает за O(1).
+- `==` сравнивает значения, `is` — идентичность объектов. `None` проверяем через `is None`.
+
+Mutable default argument — частая ошибка:
+
+```python
+def func(items=[]):
+    ...
+```
+
+**Правильно**
+
+```python
+def func(items=None):
+    if items is None:
+        items = []
+```
+
+Генератор использует yield и лениво отдаёт значения.
+
+Декоратор оборачивает функцию.
+
+Контекстный менеджер управляет ресурсом через with.
+
+GIL мешает потокам параллельно выполнять Python bytecode, поэтому:
+
+- для IO-bound задач подходят `threading` и `asyncio`;
+- для CPU-bound задач — `multiprocessing`.
+
+**ООП**
+
+- self — текущий объект;
+- classmethod получает cls;
+- staticmethod не получает ни self, ни cls;
+- property управляет доступом к атрибуту.
+
+- `super()` вызывает родительскую реализацию.
+
+### 54. Мини-набор задач, которые стоит уметь писать быстро
+
+```python
+from collections import Counter, defaultdict
+from typing import Any
+
+def remove_duplicates(items: list[int]) -> list[int]:
+    seen = set()
+    result = []
+
+    for item in items:
+        if item not in seen:
+            seen.add(item)
+            result.append(item)
+
+    return result
+
+def first_unique_char(text: str) -> str | None:
+    counter = Counter(text)
+
+    for char in text:
+        if counter[char] == 1:
+            return char
+
+    return None
+
+def group_by_user(orders: list[dict[str, int]]) -> dict[int, int]:
+    result = defaultdict(int)
+
+    for order in orders:
+        result[order["user_id"]] += order["amount"]
+
+    return dict(result)
+
+def dict_diff(
+    before: dict[str, Any],
+    after: dict[str, Any],
+) -> dict[str, tuple[Any, Any]]:
+    result = {}
+
+    for key in before.keys() | after.keys():
+        before_value = before.get(key)
+        after_value = after.get(key)
+
+        if before_value != after_value:
+            result[key] = (before_value, after_value)
+
+    return result
+
+def is_valid_password(password: str) -> bool:
+    return (
+        len(password) >= 8
+        and any(char.isdigit() for char in password)
+        and any(char.isupper() for char in password)
+    )
+```
+
+### 55. Самое важное для Senior QA Automation
+
+Тебя могут оценивать не только по знанию синтаксиса, а по тому, как ты рассуждаешь.
+
+#### Хорошо говорить так:
+
+Я стараюсь не писать всю логику прямо в тесте. Обычно разделяю код на API-клиенты, фикстуры, модели данных, builders/factories, helpers и assertions. В тесте должна быть видна бизнес-суть: подготовка данных, действие, проверка результата. Низкоуровневые детали лучше держать отдельно.
+
+#### Пример хорошего тестового подхода:
+
+```python
+def test_user_can_be_created(user_client, user_factory) -> None:
+    payload = user_factory.build()
+
+    created_user = user_client.create_user(payload)
+
+    assert created_user["id"] is not None
+    assert created_user["username"] == payload["username"]
+```
+
+#### Плохой подход:
+
+```python
+def test_user_can_be_created() -> None:
+    response = requests.post(
+        "http://host/api/users",
+        json={"username": "alex", "password": "Password1"},
+    )
+
+    assert response.status_code == 201
+```
+
+#### Почему первый лучше:
+
+- тест читается как сценарий;
+- меньше дублирования;
+- проще менять API;
+- проще переиспользовать подготовку данных;
+- проще поддерживать большой проект.
+
+Эту шпаргалку можно дальше развернуть в формат “вопрос → короткий ответ как на собеседовании → пример кода”. Это будет удобнее именно для тренировки перед интервью.

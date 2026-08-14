@@ -4,3270 +4,5077 @@
 
 Полный материал из присланного конспекта. Сохранены подробные объяснения, примеры, практические сценарии и вопросы для собеседования.
 
-## 1. Что такое Linux — как отвечать на собеседовании
+> **Как пользоваться конспектом**
+>
+> Выбери тему в навигации, прочитай объяснение и затем проговори выделенный короткий ответ своими словами. Код и команды оформлены отдельными блоками, чтобы их можно было быстро найти и скопировать.
 
-Linux — это семейство Unix-подобных операционных систем, основанных на ядре Linux.  
-В контексте QA/SDET Linux важен, потому что на нём обычно работают:  
+## Навигация по разделу
 
-тестовые стенды;  
-CI/CD-агенты;  
-Docker-контейнеры;  
-backend-сервисы;  
-базы данных;  
-логирование и мониторинг;  
-сетевые утилиты и диагностика.  
+- [Файловая система, права и процессы](#файловая-система-права-и-процессы) — вопросы 1–17
+- [Сеть, HTTP и окружение](#сеть-http-и-окружение) — вопросы 18–26
+- [Ресурсы, shell и безопасность](#ресурсы-shell-и-безопасность) — вопросы 27–45
+- [Docker и CI/CD](#docker-и-cicd) — вопросы 46–53
+- [Диагностика и полезные команды](#диагностика-и-полезные-команды) — вопросы 54–69
+- [Собеседование и повторение](#собеседование-и-повторение) — вопросы 70–75
+- [Дополнительная практика](#дополнительная-практика) — дополнительные разделы
 
-### Короткий ответ на собесе:
+## Файловая система, права и процессы
 
-Linux для меня — это рабочая среда для запуска сервисов, автотестов, Docker-контейнеров, анализа логов и диагностики проблем. Я умею работать с файлами, правами, процессами, сетью, systemd, ssh, логами и базовой отладкой окружения.  
+### 1. Что такое Linux — как отвечать на собеседовании
 
-## 2. Файловая система Linux
+Linux — это семейство Unix-подобных операционных систем, основанных на ядре Linux.
+В контексте QA/SDET Linux важен, потому что на нём обычно работают:
 
-Основные директории  
-/  
+- тестовые стенды;
+- CI/CD-агенты;
+- Docker-контейнеры;
+- backend-сервисы;
+- базы данных;
+- логирование и мониторинг;
+- сетевые утилиты и диагностика.
 
-Корень файловой системы.  
+> **Короткий ответ для собеседования**
+>
+> Linux для меня — это рабочая среда для запуска сервисов, автотестов, Docker-контейнеров, анализа логов и диагностики проблем. Я умею работать с файлами, правами, процессами, сетью, systemd, ssh, логами и базовой отладкой окружения.
 
-/home  
+### 2. Файловая система Linux
 
-Домашние директории пользователей.  
+**Основные директории**
 
-/root  
+```text
+/
+```
 
-Домашняя директория пользователя root.  
+Корень файловой системы.
 
-/etc  
+/home
 
-Конфигурационные файлы системы и сервисов.  
+Домашние директории пользователей.
 
-### Примеры:
+/root
 
-/etc/hosts  
-/etc/resolv.conf  
-/etc/ssh/sshd_config  
-/etc/systemd/system/  
-/var  
+Домашняя директория пользователя root.
 
-Изменяемые данные: логи, кэш, очереди, данные сервисов.  
+/etc
 
-/var/log  
+Конфигурационные файлы системы и сервисов.
 
-Логи системы и приложений.  
+#### Примеры:
 
-/tmp  
+```text
+/etc/hosts
+/etc/resolv.conf
+/etc/ssh/sshd_config
+/etc/systemd/system/
+```
 
-Временные файлы. Обычно очищается системой.  
+/var
 
-/usr  
+Изменяемые данные: логи, кэш, очереди, данные сервисов.
 
-Пользовательские программы, библиотеки, документация.  
+```text
+/var/log
+```
 
-/bin  
-/sbin  
-/usr/bin  
-/usr/sbin  
+Логи системы и приложений.
 
-Исполняемые файлы.  
+/tmp
 
-/opt  
+Временные файлы. Обычно очищается системой.
 
-Дополнительное ПО, установленное отдельно.  
+/usr
 
-/proc  
+Пользовательские программы, библиотеки, документация.
 
-Виртуальная файловая система с информацией о процессах и ядре.  
+/bin
+/sbin
 
-Например:  
+```text
+/usr/bin
+/usr/sbin
+```
 
-/proc/cpuinfo  
-/proc/meminfo  
-/proc/<pid>/  
-/dev  
+Исполняемые файлы.
 
-Устройства как файлы.  
+/opt
 
-Например:  
+Дополнительное ПО, установленное отдельно.
 
-/dev/null  
-/dev/sda  
-/dev/tty  
-/mnt  
-/media  
+/proc
 
-Точки монтирования дисков и внешних устройств.  
+Виртуальная файловая система с информацией о процессах и ядре.
 
-## 3. Навигация и работа с файлами
+**Например**
 
-Где я нахожусь  
-pwd  
+```text
+/proc/cpuinfo
+/proc/meminfo
+/proc/<pid>/
+```
 
-Показывает текущую директорию.  
+/dev
 
-Перейти в директорию  
-cd /var/log  
-cd ~  
-cd ..  
-cd -  
-
-cd - — вернуться в предыдущую директорию.  
-
-Посмотреть файлы  
-ls  
-ls -l  
-ls -la  
-ls -lh  
--l — подробный вывод;  
--a — показать скрытые файлы;  
--h — размеры в удобном формате.  
-Создать файл  
-touch file.txt  
-Создать директорию  
-mkdir logs  
-mkdir -p app/logs/archive  
-
--p создаёт всю цепочку директорий.  
-
-Копировать  
-cp file.txt copy.txt  
-cp -r dir1 dir2  
-Переместить / переименовать  
-mv old.txt new.txt  
-mv file.txt /tmp/  
-Удалить  
-rm file.txt  
-rm -r dir  
-rm -rf dir  
-
-rm -rf — опасная команда. Удаляет рекурсивно и без подтверждения.  
-
-## 4. Просмотр файлов
-
-Полностью вывести файл  
-cat app.log  
-Смотреть файл постранично  
-less app.log  
-
-Внутри less:  
-
-/search_text  
-n  
-q  
-/text — поиск;  
-n — следующее совпадение;  
-q — выход.  
-Первые строки файла  
-head app.log  
-head -n 50 app.log  
-Последние строки файла  
-tail app.log  
-tail -n 100 app.log  
-Смотреть лог в реальном времени  
-tail -f app.log  
-tail -n 200 -f app.log  
-
-Это часто используется при запуске тестов или сервиса.  
-
-## 5. Поиск файлов и текста
-
-Найти файл по имени  
-find /path -name "app.log"  
-find . -name "*.py"  
-Найти директории  
-find . -type d -name "logs"  
-Найти файлы  
-find . -type f -name "*.log"  
-Найти большие файлы  
-find /var/log -type f -size +100M  
-Найти текст внутри файлов  
-grep "ERROR" app.log  
-grep -i "error" app.log  
-grep -r "timeout" .  
-grep -rn "Exception" .  
--i — без учёта регистра;  
--r — рекурсивно;  
--n — показать номера строк.  
-Полезные grep-команды  
-grep "ERROR" app.log | tail -n 20  
-grep -E "ERROR|WARN|Exception" app.log  
-grep -v "DEBUG" app.log  
--E — регулярные выражения;  
--v — исключить строки.  
-
-## 6. Pipe, redirect, stdin/stdout/stderr
-
-Pipe  
-ps aux | grep python  
-
-| передаёт вывод одной команды на вход другой.  
-
-Перезаписать файл  
-echo "hello" > file.txt  
-Дописать в файл  
-echo "hello" >> file.txt  
-Перенаправить ошибки  
-command 2> error.log  
-Перенаправить обычный вывод и ошибки  
-command > output.log 2>&1  
-
-Или современный вариант:  
-
-command &> output.log  
-Частый вопрос  
-
-Чем отличается > от >>?  
-
-> перезаписывает файл.  
->> добавляет в конец файла.  
-
-## 7. Пользователи и права
-
-Кто я  
-whoami  
-id  
-Узнать группы пользователя  
-groups  
-id username  
-Переключиться на другого пользователя  
-su - username  
-Выполнить команду от root  
-sudo command  
-
-## 8. Права доступа
-
-### Пример вывода:
-
--rwxr-xr--  
-
-Разбор:  
-
--    rwx    r-x    r--  
-тип  owner  group  others  
-
-Типы:  
+Устройства как файлы.
 
--  обычный файл  
-d  директория  
-l  символическая ссылка  
+**Например**
 
-Права:  
-
-r — read  
-w — write  
-x — execute  
-Числовые права  
-r = 4  
-w = 2  
-x = 1  
+```text
+/dev/null
+/dev/sda
+/dev/tty
+```
 
-### Примеры:
+/mnt
+/media
 
-chmod 755 script.sh  
-chmod 644 file.txt  
-chmod 600 private.key  
+Точки монтирования дисков и внешних устройств.
 
-Расшифровка:  
+### 3. Навигация и работа с файлами
 
-755 = владелец rwx, группа r-x, остальные r-x  
-644 = владелец rw-, группа r--, остальные r--  
-600 = владелец rw-, остальные ничего  
-Сделать файл исполняемым  
-chmod +x script.sh  
-Поменять владельца  
-chown user:group file.txt  
-chown -R user:group directory  
+**Где я нахожусь**
 
-## 9. Важный вопрос: права на директорию
+```bash
+pwd
+```
 
-Для директории:  
+Показывает текущую директорию.
 
-r — можно посмотреть список файлов  
-w — можно создавать/удалять файлы  
-x — можно заходить в директорию  
+**Перейти в директорию**
 
-### На собесе могут спросить:
+```bash
+cd /var/log
+cd ~
+cd ..
+cd -
+```
 
-### Что значит execute на директории?
+cd - — вернуться в предыдущую директорию.
 
-Ответ:  
-
-Для директории x означает право прохода внутрь директории. Без x нельзя зайти в директорию и обратиться к файлам внутри, даже если знаешь их имена.  
-
-## 10. Процессы
-
-Посмотреть процессы  
-ps  
-ps aux  
-ps -ef  
-
-### Часто:
-
-ps aux | grep python  
-ps aux | grep nginx  
-Интерактивный просмотр  
-top  
-htop  
+**Посмотреть файлы**
 
-htop удобнее, но может быть не установлен.  
+```bash
+ls
+ls -l
+ls -la
+ls -lh
+```
 
-Найти PID процесса  
-pgrep nginx  
-pidof nginx  
-Убить процесс  
-kill <pid>  
-kill -9 <pid>  
-Убить по имени  
-pkill nginx  
-killall nginx  
-Сигналы  
-kill -15 <pid>  
-
-SIGTERM — мягкое завершение. Процесс может корректно закрыться.  
-
-kill -9 <pid>  
+-l — подробный вывод;
+-a — показать скрытые файлы;
+-h — размеры в удобном формате.
+Создать файл
 
-SIGKILL — принудительное завершение. Процесс не может его обработать.  
-
-kill -1 <pid>  
+```bash
+touch file.txt
+```
 
-SIGHUP — часто используется для перечитывания конфигурации.  
+Создать директорию
 
-## 11. Как объяснить SIGTERM и SIGKILL
+```bash
+mkdir logs
+mkdir -p app/logs/archive
+```
 
-SIGTERM:  
+-p создаёт всю цепочку директорий.
 
-Просит процесс завершиться корректно. Процесс может закрыть соединения, сохранить данные, освободить ресурсы.  
+**Копировать**
 
-SIGKILL:  
+```bash
+cp file.txt copy.txt
+cp -r dir1 dir2
+```
 
-Принудительно убивает процесс на уровне ядра. Процесс не успевает выполнить cleanup. Использовать стоит только если обычное завершение не сработало.  
+Переместить / переименовать
 
-## 12. Состояния процессов
+```bash
+mv old.txt new.txt
+mv file.txt /tmp/
+```
 
-В ps aux можно увидеть статусы:  
+**Удалить**
 
-R — running  
-S — sleeping  
-D — uninterruptible sleep  
-T — stopped  
-Z — zombie  
-Zombie process  
+```bash
+rm file.txt
+rm -r dir
+rm -rf dir
+```
 
-Zombie — процесс уже завершился, но его родитель ещё не забрал код завершения.  
+rm -rf — опасная команда. Удаляет рекурсивно и без подтверждения.
 
-### Короткий ответ:
+### 4. Просмотр файлов
 
-Zombie-процесс не выполняется, но запись о нём остаётся в таблице процессов, пока родительский процесс не вызовет wait. Обычно лечится завершением или перезапуском родительского процесса.  
+**Полностью вывести файл**
 
-## 13. Фоновые процессы
+```bash
+cat app.log
+```
 
-Запустить в фоне  
-command &  
-Посмотреть фоновые задачи  
-jobs  
-Вернуть задачу на передний план  
-fg  
-Продолжить в фоне  
-bg  
-Запустить так, чтобы процесс не умер после выхода из терминала  
-nohup command &  
+**Смотреть файл постранично**
 
-### Пример:
+```bash
+less app.log
+```
 
-nohup python script.py > app.log 2>&1 &  
+**Внутри less**
 
-## 14. systemd и сервисы
+/search_text
+n
+q
+/text — поиск;
+n — следующее совпадение;
+q — выход.
+Первые строки файла
 
-В современных Linux сервисами часто управляет systemd.  
+```bash
+head app.log
+head -n 50 app.log
+```
 
-Проверить статус сервиса  
-systemctl status nginx  
-Запустить сервис  
-sudo systemctl start nginx  
-Остановить сервис  
-sudo systemctl stop nginx  
-Перезапустить  
-sudo systemctl restart nginx  
-Перечитать конфигурацию  
-sudo systemctl reload nginx  
-Включить автозапуск  
-sudo systemctl enable nginx  
-Отключить автозапуск  
-sudo systemctl disable nginx  
-Проверить, включён ли автозапуск  
-systemctl is-enabled nginx  
-Посмотреть все сервисы  
-systemctl list-units --type=service  
+**Последние строки файла**
 
-## 15. Где лежат systemd unit-файлы
+```bash
+tail app.log
+tail -n 100 app.log
+```
 
-### Часто:
+Смотреть лог в реальном времени
 
-/etc/systemd/system/  
+```bash
+tail -f app.log
+tail -n 200 -f app.log
+```
 
-Также:  
+Это часто используется при запуске тестов или сервиса.
 
-/lib/systemd/system/  
-/usr/lib/systemd/system/  
-Пример unit-файла  
-[Unit]  
-Description=My Python Service  
-After=network.target  
+### 5. Поиск файлов и текста
 
-[Service]  
-User=appuser  
-WorkingDirectory=/opt/myapp  
-ExecStart=/usr/bin/python3 /opt/myapp/app.py  
-Restart=always  
+**Найти файл по имени**
 
-[Install]  
-WantedBy=multi-user.target  
+```bash
+find /path -name "app.log"
+find . -name "*.py"
+```
 
-После изменения unit-файла:  
+**Найти директории**
 
-sudo systemctl daemon-reload  
-sudo systemctl restart my-service  
+```bash
+find . -type d -name "logs"
+```
 
-## 16. Логи
+**Найти файлы**
 
-journalctl  
+```bash
+find . -type f -name "*.log"
+```
 
-Посмотреть логи сервиса:  
+**Найти большие файлы**
 
-journalctl -u nginx  
+```bash
+find /var/log -type f -size +100M
+```
 
-Последние строки:  
+**Найти текст внутри файлов**
 
-journalctl -u nginx -n 100  
+```bash
+grep "ERROR" app.log
+grep -i "error" app.log
+grep -r "timeout" .
+grep -rn "Exception" .
+```
 
-В реальном времени:  
+-i — без учёта регистра;
+-r — рекурсивно;
+-n — показать номера строк.
+Полезные grep-команды
 
-journalctl -u nginx -f  
+```bash
+grep "ERROR" app.log | tail -n 20
+grep -E "ERROR|WARN|Exception" app.log
+grep -v "DEBUG" app.log
+```
 
-С текущей загрузки системы:  
+-E — регулярные выражения;
+-v — исключить строки.
 
-journalctl -u nginx -b  
+### 6. Pipe, redirect, stdin/stdout/stderr
 
-За период:  
+**Pipe**
 
-journalctl --since "1 hour ago"  
-journalctl --since "2026-07-07 10:00:00"  
-Логи в файлах  
+```bash
+ps aux | grep python
+```
 
-### Часто лежат тут:
+| передаёт вывод одной команды на вход другой.
 
-/var/log/  
+**Перезаписать файл**
 
-### Примеры:
+```bash
+echo "hello" > file.txt
+```
 
-/var/log/syslog  
-/var/log/messages  
-/var/log/auth.log  
-/var/log/nginx/access.log  
-/var/log/nginx/error.log  
+**Дописать в файл**
 
-## 17. Как диагностировать “сервис не запустился”
+```bash
+echo "hello" >> file.txt
+```
 
-### Хороший порядок действий:
+**Перенаправить ошибки**
 
-systemctl status service_name  
+```bash
+command 2> error.log
+```
 
-Потом:  
+Перенаправить обычный вывод и ошибки
 
-journalctl -u service_name -n 100  
+```bash
+command > output.log 2>&1
+```
 
-Потом проверить конфиг, права, порты, переменные окружения:  
+**Или современный вариант**
 
-ls -la  
-cat config.yml  
-ss -tulpn  
-df -h  
+**command &> output.log**
+Частый вопрос
 
-### На собесе можно сказать:
+Чем отличается `>` от `>>`?
 
-Сначала смотрю systemctl status, потом journalctl -u service -n 100, проверяю код ошибки, конфиг, права на файлы, занятые порты, доступность зависимостей, переменные окружения и место на диске.  
+- `>` перезаписывает файл;
+- `>>` добавляет данные в конец файла.
 
-## 18. Сеть: базовые команды
+### 7. Пользователи и права
 
-IP-адреса  
-ip addr  
-ip a  
+**Кто я**
 
-Старый вариант:  
+```bash
+whoami
+id
+```
 
-ifconfig  
-Маршруты  
-ip route  
-Проверить доступность хоста  
-ping google.com  
-ping 8.8.8.8  
-Проверить маршрут  
-traceroute google.com  
+Узнать группы пользователя
 
-Иногда:  
+```bash
+groups
+id username
+```
 
-tracepath google.com  
-DNS  
-nslookup google.com  
-dig google.com  
-Проверить открытые порты  
-ss -tulpn  
+Переключиться на другого пользователя
 
-Или старый вариант:  
+```bash
+su - username
+```
 
-netstat -tulpn  
-Проверить, кто слушает порт  
-sudo ss -tulpn | grep 8080  
-Проверить соединение с портом  
-nc -vz host 5432  
-nc -vz example.com 443  
+Выполнить команду от root
 
-Или:  
+```bash
+sudo command
+```
 
-telnet host 5432  
+### 8. Права доступа
 
-## 19. Разбор ss -tulpn
+#### Пример вывода:
 
-ss -tulpn  
+-rwxr-xr--
 
-Флаги:  
+**Разбор**
 
--t — TCP  
--u — UDP  
--l — listening  
--p — process  
--n — не резолвить имена, показывать числа  
+-    rwx    r-x    r--
+тип  owner  group  others
 
-### Пример:
+**Типы**
 
-LISTEN 0 128 0.0.0.0:5432 0.0.0.0:* users:(("postgres",pid=1234))  
+-  обычный файл
+d  директория
+l  символическая ссылка
 
-Это значит, что PostgreSQL слушает порт 5432.  
+**Права**
 
-## 20. Частые сетевые вопросы
+- r — read
+- w — write
+- x — execute
+Числовые права
 
-TCP vs UDP  
+```python
+r = 4
+w = 2
+x = 1
+```
 
-TCP:  
+#### Примеры:
 
-устанавливает соединение;  
-гарантирует доставку;  
-гарантирует порядок пакетов;  
-есть retransmission;  
-медленнее, но надёжнее.  
+```bash
+chmod 755 script.sh
+chmod 644 file.txt
+chmod 600 private.key
+```
 
-Используется:  
+**Расшифровка**
 
-HTTP, HTTPS, SSH, PostgreSQL, MySQL  
+755 = владелец rwx, группа r-x, остальные r-x
+644 = владелец rw-, группа r--, остальные r--
+600 = владелец rw-, остальные ничего
+Сделать файл исполняемым
 
-UDP:  
+```bash
+chmod +x script.sh
+```
 
-без установки соединения;  
-не гарантирует доставку;  
-быстрее;  
-подходит для real-time.  
+**Поменять владельца**
 
-Используется:  
+```bash
+chown user:group file.txt
+chown -R user:group directory
+```
 
-DNS, VoIP, streaming, online games  
-Как объяснить коротко  
+### 9. Важный вопрос: права на директорию
 
-TCP — надёжный протокол с соединением и гарантией доставки. UDP — быстрый протокол без гарантии доставки, используется там, где важнее скорость, чем идеальная надёжность.  
+**Для директории**
 
-## 21. Проверка HTTP API из Linux
+- r — можно посмотреть список файлов
+- w — можно создавать/удалять файлы
+- x — можно заходить в директорию
 
-curl  
+#### Что значит execute на директории?
 
-GET-запрос:  
+**Ответ**
 
-curl http://localhost:8080/health  
+Для директории x означает право прохода внутрь директории. Без x нельзя зайти в директорию и обратиться к файлам внутри, даже если знаешь их имена.
 
-Показать заголовки:  
+### 10. Процессы
 
-curl -i http://localhost:8080/health  
+**Посмотреть процессы**
 
-Только заголовки:  
+```bash
+ps
+ps aux
+ps -ef
+```
 
-curl -I http://localhost:8080/health  
+#### Часто:
 
-POST JSON:  
+```bash
+ps aux | grep python
+ps aux | grep nginx
+```
 
-curl -X POST http://localhost:8080/users \  
-  -H "Content-Type: application/json" \  
-  -d '{"username": "test", "password": "Password123"}'  
+**Интерактивный просмотр**
 
-С авторизацией:  
+```bash
+top
+htop
+```
 
-curl -H "Authorization: Bearer TOKEN" http://localhost:8080/api/users  
+htop удобнее, но может быть не установлен.
 
-Сохранить ответ:  
+**Найти PID процесса**
 
-curl http://localhost:8080/api/users -o response.json  
+```bash
+pgrep nginx
+```
 
-Подробный debug:  
+**pidof nginx**
+Убить процесс
 
-curl -v http://localhost:8080/health  
+```bash
+kill <pid>
+kill -9 <pid>
+```
 
-## 22. Диагностика API на стенде
+**Убить по имени**
 
-Если API не отвечает:  
+```bash
+pkill nginx
+killall nginx
+```
 
-curl -v http://host:port/health  
+Сигналы
 
-Проверить DNS:  
+```bash
+kill -15 <pid>
+```
 
-nslookup host  
+SIGTERM — мягкое завершение. Процесс может корректно закрыться.
 
-Проверить порт:  
+```bash
+kill -9 <pid>
+```
 
-nc -vz host port  
+SIGKILL — принудительное завершение. Процесс не может его обработать.
 
-Проверить маршрут:  
+```bash
+kill -1 <pid>
+```
 
-ping host  
-traceroute host  
+SIGHUP — часто используется для перечитывания конфигурации.
 
-Проверить, слушает ли сервис порт на сервере:  
+### 11. Как объяснить SIGTERM и SIGKILL
 
-ss -tulpn | grep port  
+**SIGTERM**
 
-Проверить логи:  
+Просит процесс завершиться корректно. Процесс может закрыть соединения, сохранить данные, освободить ресурсы.
 
-journalctl -u service -f  
-tail -f /var/log/app/app.log  
+**SIGKILL**
 
-## 23. SSH
+Принудительно убивает процесс на уровне ядра. Процесс не успевает выполнить cleanup. Использовать стоит только если обычное завершение не сработало.
 
-Подключиться к серверу  
-ssh user@host  
+### 12. Состояния процессов
 
-С конкретным портом:  
+В ps aux можно увидеть статусы:
 
-ssh -p 2222 user@host  
+- R — running
+- S — sleeping
+- D — uninterruptible sleep
+- T — stopped
+- Z — zombie
+Zombie process
 
-С ключом:  
+Zombie — процесс уже завершился, но его родитель ещё не забрал код завершения.
 
-ssh -i ~/.ssh/id_rsa user@host  
-Скопировать файл на сервер  
-scp file.txt user@host:/tmp/  
+#### Короткий ответ:
 
-С сервера к себе:  
+Zombie-процесс не выполняется, но запись о нём остаётся в таблице процессов, пока родительский процесс не вызовет wait. Обычно лечится завершением или перезапуском родительского процесса.
 
-scp user@host:/tmp/file.txt .  
+### 13. Фоновые процессы
 
-Рекурсивно директорию:  
+**Запустить в фоне**
 
-scp -r ./project user@host:/opt/  
+```bash
+command &
+```
 
-С портом:  
+Посмотреть фоновые задачи
 
-scp -P 2222 file.txt user@host:/tmp/  
+```bash
+jobs
+```
 
-Обрати внимание:  
-у ssh порт задаётся через -p,  
-у scp через -P.  
+Вернуть задачу на передний план
 
-## 24. SSH-ключи
+```bash
+fg
+```
 
-Сгенерировать ключ  
-ssh-keygen -t rsa -b 4096  
+Продолжить в фоне
 
-Или современный вариант:  
+```bash
+bg
+```
 
-ssh-keygen -t ed25519  
-Публичный ключ  
-cat ~/.ssh/id_rsa.pub  
+Запустить так, чтобы процесс не умер после выхода из терминала
 
-Публичный ключ можно добавлять на сервер / GitLab / GitHub.  
+```bash
+nohup command &
+```
 
-Приватный ключ  
-~/.ssh/id_rsa  
+#### Пример:
 
-Его нельзя никому отправлять.  
+```bash
+nohup python script.py > app.log 2>&1 &
+```
 
-Права на приватный ключ:  
+### 14. systemd и сервисы
 
-chmod 600 ~/.ssh/id_rsa  
+В современных Linux сервисами часто управляет systemd.
 
-## 25. Переменные окружения
+**Проверить статус сервиса**
 
-Посмотреть переменные  
-env  
-printenv  
-Посмотреть конкретную  
-echo $PATH  
-echo $HOME  
-Задать переменную временно  
-export ENV=dev  
-export BASE_URL=http://localhost:8080  
-Запустить команду с переменной  
-BASE_URL=http://localhost:8080 pytest  
-Где часто задают переменные  
-~/.bashrc  
-~/.profile  
-/etc/environment  
-systemd unit-файлы  
-CI/CD настройки  
-Docker Compose  
+```bash
+systemctl status nginx
+```
 
-## 26. PATH
+**Запустить сервис**
 
-PATH — список директорий, где shell ищет исполняемые файлы.  
+```bash
+sudo systemctl start nginx
+```
 
-echo $PATH  
+Остановить сервис
 
-Если команда не находится:  
+```bash
+sudo systemctl stop nginx
+```
 
-which python  
-which pytest  
+Перезапустить
 
-Или:  
+```bash
+sudo systemctl restart nginx
+```
 
-command -v python3  
+Перечитать конфигурацию
 
-Добавить путь:  
+```bash
+sudo systemctl reload nginx
+```
 
-export PATH=$PATH:/opt/mytool/bin  
+Включить автозапуск
 
-## 27. Архивы
+```bash
+sudo systemctl enable nginx
+```
 
-tar.gz распаковать  
-tar -xzf archive.tar.gz  
-tar.gz создать  
-tar -czf archive.tar.gz directory/  
-zip  
-zip -r archive.zip directory/  
-unzip archive.zip  
+Отключить автозапуск
 
-## 28. Диски и место
+```bash
+sudo systemctl disable nginx
+```
 
-Свободное место  
-df -h  
-Размер директории  
-du -sh /var/log  
-du -sh *  
-Найти самые большие директории  
-du -h /var/log | sort -h | tail -n 20  
-Информация о блочных устройствах  
-lsblk  
-Смонтированные файловые системы  
-mount  
-Монтирование  
-mount /dev/sdb1 /mnt  
-Размонтирование  
-umount /mnt  
+Проверить, включён ли автозапуск
 
-## 29. Что делать, если закончилось место
+```bash
+systemctl is-enabled nginx
+```
 
-Порядок диагностики:  
+**Посмотреть все сервисы**
 
-df -h  
+```bash
+systemctl list-units --type=service
+```
 
-Потом:  
+### 15. Где лежат systemd unit-файлы
 
-du -sh /*  
+#### Часто:
 
-Дальше искать большие директории:  
+```text
+/etc/systemd/system/
+```
 
-du -h /var | sort -h | tail -n 20  
+**Также**
 
-### Часто место занимают:
+```text
+/lib/systemd/system/
+/usr/lib/systemd/system/
+```
 
-/var/log  
-Docker images/containers/volumes  
-кэши пакетного менеджера  
-старые артефакты CI  
-дампы БД  
+**Пример unit-файла**
 
-Для Docker:  
+```ini
+[Unit]
+Description=My Python Service
+After=network.target
 
-docker system df  
-docker system prune  
+[Service]
+User=appuser
+WorkingDirectory=/opt/myapp
+ExecStart=/usr/bin/python3 /opt/myapp/app.py
+Restart=always
 
-Осторожно: prune удаляет неиспользуемые ресурсы.  
+[Install]
+WantedBy=multi-user.target
+```
 
-## 30. Память и CPU
+**После изменения unit-файла**
 
-Память  
-free -h  
-CPU и процессы  
-top  
-htop  
-Информация о CPU  
-cat /proc/cpuinfo  
-lscpu  
-Информация о памяти  
-cat /proc/meminfo  
+**sudo systemctl daemon-reload**
 
-## 31. Load average
+```bash
+sudo systemctl restart my-service
+```
 
-В top можно увидеть:  
+### 16. Логи
 
-load average: 0.35, 0.52, 0.60  
+```bash
+journalctl
+```
 
-Это средняя нагрузка за:  
+**Посмотреть логи сервиса**
 
-1 минута, 5 минут, 15 минут  
+```bash
+journalctl -u nginx
+```
 
-### Как объяснить:
+**Последние строки**
 
-Load average показывает среднее количество процессов, которые выполняются или ждут CPU/IO. Его нужно оценивать относительно количества CPU-ядер.  
+```bash
+journalctl -u nginx -n 100
+```
 
-Например:  
+**В реальном времени**
 
-4 ядра и load 2.0 — нормально;  
-4 ядра и load 20.0 — сильная нагрузка;  
-высокий load может быть не только из-за CPU, но и из-за IO.  
+```bash
+journalctl -u nginx -f
+```
 
-## 32. Пакетные менеджеры
+**С текущей загрузки системы**
 
-Debian/Ubuntu  
-apt update  
-apt install nginx  
-apt remove nginx  
-apt search package  
-RHEL/CentOS/Fedora  
-yum install nginx  
-dnf install nginx  
-Проверить установленный пакет  
+```bash
+journalctl -u nginx -b
+```
 
-Ubuntu/Debian:  
+**За период**
 
-dpkg -l | grep nginx  
+```bash
+journalctl --since "1 hour ago"
+journalctl --since "2026-07-07 10:00:00"
+```
 
-RHEL/CentOS:  
+**Логи в файлах**
 
-rpm -qa | grep nginx  
+#### Часто лежат тут:
 
-## 33. Cron
+```text
+/var/log/
+```
 
-Cron используется для запуска задач по расписанию.  
+#### Примеры:
 
-Открыть crontab  
-crontab -e  
-Посмотреть  
-crontab -l  
-Формат  
-* * * * * command  
-│ │ │ │ │  
-│ │ │ │ └── день недели  
-│ │ │ └──── месяц  
-│ │ └────── день месяца  
-│ └──────── час  
-└────────── минута  
-Примеры  
+```text
+/var/log/syslog
+/var/log/messages
+/var/log/auth.log
+/var/log/nginx/access.log
+/var/log/nginx/error.log
+```
 
-Каждую минуту:  
+### 17. Как диагностировать “сервис не запустился”
 
-* * * * * /path/script.sh  
+#### Хороший порядок действий:
 
-Каждый день в 03:00:  
+```bash
+systemctl status service_name
+```
 
-0 3 * * * /path/backup.sh  
+**Потом**
 
-Каждый понедельник в 10:30:  
+```bash
+journalctl -u service_name -n 100
+```
 
-30 10 * * 1 /path/script.sh  
+Потом проверить конфиг, права, порты, переменные окружения:
 
-## 34. Exit code
+```bash
+ls -la
+cat config.yml
+ss -tulpn
+df -h
+```
 
-После выполнения команды можно посмотреть код завершения:  
+> **Короткий ответ для собеседования**
+>
+> Сначала смотрю systemctl status, потом journalctl -u service -n 100, проверяю код ошибки, конфиг, права на файлы, занятые порты, доступность зависимостей, переменные окружения и место на диске.
 
-echo $?  
+## Сеть, HTTP и окружение
 
-Обычно:  
+### 18. Сеть: базовые команды
 
-0 — успех  
-не 0 — ошибка  
+**IP-адреса**
 
-### Пример:
+```bash
+ip addr
+ip a
+```
 
-pytest  
-echo $?  
+**Старый вариант**
 
-В CI/CD это важно: если команда вернула не 0, pipeline обычно падает.  
+```bash
+ifconfig
+```
 
-## 35. Bash-скрипты
+**Маршруты**
 
-Пример простого скрипта  
-#!/bin/bash  
+```bash
+ip route
+```
 
-echo "Starting tests"  
-pytest tests/  
-echo "Exit code: $?"  
+**Проверить доступность хоста**
 
-Сделать исполняемым:  
+```bash
+ping google.com
+ping 8.8.8.8
+```
 
-chmod +x run_tests.sh  
+**Проверить маршрут**
 
-Запустить:  
+```bash
+traceroute google.com
+```
 
-./run_tests.sh  
-Shebang  
-#!/bin/bash  
+**Иногда**
 
-Указывает, каким интерпретатором запускать файл.  
+```bash
+tracepath google.com
+```
 
-Для Python:  
+**DNS**
 
-#!/usr/bin/env python3  
+```bash
+nslookup google.com
+dig google.com
+```
 
-## 36. Важное отличие: source script.sh и ./script.sh
+**Проверить открытые порты**
 
-./script.sh  
+```bash
+ss -tulpn
+```
 
-Запускает скрипт в новом shell-процессе.  
+**Или старый вариант**
 
-source script.sh  
+```bash
+netstat -tulpn
+```
 
-Выполняет скрипт в текущем shell.  
+**Проверить, кто слушает порт**
 
-Это важно для переменных окружения.  
+```bash
+sudo ss -tulpn | grep 8080
+```
 
-### Пример:
+Проверить соединение с портом
 
-source .env  
+```bash
+nc -vz host 5432
+nc -vz example.com 443
+```
 
-## 37. Символические ссылки
+**Или**
 
-Создать symlink  
-ln -s /real/path link_name  
-Посмотреть  
-ls -la  
+```bash
+telnet host 5432
+```
 
-### Пример:
+### 19. Разбор ss -tulpn
 
-python -> python3.11  
+```bash
+ss -tulpn
+```
 
-### Коротко:
+**Флаги**
 
-Символическая ссылка — это ссылка на другой файл или директорию. Похожа на shortcut.  
+- -t — TCP
+- -u — UDP
+- -l — listening
+- -p — process
+- -n — не резолвить имена, показывать числа
 
-## 38. Hard link vs symlink
+#### Пример:
 
-Hard link:  
+```python
+LISTEN 0 128 0.0.0.0:5432 0.0.0.0:* users:(("postgres",pid=1234))
+```
 
-указывает на тот же inode;  
-работает только в рамках одной файловой системы;  
-нельзя обычно делать на директории.  
+Это значит, что PostgreSQL слушает порт 5432.
 
-Symlink:  
+### 20. Частые сетевые вопросы
 
-отдельный файл-ссылка;  
-хранит путь до цели;  
-может ссылаться на несуществующий путь;  
-может ссылаться на директории.  
+**TCP vs UDP**
 
-## 39. Inode
+**TCP**
 
-Inode — структура файловой системы, которая хранит метаданные файла:  
+- устанавливает соединение;
+- гарантирует доставку;
+- гарантирует порядок пакетов;
+- есть retransmission;
+- медленнее, но надёжнее.
 
-права;  
-владельца;  
-размер;  
-время изменения;  
-ссылки на блоки данных.  
+**Используется**
 
-Имя файла хранится отдельно в директории.  
+HTTP, HTTPS, SSH, PostgreSQL, MySQL
 
-Посмотреть inode:  
+**UDP**
 
-ls -i  
+- без установки соединения;
+- не гарантирует доставку;
+- быстрее;
+- подходит для real-time.
 
-## 40. Логи авторизации
+**Используется**
 
-На Ubuntu/Debian:  
+DNS, VoIP, streaming, online games
+Как объяснить коротко
 
-/var/log/auth.log  
+TCP — надёжный протокол с соединением и гарантией доставки. UDP — быстрый протокол без гарантии доставки, используется там, где важнее скорость, чем идеальная надёжность.
 
-Можно смотреть:  
+### 21. Проверка HTTP API из Linux
 
-sudo tail -f /var/log/auth.log  
+```bash
+curl
+```
 
-Там можно увидеть SSH-логины, ошибки авторизации и sudo.  
+**GET-запрос**
 
-## 41. Firewall
+```bash
+curl http://localhost:8080/health
+```
 
-В Linux могут использоваться:  
+**Показать заголовки**
 
-iptables  
-nftables  
-ufw  
-firewalld  
-ufw  
-sudo ufw status  
-sudo ufw allow 22  
-sudo ufw allow 8080  
-sudo ufw deny 8080  
-iptables  
+```bash
+curl -i http://localhost:8080/health
+```
 
-Посмотреть правила:  
+**Только заголовки**
 
-sudo iptables -L -n -v  
+```bash
+curl -I http://localhost:8080/health
+```
 
-## 42. Как проверить, почему порт недоступен
+**POST JSON**
 
-Порядок:  
+```bash
+curl -X POST http://localhost:8080/users \
+  -H "Content-Type: application/json" \
+  -d '{"username": "test", "password": "Password123"}'
+```
 
-Проверить, что сервис запущен:  
-systemctl status app  
-Проверить, слушает ли порт:  
-ss -tulpn | grep 8080  
-Проверить firewall:  
-sudo iptables -L -n -v  
-sudo ufw status  
-Проверить доступность с клиента:  
-nc -vz host 8080  
-Проверить bind address.  
+**С авторизацией**
 
-Например сервис слушает только localhost:  
+```bash
+curl -H "Authorization: Bearer TOKEN" http://localhost:8080/api/users
+```
 
-127.0.0.1:8080  
+**Сохранить ответ**
 
-Тогда снаружи он будет недоступен.  
+```bash
+curl http://localhost:8080/api/users -o response.json
+```
 
-Нужно, чтобы слушал:  
+**Подробный debug**
 
-0.0.0.0:8080  
+```bash
+curl -v http://localhost:8080/health
+```
 
-или конкретный внешний IP.  
+### 22. Диагностика API на стенде
 
-## 43. localhost, 127.0.0.1, 0.0.0.0
+**Если API не отвечает**
 
-localhost / 127.0.0.1  
+```bash
+curl -v http://host:port/health
+```
 
-Это loopback, то есть сам текущий хост.  
+**Проверить DNS**
 
-0.0.0.0  
+```bash
+nslookup host
+```
 
-Обычно означает “слушать на всех интерфейсах”.  
+**Проверить порт**
 
-### На собесе:
+```bash
+nc -vz host port
+```
 
-Если сервис слушает 127.0.0.1, он доступен только локально. Если слушает 0.0.0.0, он принимает соединения со всех сетевых интерфейсов.  
+**Проверить маршрут**
 
-## 44. DNS в Linux
+```bash
+ping host
+traceroute host
+```
 
-/etc/hosts  
+Проверить, слушает ли сервис порт на сервере:
 
-Локальные соответствия имени и IP:  
+```bash
+ss -tulpn | grep port
+```
 
-cat /etc/hosts  
+**Проверить логи**
 
-### Пример:
+```bash
+journalctl -u service -f
+tail -f /var/log/app/app.log
+```
 
-127.0.0.1 localhost  
-10.10.1.20 test-api.local  
-/etc/resolv.conf  
+### 23. SSH
 
-DNS-серверы:  
+**Подключиться к серверу**
 
-cat /etc/resolv.conf  
+```bash
+ssh user@host
+```
 
-Проверить DNS:  
+**С конкретным портом**
 
-nslookup example.com  
-dig example.com  
+```bash
+ssh -p 2222 user@host
+```
 
-## 45. Проверка сертификата HTTPS
+**С ключом**
 
-openssl s_client -connect example.com:443  
+```bash
+ssh -i ~/.ssh/id_rsa user@host
+```
 
-Можно проверить:  
+**Скопировать файл на сервер**
 
-срок действия сертификата;  
-цепочку;  
-CN/SAN;  
-ошибки TLS.  
+```bash
+scp file.txt user@host:/tmp/
+```
 
-Через curl:  
+**С сервера к себе**
 
-curl -v https://example.com  
+```bash
+scp user@host:/tmp/file.txt .
+```
 
-Если нужно временно игнорировать сертификат:  
+**Рекурсивно директорию**
 
-curl -k https://example.com  
+```bash
+scp -r ./project user@host:/opt/
+```
 
--k использовать осторожно, только для диагностики.  
+**С портом**
 
-## 46. Docker и Linux
+```bash
+scp -P 2222 file.txt user@host:/tmp/
+```
 
-### На собеседовании по QA часто Linux смешивают с Docker.
+**Обрати внимание**
+у ssh порт задаётся через -p,
+у scp через -P.
 
-Основные команды Docker  
-docker ps  
-docker ps -a  
-docker images  
-docker logs container_name  
-docker logs -f container_name  
-docker exec -it container_name bash  
-docker exec -it container_name sh  
-docker stop container_name  
-docker start container_name  
-docker restart container_name  
-docker rm container_name  
-docker rmi image_name  
-Запустить контейнер  
-docker run nginx  
+### 24. SSH-ключи
 
-С портом:  
+**Сгенерировать ключ**
 
-docker run -p 8080:80 nginx  
+```bash
+ssh-keygen -t rsa -b 4096
+```
 
-С переменной окружения:  
+**Или современный вариант**
 
-docker run -e ENV=dev image_name  
+```bash
+ssh-keygen -t ed25519
+```
 
-С volume:  
+Публичный ключ
 
-docker run -v /host/path:/container/path image_name  
+```bash
+cat ~/.ssh/id_rsa.pub
+```
 
-## 47. Docker logs
+Публичный ключ можно добавлять на сервер / GitLab / GitHub.
 
-docker logs container  
-docker logs -f container  
-docker logs --tail 100 container  
+**Приватный ключ**
+~/.ssh/id_rsa
 
-Если контейнер падает:  
+Его нельзя никому отправлять.
 
-docker ps -a  
-docker logs container  
-docker inspect container  
+**Права на приватный ключ**
 
-## 48. Зайти внутрь контейнера
+```bash
+chmod 600 ~/.ssh/id_rsa
+```
 
-docker exec -it container bash  
+### 25. Переменные окружения
 
-Если bash нет:  
+**Посмотреть переменные**
 
-docker exec -it container sh  
+```bash
+env
+printenv
+```
 
-## 49. CMD vs ENTRYPOINT
+**Посмотреть конкретную**
 
-CMD — команда по умолчанию, которую можно легко переопределить.  
+```bash
+echo $PATH
+echo $HOME
+```
 
-ENTRYPOINT — основная команда контейнера, обычно фиксирует исполняемый процесс.  
+**Задать переменную временно**
 
-### Пример:
+```bash
+export ENV=dev
+export BASE_URL=http://localhost:8080
+```
 
-ENTRYPOINT ["python"]  
-CMD ["app.py"]  
+**Запустить команду с переменной**
 
-Контейнер запустит:  
+```python
+BASE_URL=http://localhost:8080 pytest
+```
 
-python app.py  
+**Где часто задают переменные**
+~/.bashrc
+~/.profile
 
-## 50. Почему контейнер сразу завершился
+```text
+/etc/environment
+```
 
-Контейнер живёт, пока жив основной процесс.  
+**systemd unit-файлы**
+CI/CD настройки
+Docker Compose
 
-Если основной процесс завершился — контейнер остановился.  
+### 26. PATH
 
-Диагностика:  
+PATH — список директорий, где shell ищет исполняемые файлы.
 
-docker ps -a  
-docker logs container  
-docker inspect container  
+```bash
+echo $PATH
+```
 
-## 51. Docker Compose
+**Если команда не находится**
 
-Запуск:  
+**which python**
 
-docker compose up  
-docker compose up -d  
+```bash
+which pytest
+```
 
-Остановка:  
+**Или**
 
-docker compose down  
+```bash
+command -v python3
+```
 
-Пересобрать:  
+**Добавить путь**
 
-docker compose up --build  
+```bash
+export PATH=$PATH:/opt/mytool/bin
+```
 
-Логи:  
+## Ресурсы, shell и безопасность
 
-docker compose logs  
-docker compose logs -f service_name  
+### 27. Архивы
 
-Зайти в сервис:  
+**tar.gz распаковать**
 
-docker compose exec service_name bash  
+```bash
+tar -xzf archive.tar.gz
+```
 
-## 52. Linux в CI/CD
+**tar.gz создать**
 
-В CI/CD часто нужно:  
+```bash
+tar -czf archive.tar.gz directory/
+```
 
-запускать shell-команды;  
-ставить зависимости;  
-запускать тесты;  
-собирать Docker-образы;  
-копировать артефакты;  
-работать с переменными окружения;  
-анализировать exit code;  
-читать логи.  
+**zip**
 
-### Пример шагов:
+```bash
+zip -r archive.zip directory/
+unzip archive.zip
+```
 
-python3 -m venv venv  
-source venv/bin/activate  
-pip install -r requirements.txt  
-pytest tests/ --alluredir=allure-results  
+### 28. Диски и место
 
-## 53. Диагностика упавших автотестов на Linux-стенде
+**Свободное место**
 
-Порядок:  
+```bash
+df -h
+```
 
-Проверить, что стенд доступен:  
-ping host  
-nc -vz host port  
-curl -v http://host:port/health  
-Проверить переменные окружения:  
-env  
-echo $BASE_URL  
-Проверить зависимости:  
-pip freeze  
-python --version  
-pytest --version  
-Проверить логи приложения:  
-journalctl -u app -n 100  
-tail -f /var/log/app/app.log  
-Проверить Docker:  
-docker ps  
-docker logs container  
-Проверить место:  
-df -h  
-Проверить процессы и порты:  
-ps aux | grep app  
-ss -tulpn  
+**Размер директории**
 
-## 54. Полезные команды для QA Automation
+```bash
+du -sh /var/log
+du -sh *
+```
 
-Запуск тестов  
-pytest  
-pytest tests/  
-pytest tests/test_users.py  
-pytest -k "login"  
-pytest -m smoke  
-pytest -v  
-pytest -s  
-pytest --tb=short  
-Сохранить вывод  
-pytest > test.log 2>&1  
-Запустить и одновременно видеть вывод  
-pytest 2>&1 | tee test.log  
-Найти ошибку в логах  
-grep -i "error" test.log  
-grep -i "failed" test.log  
-grep -i "traceback" test.log  
+**Найти самые большие директории**
 
-## 55. tee
+```bash
+du -h /var/log | sort -h | tail -n 20
+```
 
-command | tee output.log  
+**Информация о блочных устройствах**
 
-Позволяет одновременно:  
+```bash
+lsblk
+```
 
-видеть вывод в терминале;  
-сохранять вывод в файл.  
+Смонтированные файловые системы
 
-### Пример:
+```bash
+mount
+```
 
-pytest -v | tee pytest.log  
+Монтирование
 
-## 56. Команды для диагностики “не работает база”
+```bash
+mount /dev/sdb1 /mnt
+```
 
-Допустим PostgreSQL.  
+Размонтирование
 
-Проверить порт:  
+```bash
+umount /mnt
+```
 
-nc -vz db-host 5432  
+### 29. Что делать, если закончилось место
 
-Проверить DNS:  
+**Порядок диагностики**
 
-nslookup db-host  
+```bash
+df -h
+```
 
-Проверить переменные:  
+**Потом**
 
-echo $DB_HOST  
-echo $DB_PORT  
-echo $DB_USER  
+```bash
+du -sh /*
+```
 
-Проверить контейнер:  
+**Дальше искать большие директории**
 
-docker ps  
-docker logs postgres  
+```bash
+du -h /var | sort -h | tail -n 20
+```
 
-Подключиться:  
+#### Часто место занимают:
 
-psql -h db-host -p 5432 -U user -d database  
+```text
+/var/log
+```
 
-## 57. Разница между ps, top, htop
+Docker images/containers/volumes
+кэши пакетного менеджера
+старые артефакты CI
+дампы БД
 
-ps  
+**Для Docker**
 
-Показывает snapshot процессов.  
+```bash
+docker system df
+docker system prune
+```
 
-top  
+Осторожно: prune удаляет неиспользуемые ресурсы.
 
-Интерактивно показывает процессы, CPU, память, load average.  
+### 30. Память и CPU
 
-htop  
+**Память**
 
-Более удобный интерактивный вариант top.  
+```bash
+free -h
+```
 
-## 58. Разница между curl, ping, nc
+**CPU и процессы**
 
-ping  
+```bash
+top
+htop
+```
 
-Проверяет сетевую доступность по ICMP. Не гарантирует, что порт приложения открыт.  
+**Информация о CPU**
 
-nc  
+```bash
+cat /proc/cpuinfo
+```
 
-Проверяет доступность конкретного TCP/UDP-порта.  
+**lscpu**
+Информация о памяти
 
-curl  
+```bash
+cat /proc/meminfo
+```
 
-Проверяет HTTP/HTTPS-уровень: статус-код, заголовки, тело ответа.  
+### 31. Load average
 
-### На собесе:
+**В top можно увидеть**
 
-Если ping проходит, это ещё не значит, что API работает. Нужно проверить порт через nc и сам HTTP через curl.  
+load average: 0.35, 0.52, 0.60
 
-## 59. Как проверить, что процесс слушает порт
+**Это средняя нагрузка за**
 
-sudo ss -tulpn | grep 8080  
+1 минута, 5 минут, 15 минут
 
-### Пример ответа:
+#### Как объяснить:
 
-LISTEN 0 128 0.0.0.0:8080 users:(("python",pid=1234))  
+Load average показывает среднее количество процессов, которые выполняются или ждут CPU/IO. Его нужно оценивать относительно количества CPU-ядер.
 
-Значит Python-процесс слушает порт 8080.  
+**Например**
 
-## 60. Как найти процесс по порту
+4 ядра и load 2.0 — нормально;
+4 ядра и load 20.0 — сильная нагрузка;
+высокий load может быть не только из-за CPU, но и из-за IO.
 
-sudo lsof -i :8080  
+### 32. Пакетные менеджеры
 
-Или:  
+```bash
+Debian/Ubuntu
+apt update
+apt install nginx
+apt remove nginx
+apt search package
+RHEL/CentOS/Fedora
+yum install nginx
+dnf install nginx
+```
 
-sudo ss -tulpn | grep 8080  
+**Проверить установленный пакет**
 
-## 61. Как завершить процесс, который занял порт
+Ubuntu/Debian:
 
-Найти PID:  
+```bash
+dpkg -l | grep nginx
+```
 
-sudo lsof -i :8080  
+RHEL/CentOS:
 
-Завершить:  
+```bash
+rpm -qa | grep nginx
+```
 
-kill <pid>  
+### 33. Cron
 
-Если не завершился:  
+Cron используется для запуска задач по расписанию.
 
-kill -9 <pid>  
+**Открыть crontab**
 
-## 62. Что такое file descriptor
+```bash
+crontab -e
+```
 
-File descriptor — числовой идентификатор открытого ресурса в процессе.  
+**Посмотреть**
 
-Стандартные:  
+```bash
+crontab -l
+```
 
-0 — stdin  
-1 — stdout  
-2 — stderr  
+**Формат**
+* * * * * command
 
-### Пример:
+```text
+│ │ │ │ │
+│ │ │ │ └── день недели
+│ │ │ └──── месяц
+│ │ └────── день месяца
+│ └──────── час
+└────────── минута
+```
 
-command > out.log 2> err.log  
+**Примеры**
 
-## 63. Что такое /dev/null
+**Каждую минуту**
 
-/dev/null  
+* * * * * /path/script.sh
 
-Специальное устройство, которое “выбрасывает” всё, что в него записали.  
+Каждый день в 03:00:
 
-### Пример:
+0 3 * * * /path/backup.sh
 
-command > /dev/null 2>&1  
+Каждый понедельник в 10:30:
 
-Это значит: не показывать ни stdout, ни stderr.  
+30 10 * * 1 /path/script.sh
 
-## 64. Что такое /proc
+### 34. Exit code
 
-/proc — виртуальная файловая система с информацией о процессах и системе.  
+После выполнения команды можно посмотреть код завершения:
 
-### Примеры:
+```bash
+echo $?
+```
 
-cat /proc/cpuinfo  
-cat /proc/meminfo  
-ls /proc/<pid>  
+**Обычно**
 
-Можно посмотреть окружение процесса:  
+0 — успех
+не 0 — ошибка
 
-cat /proc/<pid>/environ  
+#### Пример:
 
-Открытые файлы процесса:  
+```bash
+pytest
+echo $?
+```
 
-ls -la /proc/<pid>/fd  
+В CI/CD это важно: если команда вернула не 0, pipeline обычно падает.
 
-## 65. Что такое umask
+### 35. Bash-скрипты
 
-umask задаёт, какие права будут убраны у новых файлов и директорий.  
+**Пример простого скрипта**
+#!/bin/bash
 
-Посмотреть:  
+```bash
+echo "Starting tests"
+pytest tests/
+echo "Exit code: $?"
+```
 
-umask  
+**Сделать исполняемым**
 
-### Часто:
+```bash
+chmod +x run_tests.sh
+```
 
-022  
+**Запустить**
 
-Это значит, что новые файлы обычно будут 644, директории 755.  
+```text
+./run_tests.sh
+```
 
-## 66. Перемещение между серверами и копирование логов
+**Shebang**
+#!/bin/bash
 
-Скопировать лог с сервера:  
+Указывает, каким интерпретатором запускать файл.
 
-scp user@host:/var/log/app/app.log .  
+**Для Python**
 
-Скопировать свой файл на сервер:  
+#!/usr/bin/env python3
 
-scp ./config.yml user@host:/tmp/  
+### 36. Важное отличие: source script.sh и ./script.sh
 
-Подключиться и посмотреть лог:  
+```text
+./script.sh
+```
 
-ssh user@host  
-tail -f /var/log/app/app.log  
+Запускает скрипт в новом shell-процессе.
 
-Одной командой:  
+```bash
+source script.sh
+```
 
-ssh user@host "tail -n 100 /var/log/app/app.log"  
+Выполняет скрипт в текущем shell.
 
-## 67. Выполнить команду на удалённой машине
+Это важно для переменных окружения.
 
-ssh user@host "hostname && uptime"  
+#### Пример:
 
-Запустить тесты:  
+```bash
+source .env
+```
 
-ssh user@host "cd /opt/project && pytest tests/"  
+### 37. Символические ссылки
 
-С переменной:  
+**Создать symlink**
 
-ssh user@host "cd /opt/project && BASE_URL=http://test pytest"  
+```bash
+ln -s /real/path link_name
+```
 
-## 68. &&, ||, ;
+Посмотреть
 
-command1 && command2  
+```bash
+ls -la
+```
 
-Выполнить command2, только если command1 успешна.  
+#### Пример:
 
-command1 || command2  
+```bash
+python -> python3.11
+```
 
-Выполнить command2, только если command1 упала.  
+#### Коротко:
 
-command1 ; command2  
+Символическая ссылка — это ссылка на другой файл или директорию. Похожа на shortcut.
 
-Выполнить обе команды независимо от результата первой.  
+### 38. Hard link vs symlink
 
-### Пример:
+**Hard link**
 
-cd project && pytest  
+указывает на тот же inode;
+работает только в рамках одной файловой системы;
+нельзя обычно делать на директории.
 
-Если cd project не сработает, pytest не запустится.  
+**Symlink**
 
-## 69. Архитектура диагностики проблемы
+- отдельный файл-ссылка;
+- хранит путь до цели;
+- может ссылаться на несуществующий путь;
+- может ссылаться на директории.
 
-### Когда говорят:
+### 39. Inode
 
-На стенде не работает сервис. Что будешь делать?  
+Inode — структура файловой системы, которая хранит метаданные файла:
 
-Можно отвечать так:  
+- права;
+- владельца;
+- размер;
+- время изменения;
+- ссылки на блоки данных.
 
-Я бы шёл по слоям. Сначала проверил, доступен ли хост и порт: ping, nc, curl. Потом проверил бы, запущен ли сервис: systemctl status или docker ps. Потом посмотрел бы логи: journalctl или docker logs. Дальше проверил бы конфиг, переменные окружения, доступность БД/брокера, занятые порты, права на файлы и место на диске.  
+Имя файла хранится отдельно в директории.
 
-## 70. Типовые вопросы и короткие ответы
+**Посмотреть inode**
 
-Как посмотреть логи сервиса?  
-journalctl -u service_name -f  
+```bash
+ls -i
+```
 
-Или файл:  
+### 40. Логи авторизации
 
-tail -f /var/log/app/app.log  
-Как посмотреть процессы?  
-ps aux  
-top  
-htop  
-Как найти процесс по имени?  
-ps aux | grep nginx  
-pgrep nginx  
-Как найти процесс по порту?  
-sudo lsof -i :8080  
-sudo ss -tulpn | grep 8080  
-Как проверить, открыт ли порт?  
-nc -vz host port  
-Как проверить HTTP API?  
-curl -v http://host:port/health  
-Как проверить свободное место?  
-df -h  
-Как найти, что занимает место?  
-du -sh *  
-du -h /var | sort -h | tail  
-Как посмотреть память?  
-free -h  
-Как посмотреть нагрузку?  
-top  
-uptime  
-Как убить процесс?  
-kill pid  
-kill -9 pid  
-Как сделать файл исполняемым?  
-chmod +x file.sh  
-Как поменять владельца?  
-chown user:group file  
-Как подключиться по SSH?  
-ssh user@host  
-Как скопировать файл?  
-scp file user@host:/tmp/  
-Как посмотреть IP?  
-ip a  
-Как посмотреть маршруты?  
-ip route  
-Как проверить DNS?  
-nslookup host  
-dig host  
+На Ubuntu/Debian:
 
-## 71. Что нужно уметь уверенно сказать на Senior QA/SDET
+```text
+/var/log/auth.log
+```
 
-Про Linux в целом  
+**Можно смотреть**
 
-Я использую Linux для работы со стендами, CI/CD и контейнерами. Умею подключаться по SSH, смотреть процессы, логи, сервисы, порты, проверять доступность API и баз, работать с правами, файлами и переменными окружения.  
+```bash
+sudo tail -f /var/log/auth.log
+```
 
-Про диагностику  
+Там можно увидеть SSH-логины, ошибки авторизации и sudo.
 
-Обычно иду сверху вниз: доступность хоста, порт, HTTP-ответ, статус сервиса, логи, конфиг, зависимости, ресурсы системы.  
+### 41. Firewall
 
-Про логи  
+**В Linux могут использоваться**
 
-Для systemd-сервисов смотрю journalctl -u service, для файловых логов — tail -f, grep, less. В Docker — docker logs.  
+**iptables**
 
-Про сеть  
+```bash
+nftables
+ufw
+firewalld
+ufw
+sudo ufw status
+sudo ufw allow 22
+sudo ufw allow 8080
+sudo ufw deny 8080
+iptables
+```
 
-Проверяю IP и маршруты через ip a, ip route, DNS через dig/nslookup, порт через nc или ss, HTTP через curl.  
+**Посмотреть правила**
 
-Про процессы  
+```bash
+sudo iptables -L -n -v
+```
 
-Смотрю процессы через ps aux, top, htop; завершаю через kill, стараюсь сначала использовать SIGTERM, а SIGKILL только если процесс не завершается.  
+### 42. Как проверить, почему порт недоступен
 
-Про права  
+**Порядок**
 
-Понимаю rwx, chmod, chown, права владельца/группы/остальных, отличие прав на файл и директорию.  
+**Проверить, что сервис запущен**
 
-## 72. Мини-сценарии для собеседования
+```bash
+systemctl status app
+```
 
-Сценарий 1: API недоступен  
+**Проверить, слушает ли порт**
 
-Вопрос:  
+```bash
+ss -tulpn | grep 8080
+```
 
-Автотесты падают, API не отвечает. Что делаешь?  
+**Проверить firewall**
 
-Ответ:  
+```bash
+sudo iptables -L -n -v
+sudo ufw status
+```
 
-Сначала проверю, корректный ли BASE_URL. Потом curl -v /health. Если нет ответа — проверю DNS через nslookup, доступность порта через nc -vz host port. На сервере посмотрю, запущен ли сервис: systemctl status или docker ps. Потом логи: journalctl -u service -n 100 или docker logs. Также проверю, слушает ли процесс порт через ss -tulpn.  
+Проверить доступность с клиента:
 
-### Сценарий 2: сервис не стартует
+```bash
+nc -vz host 8080
+```
 
-Ответ:  
+Проверить bind address.
 
-Проверю systemctl status service, потом journalctl -u service -n 100. Дальше смотрю ошибку: может быть неправильный конфиг, занятый порт, нет прав на файл, не хватает переменных окружения, недоступна БД или закончилось место на диске.  
+Например сервис слушает только localhost:
 
-### Сценарий 3: тесты в CI падают, локально проходят
+127.0.0.1:8080
 
-Ответ:  
+Тогда снаружи он будет недоступен.
 
-Сравню окружения: версии Python, зависимости, переменные окружения, доступность сервисов, права, рабочую директорию, наличие файлов, сетевой доступ из CI-агента. Посмотрю логи job, exit code, артефакты, pytest output. Частая причина — разные env-переменные, разные версии пакетов или недоступные внешние зависимости.  
+**Нужно, чтобы слушал**
 
-### Сценарий 4: порт занят
+0.0.0.0:8080
 
-Ответ:  
+или конкретный внешний IP.
 
-Найду процесс через lsof -i :port или ss -tulpn | grep port. Потом решу: либо остановить старый процесс, либо поменять порт в конфиге. Завершать лучше сначала обычным kill, а kill -9 использовать только если процесс завис.  
+### 43. localhost, 127.0.0.1, 0.0.0.0
 
-### Сценарий 5: нет места на диске
+localhost / 127.0.0.1
 
-Ответ:  
+Это loopback, то есть сам текущий хост.
 
-Проверю df -h, потом найду крупные директории через du -sh /* и глубже через du -h | sort -h | tail. Часто место занимают логи, Docker images/volumes, дампы, артефакты CI. Удалять буду аккуратно, сначала поняв, что это за файлы.  
+0.0.0.0
 
-## 73. Команды, которые стоит выучить прямо обязательно
+Обычно означает “слушать на всех интерфейсах”.
 
-pwd  
-ls -la  
-cd  
-cat  
-less  
-head  
-tail -f  
-grep -rn  
-find  
-cp  
-mv  
-rm  
-chmod  
-chown  
-ps aux  
-top  
-kill  
-systemctl status  
-journalctl -u  
-df -h  
-du -sh  
-free -h  
-ip a  
-ip route  
-ping  
-curl -v  
-nc -vz  
-ss -tulpn  
-ssh  
-scp  
-env  
-echo $?  
-docker ps  
-docker logs  
-docker exec -it  
+> **Короткий ответ для собеседования**
+>
+> Если сервис слушает 127.0.0.1, он доступен только локально. Если слушает 0.0.0.0, он принимает соединения со всех сетевых интерфейсов.
 
-## 74. Самая короткая версия для ответа на собесе
+### 44. DNS в Linux
 
-Если нужно красиво и уверенно:  
+```text
+/etc/hosts
+```
 
-В Linux я уверенно работаю на уровне, который нужен QA Automation: подключаюсь к стендам по SSH, запускаю тесты и сервисы, смотрю логи через tail, grep, journalctl, проверяю процессы через ps, top, systemctl, диагностирую сеть через curl, ping, nc, ss, проверяю порты, права, переменные окружения, место на диске. Также работаю с Docker-контейнерами: docker ps, logs, exec, compose. Обычно при проблемах иду по слоям: хост, порт, HTTP, сервис, логи, конфиг, зависимости, ресурсы.  
+Локальные соответствия имени и IP:
 
-## 75. Что тебе стоит повторить в первую очередь
+```bash
+cat /etc/hosts
+```
 
-Для собеседования я бы расставил приоритет так:  
+#### Пример:
 
-Процессы: ps, top, kill, сигналы, zombie.  
-Логи: tail, grep, journalctl.  
-Сеть: curl, nc, ss, ping, dig/nslookup.  
-Права: chmod, chown, rwx, права на директории.  
-systemd: systemctl status/start/restart, journalctl -u.  
-Диски: df, du, поиск больших файлов.  
-SSH/SCP: подключение, копирование, ключи.  
-Docker на Linux: ps, logs, exec, compose.  
-CI/CD окружение: env, exit code, запуск pytest.  
-Диагностические сценарии: API не отвечает, сервис не стартует, порт занят, нет места.  
+127.0.0.1 localhost
+10.10.1.20 test-api.local
 
-Главное — не просто помнить команды, а уметь объяснить как ты будешь диагностировать проблему по шагам. Это на собесе ценится сильнее, чем знание редких флагов.  
+```text
+/etc/resolv.conf
+```
 
+**DNS-серверы**
 
-## Дополнение. Работа с файлами и текстом
+```bash
+cat /etc/resolv.conf
+```
 
-Разверну именно практическую часть: как смотреть, фильтровать, менять файлы и логи на стенде. Упор сделаю на команды, которые реально пригодятся QA: grep, sed, awk, find, xargs, jq, diff, tail, less.  
+**Проверить DNS**
 
-Ниже — практическая шпаргалка по работе с файлами и текстом в Linux для QA/SDET. Это как раз то, что чаще всего нужно на стендах, в CI/CD, при анализе логов, конфигов, результатов тестов и артефактов.  
+```bash
+nslookup example.com
+dig example.com
+```
 
-1. Базовая работа с файлами  
-Посмотреть, где находишься  
-pwd  
-Посмотреть файлы  
-ls  
-ls -l  
-ls -la  
-ls -lh  
+### 45. Проверка сертификата HTTPS
 
-### Часто используемый вариант:
+```bash
+openssl s_client -connect example.com:443
+```
 
-ls -lah  
+**Можно проверить**
 
-Расшифровка:  
+- срок действия сертификата;
+- цепочку;
+- CN/SAN;
+- ошибки TLS.
 
--l  подробный вывод  
--a  показать скрытые файлы  
--h  человекочитаемые размеры: K, M, G  
-Создать файл  
-touch app.log  
-Создать директорию  
-mkdir logs  
-mkdir -p reports/allure-results  
+**Через curl**
 
--p создаёт всю цепочку директорий, если её ещё нет.  
+```bash
+curl -v https://example.com
+```
 
-Копировать файл  
-cp app.log app_copy.log  
-Копировать директорию  
-cp -r reports reports_backup  
-Переместить или переименовать  
-mv old.log new.log  
-mv app.log /tmp/  
-Удалить файл  
-rm app.log  
-Удалить директорию  
-rm -r reports  
-Удалить принудительно  
-rm -rf reports  
+Если нужно временно игнорировать сертификат:
 
-rm -rf — опасная команда. На стенде лучше сначала проверить путь через pwd и ls.  
+```bash
+curl -k https://example.com
+```
 
-2. Просмотр текстовых файлов  
-cat — вывести весь файл  
-cat app.log  
+-k использовать осторожно, только для диагностики.
 
-### Подходит для маленьких файлов.
+## Docker и CI/CD
 
-### Плохая идея для огромных логов:
+### 46. Docker и Linux
 
-cat huge.log  
+#### Акцент для собеседования
 
-Лучше использовать less, tail, grep.  
+**Основные команды Docker**
 
-less — удобный просмотр большого файла  
-less app.log  
+```bash
+docker ps
+docker ps -a
+docker images
+docker logs container_name
+docker logs -f container_name
+docker exec -it container_name bash
+docker exec -it container_name sh
+docker stop container_name
+docker start container_name
+docker restart container_name
+docker rm container_name
+docker rmi image_name
+```
 
-Внутри less:  
+**Запустить контейнер**
 
-/ERROR       поиск слова ERROR  
-n            следующее совпадение  
-N            предыдущее совпадение  
-G            в конец файла  
-g            в начало файла  
-q            выйти  
+```bash
+docker run nginx
+```
 
-Удобно смотреть большие логи:  
+**С портом**
 
-less /var/log/app/app.log  
-head — первые строки файла  
-head app.log  
+```bash
+docker run -p 8080:80 nginx
+```
 
-Первые 50 строк:  
+**С переменной окружения**
 
-head -n 50 app.log  
-tail — последние строки файла  
-tail app.log  
+```bash
+docker run -e ENV=dev image_name
+```
 
-Последние 100 строк:  
+**С volume**
 
-tail -n 100 app.log  
-tail -f — смотреть лог в реальном времени  
-tail -f app.log  
+```bash
+docker run -v /host/path:/container/path image_name
+```
 
-### Часто для QA:
+### 47. Docker logs
 
-tail -n 200 -f app.log  
+```bash
+docker logs container
+docker logs -f container
+docker logs --tail 100 container
+```
 
-Это значит:  
+**Если контейнер падает**
 
-Покажи последние 200 строк и продолжай показывать новые строки.  
+```bash
+docker ps -a
+docker logs container
+docker inspect container
+```
 
-Для нескольких файлов:  
+### 48. Зайти внутрь контейнера
 
-tail -f app.log error.log  
-3. grep — поиск текста в файлах  
+```bash
+docker exec -it container bash
+```
 
-grep — одна из самых важных команд для тестировщика.  
+**Если bash нет**
 
-Найти строку в файле  
-grep "ERROR" app.log  
-Поиск без учёта регистра  
-grep -i "error" app.log  
+```bash
+docker exec -it container sh
+```
 
-Найдёт:  
+### 49. CMD vs ENTRYPOINT
 
-error  
-ERROR  
-Error  
-eRrOr  
-Показать номера строк  
-grep -n "ERROR" app.log  
-Рекурсивный поиск по директории  
-grep -r "Exception" .  
+CMD — команда по умолчанию, которую можно легко переопределить.
 
-С номерами строк:  
+ENTRYPOINT — основная команда контейнера, обычно фиксирует исполняемый процесс.
 
-grep -rn "Exception" .  
+#### Пример:
 
-Очень полезно в проекте:  
+**ENTRYPOINT ["python"]**
+CMD ["app.py"]
 
-grep -rn "BASE_URL" .  
-Искать несколько вариантов  
-grep -E "ERROR|WARN|Exception" app.log  
+**Контейнер запустит**
 
--E включает расширенные регулярные выражения.  
+```bash
+python app.py
+```
 
-Исключить строки  
-grep -v "DEBUG" app.log  
+### 50. Почему контейнер сразу завершился
 
-Например, посмотреть лог без debug:  
+Контейнер живёт, пока жив основной процесс.
 
-grep -v "DEBUG" app.log | less  
-Посмотреть строки до и после совпадения  
+Если основной процесс завершился — контейнер остановился.
 
-3 строки после:  
+**Диагностика**
 
-grep -A 3 "ERROR" app.log  
+```bash
+docker ps -a
+docker logs container
+docker inspect container
+```
 
-3 строки до:  
+### 51. Docker Compose
 
-grep -B 3 "ERROR" app.log  
+**Запуск**
 
-3 строки до и после:  
+```bash
+docker compose up
+docker compose up -d
+```
 
-grep -C 3 "ERROR" app.log  
+**Остановка**
 
-Очень полезно при анализе stacktrace:  
+```bash
+docker compose down
+```
 
-grep -C 10 "Traceback" test.log  
-Найти только количество совпадений  
-grep -c "ERROR" app.log  
+**Пересобрать**
 
-Например:  
+```bash
+docker compose up --build
+```
 
-grep -c "500 Internal Server Error" access.log  
-Найти файлы, где есть совпадение  
-grep -rl "DB_HOST" .  
+**Логи**
 
-Только имена файлов.  
+```bash
+docker compose logs
+docker compose logs -f service_name
+```
 
-Найти файлы, где нет совпадения  
-grep -rL "pytest" .  
-4. Практические grep-сценарии для QA  
-Найти ошибки в логе  
-grep -i "error" app.log  
-Найти ошибки, warning и exception  
-grep -Ei "error|warn|exception|traceback|failed" app.log  
-Найти падения автотестов  
-grep -Ei "failed|error|assert|traceback" pytest.log  
-Найти HTTP 500 в access.log  
-grep " 500 " access.log  
-Найти запросы конкретного пользователя  
-grep "user_id=12345" app.log  
-Найти конкретный request_id  
-grep "request_id=abc-123" app.log  
-Смотреть лог в реальном времени и фильтровать ошибки  
-tail -f app.log | grep -i "error"  
+**Зайти в сервис**
 
-С несколькими словами:  
+```bash
+docker compose exec service_name bash
+```
 
-tail -f app.log | grep -Ei "error|exception|failed"  
-5. sed — поиск и замена текста  
+### 52. Linux в CI/CD
 
-sed — stream editor.  
-Он умеет читать текстовый поток, менять строки, удалять строки, печатать нужные участки.  
+В CI/CD часто нужно:
 
-Для QA sed полезен, когда нужно:  
+- запускать shell-команды;
+- ставить зависимости;
+- запускать тесты;
+- собирать Docker-образы;
+- копировать артефакты;
+- работать с переменными окружения;
+- анализировать exit code;
+- читать логи.
 
-быстро заменить URL в конфиге;  
-подменить параметр окружения;  
-удалить лишние строки;  
-вытащить часть лога;  
-подготовить тестовые данные;  
-заменить значения в .env, .yaml, .json-подобных файлах;  
-поправить временный конфиг в CI.  
-6. Базовый синтаксис sed  
+#### Пример шагов:
 
-Общий вид:  
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+pytest tests/ --alluredir=allure-results
+```
 
-sed 'команда' file.txt  
+### 53. Диагностика упавших автотестов на Linux-стенде
 
-Например:  
+**Порядок**
 
-sed 's/dev/stage/' config.env  
+**Проверить, что стенд доступен**
 
-s означает substitute, то есть заменить.  
+```bash
+ping host
+nc -vz host port
+curl -v http://host:port/health
+```
 
-7. Замена текста через sed  
-Заменить первое совпадение в каждой строке  
-sed 's/dev/stage/' config.env  
+**Проверить переменные окружения**
 
-Если строка такая:  
+```bash
+env
+echo $BASE_URL
+```
 
-ENV=dev dev dev  
+**Проверить зависимости**
 
-Результат будет:  
+```bash
+pip freeze
+python --version
+pytest --version
+```
 
-ENV=stage dev dev  
+**Проверить логи приложения**
 
-Поменяется только первое совпадение в строке.  
+```bash
+journalctl -u app -n 100
+tail -f /var/log/app/app.log
+```
 
-Заменить все совпадения в строке  
-sed 's/dev/stage/g' config.env  
+**Проверить Docker**
 
-g означает global.  
+```bash
+docker ps
+docker logs container
+```
 
-Теперь:  
+**Проверить место**
 
-ENV=dev dev dev  
+```bash
+df -h
+```
 
-станет:  
+**Проверить процессы и порты**
 
-ENV=stage stage stage  
-Заменить URL  
-sed 's|http://dev-api.local|http://stage-api.local|g' config.env  
+```bash
+ps aux | grep app
+ss -tulpn
+```
 
-Здесь вместо / используется |.  
+## Диагностика и полезные команды
 
-Почему?  
+### 54. Полезные команды для QA Automation
 
-Потому что URL содержит /, и так команда читается проще.  
+**Запуск тестов**
 
-### Плохо читается:
+```bash
+pytest
+pytest tests/
+pytest tests/test_users.py
+pytest -k "login"
+pytest -m smoke
+pytest -v
+pytest -s
+pytest --tb=short
+```
 
-sed 's/http:\/\/dev-api.local/http:\/\/stage-api.local/g' config.env  
+**Сохранить вывод**
 
-Лучше:  
+```bash
+pytest > test.log 2>&1
+```
 
-sed 's|http://dev-api.local|http://stage-api.local|g' config.env  
-8. sed -i — изменить файл на месте  
+Запустить и одновременно видеть вывод
 
-Обычный sed только выводит результат в терминал:  
+```bash
+pytest 2>&1 | tee test.log
+```
 
-sed 's/dev/stage/g' config.env  
+**Найти ошибку в логах**
 
-Файл не меняется.  
+```bash
+grep -i "error" test.log
+grep -i "failed" test.log
+grep -i "traceback" test.log
+```
 
-Чтобы изменить файл:  
+### 55. tee
 
-sed -i 's/dev/stage/g' config.env  
-Безопасный вариант с backup  
-sed -i.bak 's/dev/stage/g' config.env  
+**command | tee output.log**
 
-Появятся два файла:  
+**Позволяет одновременно**
 
-config.env  
-config.env.bak  
+видеть вывод в терминале;
+сохранять вывод в файл.
 
-Это полезно на стенде, чтобы можно было откатиться.  
+#### Пример:
 
-Важный нюанс macOS vs Linux  
+```bash
+pytest -v | tee pytest.log
+```
 
-На Linux:  
+### 56. Команды для диагностики “не работает база”
 
-sed -i 's/dev/stage/g' config.env  
+Допустим PostgreSQL.
 
-На macOS часто нужно так:  
+**Проверить порт**
 
-sed -i '' 's/dev/stage/g' config.env  
+```bash
+nc -vz db-host 5432
+```
 
-### На собеседовании по Linux обычно ожидают GNU/Linux-вариант:
+**Проверить DNS**
 
-sed -i 's/old/new/g' file  
-9. Заменить строку целиком через sed  
+```bash
+nslookup db-host
+```
 
-Допустим есть .env:  
+**Проверить переменные**
 
-BASE_URL=http://dev.local  
-DB_HOST=localhost  
-ENV=dev  
+```bash
+echo $DB_HOST
+echo $DB_PORT
+echo $DB_USER
+```
 
-Нужно заменить строку с BASE_URL.  
+**Проверить контейнер**
 
-sed -i 's|^BASE_URL=.*|BASE_URL=http://stage.local|' .env  
+```bash
+docker ps
+docker logs postgres
+```
 
-Разбор:  
+**Подключиться**
 
-^BASE_URL=  строка начинается с BASE_URL=  
-.*          любое значение после =  
+psql -h db-host -p 5432 -U user -d database
 
-Это очень полезная команда для CI/CD.  
+### 57. Разница между ps, top, htop
 
-Заменить DB_HOST  
-sed -i 's|^DB_HOST=.*|DB_HOST=postgres|' .env  
-Заменить ENV  
-sed -i 's|^ENV=.*|ENV=stage|' .env  
-10. Удаление строк через sed  
-Удалить строки, содержащие DEBUG  
-sed '/DEBUG/d' app.log  
+```bash
+ps
+```
 
-Файл не изменится, результат будет выведен в консоль.  
+Показывает snapshot процессов.
 
-Изменить файл:  
+```bash
+top
+```
 
-sed -i '/DEBUG/d' app.log  
-Удалить пустые строки  
-sed '/^$/d' file.txt  
+Интерактивно показывает процессы, CPU, память, load average.
 
-Разбор:  
+```bash
+htop
+```
 
-^  начало строки  
-$  конец строки  
-^$ пустая строка  
-d  delete  
-Удалить строки с комментариями  
-sed '/^#/d' config.env  
+Более удобный интерактивный вариант top.
 
-Удалит строки, которые начинаются с #.  
+### 58. Разница между curl, ping, nc
 
-Удалить комментарии и пустые строки:  
+```bash
+ping
+```
 
-sed '/^#/d; /^$/d' config.env  
-11. Печать нужных строк через sed  
-Напечатать конкретную строку  
-sed -n '10p' app.log  
+Проверяет сетевую доступность по ICMP. Не гарантирует, что порт приложения открыт.
 
--n отключает обычный вывод, p печатает нужное.  
+```bash
+nc
+```
 
-Напечатать диапазон строк  
-sed -n '10,20p' app.log  
+Проверяет доступность конкретного TCP/UDP-порта.
 
-Покажет строки с 10 по 20.  
+```bash
+curl
+```
 
-Напечатать от совпадения до совпадения  
-sed -n '/START/,/END/p' app.log  
+Проверяет HTTP/HTTPS-уровень: статус-код, заголовки, тело ответа.
 
-Покажет блок от строки с START до строки с END.  
+> **Короткий ответ для собеседования**
+>
+> Если ping проходит, это ещё не значит, что API работает. Нужно проверить порт через nc и сам HTTP через curl.
 
-### Практический пример:
+### 59. Как проверить, что процесс слушает порт
 
-sed -n '/Traceback/,/AssertionError/p' pytest.log  
-12. Добавление текста через sed  
-Добавить строку после совпадения  
-sed '/BASE_URL/a TIMEOUT=30' .env  
+```bash
+sudo ss -tulpn | grep 8080
+```
 
-a — append, добавить после строки.  
+#### Пример ответа:
 
-Добавить строку перед совпадением  
-sed '/BASE_URL/i ENV=stage' .env  
+```python
+LISTEN 0 128 0.0.0.0:8080 users:(("python",pid=1234))
+```
 
-i — insert, добавить перед строкой.  
+Значит Python-процесс слушает порт 8080.
 
-13. Замена только в строках с условием  
+### 60. Как найти процесс по порту
 
-Допустим нужно заменить false на true, но только в строке с FEATURE_LOGIN.  
+```bash
+sudo lsof -i :8080
+```
 
-sed '/FEATURE_LOGIN/s/false/true/' config.env  
+**Или**
 
-### Пример:
+```bash
+sudo ss -tulpn | grep 8080
+```
 
-FEATURE_LOGIN=false  
-FEATURE_PAYMENT=false  
+### 61. Как завершить процесс, который занял порт
 
-После команды:  
+**Найти PID**
 
-FEATURE_LOGIN=true  
-FEATURE_PAYMENT=false  
-14. Частые sed команды для QA  
-Быстро поменять стенд в конфиге  
-sed -i 's|dev-api.company.local|stage-api.company.local|g' config.yml  
-Поменять base_url в .env  
-sed -i 's|^BASE_URL=.*|BASE_URL=http://stage.local|' .env  
-Убрать DEBUG-строки из лога  
-sed '/DEBUG/d' app.log > app_without_debug.log  
-Достать кусок лога по строкам  
-sed -n '100,200p' app.log  
-Достать кусок лога между двумя событиями  
-sed -n '/test_login_start/,/test_login_end/p' pytest.log  
-Удалить пустые строки  
-sed '/^$/d' file.txt  
-Удалить комментарии и пустые строки  
-sed '/^#/d; /^$/d' config.env  
-15. awk — работа с колонками  
+```bash
+sudo lsof -i :8080
+```
 
-awk удобен, когда файл похож на таблицу или лог с колонками.  
+**Завершить**
 
-### Пример:
+```bash
+kill <pid>
+```
 
-2026-07-09 12:00:01 INFO user_id=123 status=200  
-2026-07-09 12:00:02 ERROR user_id=456 status=500  
-Напечатать первую колонку  
-awk '{print $1}' app.log  
-Напечатать первую и третью колонку  
-awk '{print $1, $3}' app.log  
-Фильтр по значению  
-awk '$3 == "ERROR" {print $0}' app.log  
+**Если не завершился**
 
-$0 — вся строка.  
+```bash
+kill -9 <pid>
+```
 
-16. awk с разделителем  
+### 62. Что такое file descriptor
 
-Допустим CSV:  
+File descriptor — числовой идентификатор открытого ресурса в процессе.
 
-id,name,status  
-1,Alex,active  
-2,John,blocked  
+**Стандартные**
 
-### Команда:
+- 0 — stdin
+- 1 — stdout
+- 2 — stderr
 
-awk -F',' '{print $1, $3}' users.csv  
+#### Пример:
 
--F',' задаёт разделитель.  
+```bash
+command > out.log 2> err.log
+```
 
-Найти строки с HTTP 500 в access.log  
+### 63. Что такое /dev/null
 
-Если статус — 9-я колонка:  
+```text
+/dev/null
+```
 
-awk '$9 == 500 {print $0}' access.log  
-Посчитать количество 500  
-awk '$9 == 500 {count++} END {print count}' access.log  
-Посчитать количество ответов по статусам  
-awk '{print $9}' access.log | sort | uniq -c | sort -nr  
-17. cut — вытащить колонку  
+Специальное устройство, которое “выбрасывает” всё, что в него записали.
 
-cut проще, чем awk, если нужно просто разрезать строки по разделителю.  
+#### Пример:
 
-Взять первую колонку по :  
-cut -d':' -f1 /etc/passwd  
-Взять второй столбец CSV  
-cut -d',' -f2 users.csv  
-Взять первый и третий столбец  
-cut -d',' -f1,3 users.csv  
-18. sort — сортировка  
-Отсортировать строки  
-sort file.txt  
-Числовая сортировка  
-sort -n numbers.txt  
-Обратная сортировка  
-sort -r file.txt  
-Числовая обратная  
-sort -nr numbers.txt  
-19. uniq — уникальные строки  
+```bash
+command > /dev/null 2>&1
+```
 
-### Важно: uniq работает нормально только с соседними дублями, поэтому обычно используют вместе с sort.
+Это значит: не показывать ни stdout, ни stderr.
 
-sort file.txt | uniq  
-Посчитать количество повторов  
-sort file.txt | uniq -c  
-Отсортировать по количеству повторов  
-sort file.txt | uniq -c | sort -nr  
+### 64. Что такое /proc
 
-### Практический пример — самые частые ошибки:
+/proc — виртуальная файловая система с информацией о процессах и системе.
 
-grep -i "error" app.log | sort | uniq -c | sort -nr  
-20. wc — подсчёт строк, слов, байт  
-Количество строк  
-wc -l app.log  
-Количество слов  
-wc -w file.txt  
-Размер в байтах  
-wc -c file.txt  
-Посчитать количество ошибок  
-grep -i "error" app.log | wc -l  
-21. find — поиск файлов  
-Найти файл по имени  
-find . -name "config.yml"  
-Найти все .log  
-find . -name "*.log"  
-Найти только файлы  
-find . -type f -name "*.log"  
-Найти только директории  
-find . -type d -name "reports"  
-Найти файлы больше 100 MB  
-find . -type f -size +100M  
-Найти файлы, изменённые за последние сутки  
-find . -type f -mtime -1  
-Найти файлы старше 7 дней  
-find . -type f -mtime +7  
-Найти пустые файлы  
-find . -type f -empty  
-22. find + действия  
-Удалить старые логи  
-find ./logs -type f -name "*.log" -mtime +7 -delete  
+#### Примеры:
 
-Осторожно. Лучше сначала проверить:  
+```bash
+cat /proc/cpuinfo
+cat /proc/meminfo
+ls /proc/<pid>
+```
 
-find ./logs -type f -name "*.log" -mtime +7  
+**Можно посмотреть окружение процесса**
 
-И только потом:  
+```bash
+cat /proc/<pid>/environ
+```
 
-find ./logs -type f -name "*.log" -mtime +7 -delete  
-Найти и выполнить команду  
-find . -type f -name "*.log" -exec grep -H "ERROR" {} \;  
+**Открытые файлы процесса**
 
-Но часто удобнее через xargs.  
+```bash
+ls -la /proc/<pid>/fd
+```
 
-23. xargs — передать список файлов в команду  
-Найти ошибки во всех логах  
-find . -type f -name "*.log" | xargs grep -i "error"  
-Безопаснее для файлов с пробелами  
-find . -type f -name "*.log" -print0 | xargs -0 grep -i "error"  
-Удалить найденные файлы  
-find . -type f -name "*.tmp" | xargs rm  
+### 65. Что такое umask
 
-Безопаснее:  
+umask задаёт, какие права будут убраны у новых файлов и директорий.
 
-find . -type f -name "*.tmp" -print0 | xargs -0 rm  
-24. jq — работа с JSON  
+**Посмотреть**
 
-Для тестировщика jq очень полезен: API часто возвращает JSON.  
+**umask**
 
-Красиво вывести JSON  
-cat response.json | jq  
+#### Часто:
 
-Или:  
+022
 
-jq . response.json  
-Вытащить поле  
-jq '.id' response.json  
-jq '.user.name' response.json  
-Вытащить массив  
-jq '.items' response.json  
-Вытащить первый элемент массива  
-jq '.items[0]' response.json  
-Вытащить поле у каждого элемента  
-jq '.items[].id' response.json  
-Фильтр по значению  
-jq '.items[] | select(.status == "active")' response.json  
-Вывести только id активных пользователей  
-jq '.items[] | select(.status == "active") | .id' response.json  
-25. curl + jq  
+Это значит, что новые файлы обычно будут 644, директории 755.
 
-Очень частый QA-сценарий.  
+### 66. Перемещение между серверами и копирование логов
 
-GET и красиво вывести JSON  
-curl -s http://localhost:8080/users | jq  
-Вытащить статус пользователя  
-curl -s http://localhost:8080/users/123 | jq '.status'  
-Проверить количество элементов  
-curl -s http://localhost:8080/users | jq '.items | length'  
-Получить токен из ответа  
-TOKEN=$(curl -s -X POST http://localhost:8080/login \  
-  -H "Content-Type: application/json" \  
-  -d '{"username":"test","password":"Password123"}' \  
-  | jq -r '.token')  
+**Скопировать лог с сервера**
 
--r убирает кавычки из строки.  
+```bash
+scp user@host:/var/log/app/app.log .
+```
 
-26. diff — сравнение файлов  
-Сравнить два файла  
-diff old.txt new.txt  
-Удобный формат  
-diff -u old.txt new.txt  
+Скопировать свой файл на сервер:
 
--u — unified diff, часто используется в Git.  
+```bash
+scp ./config.yml user@host:/tmp/
+```
 
-Сравнить директории  
-diff -r dir1 dir2  
-Только отличающиеся файлы  
-diff -qr dir1 dir2  
+**Подключиться и посмотреть лог**
 
-Полезно для сравнения артефактов, конфигов, отчётов.  
+```bash
+ssh user@host
+tail -f /var/log/app/app.log
+```
 
-27. comm — сравнение отсортированных списков  
+**Одной командой**
 
-Допустим есть два файла:  
+```bash
+ssh user@host "tail -n 100 /var/log/app/app.log"
+```
 
-expected.txt  
-actual.txt  
+### 67. Выполнить команду на удалённой машине
 
-Сначала сортируем:  
+```bash
+ssh user@host "hostname && uptime"
+```
 
-sort expected.txt > expected_sorted.txt  
-sort actual.txt > actual_sorted.txt  
+**Запустить тесты**
 
-Потом:  
+```bash
+ssh user@host "cd /opt/project && pytest tests/"
+```
 
-comm expected_sorted.txt actual_sorted.txt  
+**С переменной**
 
-Колонки:  
+```bash
+ssh user@host "cd /opt/project && BASE_URL=http://test pytest"
+```
 
-1-я колонка — только в первом файле  
-2-я колонка — только во втором файле  
-3-я колонка — есть в обоих  
+### 68. &&, ||, ;
 
-Только строки, которых нет во втором файле:  
+command1 && command2
 
-comm -23 expected_sorted.txt actual_sorted.txt  
+Выполнить command2, только если command1 успешна.
 
-Только лишние строки во втором:  
+command1 || command2
 
-comm -13 expected_sorted.txt actual_sorted.txt  
-28. tee — вывести и сохранить одновременно  
-pytest -v | tee pytest.log  
+Выполнить command2, только если command1 упала.
 
-Ты одновременно видишь вывод и сохраняешь его в файл.  
+command1 ; command2
 
-С ошибками тоже:  
+Выполнить обе команды независимо от результата первой.
 
-pytest -v 2>&1 | tee pytest.log  
-29. Перенаправления вывода  
-Перезаписать файл  
-command > output.log  
-Дозаписать в файл  
-command >> output.log  
-Ошибки в отдельный файл  
-command 2> error.log  
-stdout и stderr в один файл  
-command > output.log 2>&1  
+#### Пример:
 
-Или:  
+```bash
+cd project && pytest
+```
 
-command &> output.log  
-Ничего не выводить  
-command > /dev/null 2>&1  
-30. watch — периодически выполнять команду  
-Обновлять команду каждые 2 секунды  
-watch "docker ps"  
-Смотреть свободное место  
-watch "df -h"  
-Смотреть количество строк в логе  
-watch "wc -l app.log"  
-Смотреть, поднялся ли сервис  
-watch "curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/health"  
-31. file, stat, du  
-Определить тип файла  
-file app.log  
-file archive.tar.gz  
-file script.sh  
-Метаданные файла  
-stat app.log  
+Если cd project не сработает, pytest не запустится.
 
-Покажет:  
+### 69. Архитектура диагностики проблемы
 
-размер;  
-права;  
-владельца;  
-дату изменения;  
-inode.  
-Размер файла или директории  
-du -sh app.log  
-du -sh reports/  
-32. tar, gzip, zip  
-Распаковать .tar.gz  
-tar -xzf archive.tar.gz  
-Создать .tar.gz  
-tar -czf reports.tar.gz reports/  
-Посмотреть содержимое архива  
-tar -tzf archive.tar.gz  
-Распаковать zip  
-unzip archive.zip  
-Создать zip  
-zip -r reports.zip reports/  
-33. Работа с кодировками и переносами строк  
+#### Когда говорят:
 
-Иногда тесты падают из-за Windows-переносов строк.  
+На стенде не работает сервис. Что будешь делать?
 
-Посмотреть скрытые символы  
-cat -A file.txt  
+**Можно отвечать так**
 
-Если видишь ^M, значит могут быть Windows-переносы строк.  
+Я бы шёл по слоям. Сначала проверил, доступен ли хост и порт: ping, nc, curl. Потом проверил бы, запущен ли сервис: systemctl status или docker ps. Потом посмотрел бы логи: journalctl или docker logs. Дальше проверил бы конфиг, переменные окружения, доступность БД/брокера, занятые порты, права на файлы и место на диске.
 
-Конвертировать Windows → Linux  
-dos2unix file.txt  
+## Собеседование и повторение
 
-Если dos2unix нет:  
+### 70. Типовые вопросы и короткие ответы
 
-sed -i 's/\r$//' file.txt  
-Конвертация кодировки  
-iconv -f WINDOWS-1251 -t UTF-8 input.txt > output.txt  
+Как посмотреть логи сервиса?
 
-Полезно, если логи или выгрузки в странной кодировке.  
+```bash
+journalctl -u service_name -f
+```
 
-34. Практика: анализ логов  
+**Или файл**
 
-Допустим есть app.log.  
+```bash
+tail -f /var/log/app/app.log
+```
 
-Найти все ошибки  
-grep -i "error" app.log  
-Найти ошибки и сохранить  
-grep -i "error" app.log > errors.log  
-Посчитать ошибки  
-grep -i "error" app.log | wc -l  
-Найти уникальные ошибки  
-grep -i "error" app.log | sort | uniq -c | sort -nr  
-Смотреть ошибки в реальном времени  
-tail -f app.log | grep -i "error"  
-Найти ошибку с контекстом  
-grep -C 5 "NullPointerException" app.log  
-Достать лог за конкретный тест  
-sed -n '/test_create_user/,/test_create_user finished/p' app.log  
-35. Практика: работа с .env  
+Как посмотреть процессы?
 
-Файл:  
+```bash
+ps aux
+top
+htop
+```
 
-BASE_URL=http://dev.local  
-DB_HOST=localhost  
-DB_PORT=5432  
-ENV=dev  
-DEBUG=true  
-Посмотреть без комментариев и пустых строк  
-sed '/^#/d; /^$/d' .env  
-Поменять BASE_URL  
-sed -i 's|^BASE_URL=.*|BASE_URL=http://stage.local|' .env  
-Поменять DB_HOST  
-sed -i 's|^DB_HOST=.*|DB_HOST=postgres|' .env  
-Вытащить значение BASE_URL  
-grep "^BASE_URL=" .env | cut -d'=' -f2  
+Как найти процесс по имени?
 
-Или через awk:  
+```bash
+ps aux | grep nginx
+pgrep nginx
+```
 
-awk -F'=' '/^BASE_URL=/ {print $2}' .env  
-36. Практика: найти нужный конфиг в проекте  
-Найти все env-файлы  
-find . -type f -name "*.env"  
-Найти все yaml/yml  
-find . -type f \( -name "*.yml" -o -name "*.yaml" \)  
-Найти, где используется BASE_URL  
-grep -rn "BASE_URL" .  
-Найти, где прописан dev-стенд  
-grep -rn "dev-api" .  
-Массово заменить dev на stage в yaml-файлах  
+Как найти процесс по порту?
 
-Сначала проверить:  
+```bash
+sudo lsof -i :8080
+sudo ss -tulpn | grep 8080
+```
 
-grep -rn "dev-api.company.local" .  
+Как проверить, открыт ли порт?
 
-Потом заменить:  
+```bash
+nc -vz host port
+```
 
-find . -type f \( -name "*.yml" -o -name "*.yaml" \) \  
-  -print0 | xargs -0 sed -i 's|dev-api.company.local|stage-api.company.local|g'  
-37. Практика: работа с результатами pytest  
-Запустить тесты и сохранить лог  
-pytest -v 2>&1 | tee pytest.log  
-Найти failed  
-grep -i "failed" pytest.log  
-Найти traceback  
-grep -n "Traceback" pytest.log  
-Найти assertion  
-grep -i "assert" pytest.log  
-Найти блок ошибки  
-grep -C 20 "AssertionError" pytest.log  
-Посчитать количество failed  
-grep -c "FAILED" pytest.log  
-38. Практика: HTTP access.log  
+Как проверить HTTP API?
 
-### Пример access.log условно:
+```bash
+curl -v http://host:port/health
+```
 
-10.0.0.1 - - [09/Jul/2026:12:00:01] "GET /users HTTP/1.1" 200  
-10.0.0.2 - - [09/Jul/2026:12:00:02] "POST /login HTTP/1.1" 500  
-Найти все 500  
-grep " 500" access.log  
-Посчитать 500  
-grep " 500" access.log | wc -l  
-Посчитать статусы  
-awk '{print $9}' access.log | sort | uniq -c | sort -nr  
-Топ IP-адресов  
-awk '{print $1}' access.log | sort | uniq -c | sort -nr | head  
-Топ URL  
-awk '{print $7}' access.log | sort | uniq -c | sort -nr | head  
-39. Полезные пайплайны команд  
-Найти топ ошибок  
-grep -i "error" app.log | sort | uniq -c | sort -nr | head  
-Найти все большие логи  
-find /var/log -type f -name "*.log" -size +100M  
-Посмотреть последние ошибки  
-grep -i "error" app.log | tail -n 20  
-Посмотреть ошибки в большом файле через less  
-grep -i "error" app.log | less  
-Найти файлы, где есть password  
-grep -rn "password" .  
-Найти файлы, изменённые сегодня  
-find . -type f -mtime -1  
-Найти и удалить старые allure-results  
-find . -type d -name "allure-results"  
+Как проверить свободное место?
 
-Удалить осторожно:  
+```bash
+df -h
+```
 
-find . -type d -name "allure-results" -prune -exec rm -rf {} \;  
-40. Что обычно нужно тестировщику в Linux  
-1. Смотреть логи  
-tail -f app.log  
-less app.log  
-grep -i "error" app.log  
-journalctl -u service -f  
-docker logs -f container  
-2. Искать конфиги  
-find . -name "*.yml"  
-find . -name ".env"  
-grep -rn "BASE_URL" .  
-3. Менять конфиги  
-sed -i 's|^BASE_URL=.*|BASE_URL=http://stage.local|' .env  
-4. Проверять результаты тестов  
-pytest -v 2>&1 | tee pytest.log  
-grep -i "failed" pytest.log  
-5. Сравнивать файлы  
-diff -u expected.json actual.json  
-6. Работать с JSON  
-curl -s http://host/api/users | jq  
-jq '.items[].id' response.json  
-7. Искать большие файлы  
-du -sh *  
-find . -type f -size +100M  
-8. Чистить старые артефакты  
-find ./reports -type f -mtime +7 -delete  
-9. Копировать файлы со стенда  
-scp user@host:/var/log/app/app.log .  
-10. Смотреть права и владельца  
-ls -la  
-chmod +x script.sh  
-chown user:group file  
-41. Как красиво объяснить на собеседовании  
+Как найти, что занимает место?
 
-Можно сказать так:  
+```bash
+du -sh *
+du -h /var | sort -h | tail
+```
 
-В Linux я часто работаю с текстовыми файлами, логами и конфигами. Для просмотра использую less, tail, head, для поиска — grep, для замены и правки конфигов — sed, для работы с колонками — awk и cut, для сортировки и агрегации — sort, uniq, wc. Для поиска файлов использую find, для массовой обработки — xargs. JSON-ответы API удобно проверяю через jq. При анализе проблем обычно смотрю логи, фильтрую ошибки, считаю частотность, сравниваю expected/actual через diff, а при необходимости быстро меняю параметры окружения в .env или yaml через sed.  
+Как посмотреть память?
 
-42. Самый важный минимум команд  
+```bash
+free -h
+```
 
-Вот это прям стоит знать уверенно:  
+Как посмотреть нагрузку?
 
-cat file  
-less file  
-head -n 50 file  
-tail -n 100 file  
-tail -f file  
+```bash
+top
+uptime
+```
 
-grep "ERROR" file  
-grep -i "error" file  
-grep -rn "text" .  
-grep -C 5 "Exception" app.log  
+Как убить процесс?
 
-sed 's/old/new/g' file  
-sed -i 's/old/new/g' file  
-sed -n '10,20p' file  
-sed '/DEBUG/d' file  
+```bash
+kill pid
+kill -9 pid
+```
 
-awk '{print $1}' file  
-awk -F',' '{print $2}' file  
+Как сделать файл исполняемым?
 
-cut -d',' -f1 file  
-sort file  
-uniq -c  
-wc -l file  
+```bash
+chmod +x file.sh
+```
 
-find . -name "*.log"  
-find . -type f -size +100M  
-find . -type f -mtime +7  
+Как поменять владельца?
 
-xargs  
-jq .  
-diff -u old new  
-tee  
-43. Мини-блок именно по sed, который стоит выучить  
-# заменить первое совпадение в строке  
-sed 's/old/new/' file  
+```bash
+chown user:group file
+```
 
-# заменить все совпадения  
-sed 's/old/new/g' file  
+Как подключиться по SSH?
 
-# изменить файл на месте  
-sed -i 's/old/new/g' file  
+```bash
+ssh user@host
+```
 
-# изменить файл и создать backup  
-sed -i.bak 's/old/new/g' file  
+Как скопировать файл?
 
-# заменить строку с BASE_URL  
-sed -i 's|^BASE_URL=.*|BASE_URL=http://stage.local|' .env  
+```bash
+scp file user@host:/tmp/
+```
 
-# удалить строки с DEBUG  
-sed '/DEBUG/d' app.log  
+Как посмотреть IP?
 
-# удалить пустые строки  
-sed '/^$/d' file  
+```bash
+ip a
+```
 
-# вывести строки 10-20  
-sed -n '10,20p' file  
+Как посмотреть маршруты?
 
-# вывести блок между START и END  
-sed -n '/START/,/END/p' file  
+```bash
+ip route
+```
 
-# заменить только в строках с FEATURE_LOGIN  
-sed '/FEATURE_LOGIN/s/false/true/' config.env  
-44. Мини-блок “что я делаю, если надо быстро проанализировать лог”  
-# последние строки  
-tail -n 200 app.log  
+Как проверить DNS?
 
-# смотреть в реальном времени  
-tail -f app.log  
+```bash
+nslookup host
+dig host
+```
 
-# ошибки  
-grep -Ei "error|exception|failed|traceback" app.log  
+### 71. Что нужно уметь уверенно сказать на Senior QA/SDET
 
-# ошибки с контекстом  
-grep -C 10 "Exception" app.log  
+**Про Linux в целом**
 
-# количество ошибок  
-grep -Ei "error|exception" app.log | wc -l  
+Я использую Linux для работы со стендами, CI/CD и контейнерами. Умею подключаться по SSH, смотреть процессы, логи, сервисы, порты, проверять доступность API и баз, работать с правами, файлами и переменными окружения.
 
-# уникальные ошибки  
-grep -Ei "error|exception" app.log | sort | uniq -c | sort -nr  
+**Про диагностику**
 
-# сохранить ошибки отдельно  
-grep -Ei "error|exception" app.log > errors.log  
-45. Что могут спросить на собеседовании  
-Чем cat отличается от less?  
+Обычно иду сверху вниз: доступность хоста, порт, HTTP-ответ, статус сервиса, логи, конфиг, зависимости, ресурсы системы.
 
-cat выводит весь файл сразу.  
-less позволяет удобно смотреть большой файл постранично, искать внутри и не грузить весь вывод в терминал.  
+**Про логи**
 
-Как посмотреть лог в реальном времени?  
-tail -f app.log  
+Для systemd-сервисов смотрю journalctl -u service, для файловых логов — tail -f, grep, less. В Docker — docker logs.
 
-Или для systemd-сервиса:  
+**Про сеть**
 
-journalctl -u service -f  
-Как найти ошибку в большом логе?  
-grep -i "error" app.log  
+Проверяю IP и маршруты через ip a, ip route, DNS через dig/nslookup, порт через nc или ss, HTTP через curl.
 
-С контекстом:  
+**Про процессы**
 
-grep -C 5 "error" app.log  
-Как заменить значение в конфиге?  
-sed -i 's|^BASE_URL=.*|BASE_URL=http://stage.local|' .env  
-Как удалить пустые строки?  
-sed '/^$/d' file.txt  
-Как посчитать количество строк в файле?  
-wc -l file.txt  
-Как найти все .log файлы?  
-find . -type f -name "*.log"  
-Как найти все большие файлы?  
-find . -type f -size +100M  
-Как найти уникальные ошибки?  
-grep -i "error" app.log | sort | uniq -c | sort -nr  
-Как красиво посмотреть JSON?  
-cat response.json | jq  
+Смотрю процессы через ps aux, top, htop; завершаю через kill, стараюсь сначала использовать SIGTERM, а SIGKILL только если процесс не завершается.
 
-Или:  
+**Про права**
 
-jq . response.json  
-46. Самый собеседовательный ответ  
+Понимаю rwx, chmod, chown, права владельца/группы/остальных, отличие прав на файл и директорию.
 
-Если тебя спросят:  
+### 72. Мини-сценарии для собеседования
 
-Какими Linux-командами для работы с файлами и текстом вы пользуетесь?  
+Сценарий 1: API недоступен
 
-Можно ответить так:  
+**Вопрос**
 
-Чаще всего использую less, tail, grep, sed, awk, find, xargs, sort, uniq, wc, jq, diff. Например, логи смотрю через tail -f и less, ошибки фильтрую через grep -i или grep -E, конфиги могу быстро поправить через sed -i, JSON-ответы API смотрю через jq, файлы ищу через find, а для массовой обработки использую find вместе с xargs. Для анализа логов часто комбинирую команды через pipe: grep | sort | uniq -c | sort -nr.  
+Автотесты падают, API не отвечает. Что делаешь?
 
-Главное для собеса — показать, что ты не просто знаешь команды, а умеешь собрать из них цепочку для реальной задачи: найти лог, отфильтровать ошибку, посчитать количество, достать контекст, сравнить результат и при необходимости быстро поправить конфиг.  
+**Ответ**
 
+Сначала проверю, корректный ли BASE_URL. Потом curl -v /health. Если нет ответа — проверю DNS через nslookup, доступность порта через nc -vz host port. На сервере посмотрю, запущен ли сервис: systemctl status или docker ps. Потом логи: journalctl -u service -n 100 или docker logs. Также проверю, слушает ли процесс порт через ss -tulpn.
 
-## Дополнение. Диагностика проблем на сервере
+#### Сценарий 2: сервис не стартует
 
-Да. Если ты уже выучил работу с файлами, grep, sed, awk, find, jq, tail, less, то для собеседования по Linux тебе ещё обязательно нужны процессы, сервисы, сеть, права, ресурсы системы, Docker и диагностика.  
+**Ответ**
 
-Что ещё нужно знать по Linux  
-1. Процессы  
+Проверю systemctl status service, потом journalctl -u service -n 100. Дальше смотрю ошибку: может быть неправильный конфиг, занятый порт, нет прав на файл, не хватает переменных окружения, недоступна БД или закончилось место на диске.
 
-### Основные команды:
+#### Сценарий 3: тесты в CI падают, локально проходят
 
-ps aux  
-top  
-htop  
-pgrep service_name  
-kill PID  
-kill -9 PID  
+**Ответ**
 
-Нужно понимать:  
+Сравню окружения: версии Python, зависимости, переменные окружения, доступность сервисов, права, рабочую директорию, наличие файлов, сетевой доступ из CI-агента. Посмотрю логи job, exit code, артефакты, pytest output. Частая причина — разные env-переменные, разные версии пакетов или недоступные внешние зависимости.
 
-что такое PID;  
-чем процесс отличается от сервиса;  
-SIGTERM и SIGKILL;  
-как найти процесс по имени;  
-как найти процесс, который занял порт.  
-ps aux | grep python  
-pgrep -af python  
-lsof -i :8080  
-ss -ltnp | grep 8080  
+#### Сценарий 4: порт занят
 
-### На собеседовании:
+**Ответ**
 
-Сначала процесс стоит завершать через обычный kill, то есть SIGTERM, чтобы он корректно освободил ресурсы. kill -9 использую только если процесс завис и не реагирует.  
+Найду процесс через lsof -i :port или ss -tulpn | grep port. Потом решу: либо остановить старый процесс, либо поменять порт в конфиге. Завершать лучше сначала обычным kill, а kill -9 использовать только если процесс завис.
 
-2. Управление сервисами  
-systemctl status nginx  
-systemctl start nginx  
-systemctl stop nginx  
-systemctl restart nginx  
-systemctl reload nginx  
+#### Сценарий 5: нет места на диске
 
-Логи сервиса:  
+**Ответ**
 
-journalctl -u nginx  
-journalctl -u nginx -n 100  
-journalctl -u nginx -f  
+Проверю df -h, потом найду крупные директории через du -sh /* и глубже через du -h | sort -h | tail. Часто место занимают логи, Docker images/volumes, дампы, артефакты CI. Удалять буду аккуратно, сначала поняв, что это за файлы.
 
-### Важно понимать разницу:
+### 73. Команды, которые стоит выучить прямо обязательно
 
-restart — полностью перезапустить;  
-reload — перечитать конфигурацию без полного перезапуска;  
-status — посмотреть состояние и последние ошибки.  
-3. Сеть  
+```bash
+pwd
+ls -la
+cd
+cat
+less
+head
+tail -f
+grep -rn
+find
+cp
+mv
+rm
+chmod
+chown
+ps aux
+top
+kill
+systemctl status
+journalctl -u
+df -h
+du -sh
+free -h
+ip a
+ip route
+ping
+curl -v
+nc -vz
+ss -tulpn
+ssh
+scp
+env
+echo $?
+docker ps
+docker logs
+docker exec -it
+```
 
-### Основные команды:
+### 74. Самая короткая версия для ответа на собесе
 
-ip a  
-ip route  
-ping host  
-nslookup host  
-dig host  
-nc -vz host 8080  
-curl -v http://host:8080/health  
-ss -ltnp  
+Если нужно красиво и уверенно:
 
-Нужно понимать, что проверяет каждая команда:  
+В Linux я уверенно работаю на уровне, который нужен QA Automation: подключаюсь к стендам по SSH, запускаю тесты и сервисы, смотрю логи через tail, grep, journalctl, проверяю процессы через ps, top, systemctl, диагностирую сеть через curl, ping, nc, ss, проверяю порты, права, переменные окружения, место на диске. Также работаю с Docker-контейнерами: docker ps, logs, exec, compose. Обычно при проблемах иду по слоям: хост, порт, HTTP, сервис, логи, конфиг, зависимости, ресурсы.
 
-ping — доступность хоста по ICMP;  
-nc — доступность конкретного порта;  
-curl — работа приложения на уровне HTTP;  
-ss — какие порты слушает сервер;  
-dig / nslookup — DNS;  
-ip route — маршрутизация.  
+### 75. Что тебе стоит повторить в первую очередь
 
-### Хорошая фраза:
+Для собеседования я бы расставил приоритет так:
 
-Прохождение ping ещё не означает, что сервис работает. Нужно отдельно проверить порт через nc и HTTP-ответ через curl.  
+Процессы: ps, top, kill, сигналы, zombie.
+Логи: tail, grep, journalctl.
+Сеть: curl, nc, ss, ping, dig/nslookup.
+Права: chmod, chown, rwx, права на директории.
+systemd: systemctl status/start/restart, journalctl -u.
+Диски: df, du, поиск больших файлов.
+SSH/SCP: подключение, копирование, ключи.
+Docker на Linux: ps, logs, exec, compose.
+CI/CD окружение: env, exit code, запуск pytest.
+Диагностические сценарии: API не отвечает, сервис не стартует, порт занят, нет места.
 
-4. Права доступа  
-ls -la  
-chmod 755 script.sh  
-chmod +x script.sh  
-chown user:group file  
+Главное — не просто помнить команды, а уметь объяснить как ты будешь диагностировать проблему по шагам. Это на собесе ценится сильнее, чем знание редких флагов.
 
-Нужно знать:  
+## Дополнительная практика
 
-r — чтение  
-w — запись  
-x — выполнение  
+### Дополнение. Работа с файлами и текстом
 
-И числовые права:  
+Разверну именно практическую часть: как смотреть, фильтровать, менять файлы и логи на стенде. Упор сделаю на команды, которые реально пригодятся QA: grep, sed, awk, find, xargs, jq, diff, tail, less.
 
-644 — владелец читает и пишет, остальные только читают  
-755 — владелец всё, остальные читают и выполняют  
-600 — доступ только владельцу  
-5. Ресурсы сервера  
-df -h  
-du -sh *  
-free -h  
-top  
-uptime  
+Ниже — практическая шпаргалка по работе с файлами и текстом в Linux для QA/SDET. Это как раз то, что чаще всего нужно на стендах, в CI/CD, при анализе логов, конфигов, результатов тестов и артефактов.
 
-Нужно уметь проверить:  
+#### 1. Базовая работа с файлами
 
-закончилось ли место на диске;  
-закончилась ли память;  
-перегружен ли CPU;  
-есть ли высокий load average;  
-какие процессы потребляют ресурсы.  
+Посмотреть, где находишься
 
-Полезно:  
+```bash
+pwd
+```
 
-ps aux --sort=-%cpu | head  
-ps aux --sort=-%mem | head  
-6. Переменные окружения  
-env  
-printenv  
-echo $BASE_URL  
-echo $PATH  
+**Посмотреть файлы**
 
-Очень часто проблема на стенде связана с неправильным окружением:  
+```bash
+ls
+ls -l
+ls -la
+ls -lh
+```
 
-echo $DB_HOST  
-echo $DB_PORT  
-echo $ENV  
-7. Exit code  
-echo $?  
+#### Часто используемый вариант:
 
-Нужно знать:  
+```bash
+ls -lah
+```
 
-0 — успешное выполнение  
-не 0 — ошибка  
+**Расшифровка**
 
-Особенно важно для CI/CD.  
+-l  подробный вывод
+-a  показать скрытые файлы
+-h  человекочитаемые размеры: K, M, G
+Создать файл
 
-8. Docker  
+```bash
+touch app.log
+```
 
-Минимум:  
+Создать директорию
 
-docker ps  
-docker ps -a  
-docker logs container  
-docker logs -f container  
-docker inspect container  
-docker exec -it container sh  
-docker restart container  
+```bash
+mkdir logs
+mkdir -p reports/allure-results
+```
 
-Для диагностики:  
+-p создаёт всю цепочку директорий, если её ещё нет.
 
-docker ps -a  
-docker logs --tail 200 container  
-docker inspect container  
-Главная логика диагностики  
+**Копировать файл**
 
-### На собеседовании важно показать не набор случайных команд, а последовательность.
+```bash
+cp app.log app_copy.log
+```
 
-Удобная схема:  
+**Копировать директорию**
 
-Клиент  
-↓  
-DNS  
-↓  
-Сеть  
-↓  
-Порт  
-↓  
-Reverse proxy / API Gateway  
-↓  
-Приложение  
-↓  
-Зависимости: БД, брокер, внешние API  
-↓  
-Ресурсы и конфигурация  
+```bash
+cp -r reports reports_backup
+```
 
-То есть идём от внешнего слоя к внутреннему.  
+**Переместить или переименовать**
 
-Сценарий 1. Сервер, много сервисов, запрос возвращает 500  
-Что означает 500  
+```bash
+mv old.log new.log
+mv app.log /tmp/
+```
 
-HTTP 500 — сервер получил запрос, но во время обработки произошла внутренняя ошибка.  
+**Удалить файл**
 
-Это обычно значит:  
+```bash
+rm app.log
+```
 
-приложение упало на исключении;  
-недоступна БД;  
-недоступен другой сервис;  
-неправильные данные или конфигурация;  
-отсутствует переменная окружения;  
-закончилась память или место;  
-проблема с правами;  
-ошибка после деплоя;  
-таймаут зависимости.  
-Как диагностировать по шагам  
-Шаг 1. Повторить запрос вручную  
-curl -v http://host/api/users  
+**Удалить директорию**
 
-Для POST:  
+```bash
+rm -r reports
+```
 
-curl -v -X POST http://host/api/users \  
-  -H "Content-Type: application/json" \  
-  -d '{"name":"Alex"}'  
+**Удалить принудительно**
 
-Проверяем:  
+```bash
+rm -rf reports
+```
 
-действительно ли статус 500;  
-тело ответа;  
-заголовки;  
-request ID / trace ID;  
-точно ли запрос отправлен на нужный стенд;  
-правильные ли данные и заголовки.  
+rm -rf — опасная команда. На стенде лучше сначала проверить путь через pwd и ls.
 
-Если есть request ID:  
+#### 2. Просмотр текстовых файлов
 
-X-Request-ID: abc-123  
+cat — вывести весь файл
 
-Его нужно использовать для поиска по логам.  
+```bash
+cat app.log
+```
 
-Шаг 2. Понять, какой сервис обрабатывает запрос  
+#### Подходит для маленьких файлов.
 
-Если сервисов много, нужно определить маршрут:  
+#### Плохая идея для огромных логов:
 
-nginx → API Gateway → user-service → database  
+```bash
+cat huge.log
+```
 
-Проверяем конфиг nginx или gateway, документацию, service discovery, Docker Compose или Kubernetes-манифесты.  
+Лучше использовать less, tail, grep.
 
-На сервере:  
+less — удобный просмотр большого файла
 
-ss -ltnp  
-docker ps  
-systemctl list-units --type=service  
-Шаг 3. Посмотреть логи входного сервиса  
+```bash
+less app.log
+```
 
-Если nginx:  
+**Внутри less**
 
-tail -f /var/log/nginx/access.log  
-tail -f /var/log/nginx/error.log  
+/ERROR       поиск слова ERROR
+n            следующее совпадение
+N            предыдущее совпадение
+G            в конец файла
+g            в начало файла
+q            выйти
 
-Если systemd:  
+**Удобно смотреть большие логи**
 
-journalctl -u api-gateway -n 200  
+```bash
+less /var/log/app/app.log
+```
 
-Если Docker:  
+head — первые строки файла
 
-docker logs --tail 200 api-gateway  
+```bash
+head app.log
+```
 
-Ищем request ID:  
+Первые 50 строк:
 
-grep "abc-123" app.log  
+```bash
+head -n 50 app.log
+```
 
-Или ошибки по времени:  
+tail — последние строки файла
 
-grep -Ei "error|exception|traceback|failed" app.log  
-Шаг 4. Посмотреть логи бизнес-сервиса  
+```bash
+tail app.log
+```
 
-Допустим запрос дошёл до user-service.  
+Последние 100 строк:
 
-journalctl -u user-service -n 200  
+```bash
+tail -n 100 app.log
+```
 
-Или:  
+tail -f — смотреть лог в реальном времени
 
-docker logs --tail 200 user-service  
+```bash
+tail -f app.log
+```
 
-Ищем:  
+#### Часто для QA:
 
-stacktrace;  
-timeout;  
-connection refused;  
-authentication failed;  
-null pointer;  
-key error;  
-database exception;  
-out of memory;  
-permission denied.  
-Шаг 5. Проверить зависимости  
+```bash
+tail -n 200 -f app.log
+```
 
-Приложение может работать, но падать при обращении к БД или другому сервису.  
+**Это значит**
 
-Проверить БД:  
+Покажи последние 200 строк и продолжай показывать новые строки.
 
-nc -vz db-host 5432  
+**Для нескольких файлов**
 
-Проверить другой сервис:  
+```bash
+tail -f app.log error.log
+```
 
-curl -v http://payment-service:8080/health  
+#### 3. grep — поиск текста в файлах
 
-Проверить брокер:  
+grep — одна из самых важных команд для тестировщика.
 
-nc -vz kafka-host 9092  
+**Найти строку в файле**
 
-Проверить DNS:  
+```bash
+grep "ERROR" app.log
+```
 
-dig db-host  
-nslookup db-host  
-Шаг 6. Проверить состояние сервиса  
-systemctl status user-service  
+**Поиск без учёта регистра**
 
-Или:  
+```bash
+grep -i "error" app.log
+```
 
-docker ps -a  
+**Найдёт**
 
-Важно: сервис может быть running, но фактически неработоспособен. Поэтому отдельно проверяем health endpoint:  
+**error**
+ERROR
+Error
+eRrOr
+Показать номера строк
 
-curl -v http://localhost:8080/health  
-Шаг 7. Проверить конфигурацию  
-env  
-printenv  
-echo $DB_HOST  
-echo $DB_USER  
-echo $ENV  
+```bash
+grep -n "ERROR" app.log
+```
 
-Проверить конфиги:  
+**Рекурсивный поиск по директории**
 
-cat application.yml  
-grep -rn "DB_HOST" .  
+```bash
+grep -r "Exception" .
+```
 
-### Частые проблемы:
+**С номерами строк**
 
-неверный host;  
-неверный порт;  
-неправильный пароль;  
-переменная отсутствует;  
-сервис направлен на старый стенд;  
-конфиг не перечитан после изменения.  
-Шаг 8. Проверить ресурсы  
-df -h  
-free -h  
-top  
+```bash
+grep -rn "Exception" .
+```
 
-Ищем:  
+**Очень полезно в проекте**
 
-диск заполнен на 100%;  
-память закончилась;  
-процесс убит OOM Killer;  
-CPU загружен;  
-слишком много открытых файлов.  
+```bash
+grep -rn "BASE_URL" .
+```
 
-OOM можно искать так:  
+**Искать несколько вариантов**
 
-dmesg | grep -i "out of memory"  
-journalctl -k | grep -i "oom"  
-Шаг 9. Проверить изменения  
+```bash
+grep -E "ERROR|WARN|Exception" app.log
+```
 
-Нужно спросить:  
+-E включает расширенные регулярные выражения.
 
-был ли недавно деплой;  
-менялся ли конфиг;  
-менялась ли схема БД;  
-обновлялись ли сертификаты;  
-проблема возникает у всех или только у одного запроса.  
+**Исключить строки**
 
-Если ошибка появилась после релиза, сравнить версии:  
+```bash
+grep -v "DEBUG" app.log
+```
 
-docker images  
-docker inspect container  
-git log -n 5  
-Хороший ответ на собеседовании  
+Например, посмотреть лог без debug:
 
-Я сначала повторю запрос через curl -v, проверю статус, тело и request ID. Затем определю, какой сервис обрабатывает запрос: gateway, nginx и конкретный backend. По request ID и времени найду запрос в логах gateway и приложения. После этого проверю stacktrace и зависимости сервиса: БД, брокер, внешние API. Также проверю переменные окружения, конфигурацию, состояние процесса, порт и ресурсы сервера — память, CPU и диск. Если ошибка появилась после деплоя, сравню версию и последние изменения.  
+```bash
+grep -v "DEBUG" app.log | less
+```
 
-### Сценарий 2. Запрос не возвращает ответ и висит
+Посмотреть строки до и после совпадения
 
-Возможные причины:  
+3 строки после:
 
-таймаут зависимости;  
-зависший поток;  
-блокировка в БД;  
-сервис ждёт брокер;  
-сетевой timeout;  
-исчерпан connection pool;  
-высокая нагрузка.  
+```bash
+grep -A 3 "ERROR" app.log
+```
 
-### Проверки:
+3 строки до:
 
-curl -v --max-time 10 http://host/api  
+```bash
+grep -B 3 "ERROR" app.log
+```
 
-Проверить порт:  
+3 строки до и после:
 
-nc -vz host 8080  
+```bash
+grep -C 3 "ERROR" app.log
+```
 
-Проверить нагрузку:  
+Очень полезно при анализе stacktrace:
 
-top  
-free -h  
+```bash
+grep -C 10 "Traceback" test.log
+```
 
-Проверить соединения:  
+**Найти только количество совпадений**
 
-ss -antp  
+```bash
+grep -c "ERROR" app.log
+```
 
-Проверить логи:  
+**Например**
 
-grep -Ei "timeout|connection pool|deadlock|blocked" app.log  
+```bash
+grep -c "500 Internal Server Error" access.log
+```
 
-Ответ:  
+Найти файлы, где есть совпадение
 
-Если запрос висит, сначала ограничу его временем через curl --max-time, проверю соединение с портом, затем логи сервиса на timeout и зависшие зависимости. Проверю состояние connection pool, БД, внешние сервисы, количество соединений и нагрузку на сервер.  
+```bash
+grep -rl "DB_HOST" .
+```
 
-### Сценарий 3. Получаем 502 Bad Gateway
+Только имена файлов.
 
-502 обычно означает:  
+Найти файлы, где нет совпадения
 
-Proxy или gateway не получил корректный ответ от backend-сервиса.  
+```bash
+grep -rL "pytest" .
+```
 
-Проверяем:  
+#### 4. Практические grep-сценарии для QA
 
-systemctl status nginx  
-tail -f /var/log/nginx/error.log  
+Найти ошибки в логе
 
-Проверить backend напрямую:  
+```bash
+grep -i "error" app.log
+```
 
-curl -v http://backend-host:8080/health  
+Найти ошибки, warning и exception
 
-Проверить порт:  
+```bash
+grep -Ei "error|warn|exception|traceback|failed" app.log
+```
 
-nc -vz backend-host 8080  
+**Найти падения автотестов**
 
-Проверить, слушает ли backend:  
+```bash
+grep -Ei "failed|error|assert|traceback" pytest.log
+```
 
-ss -ltnp | grep 8080  
+Найти HTTP 500 в access.log
 
-Типовые причины:  
+```bash
+grep " 500 " access.log
+```
 
-backend не запущен;  
-неправильный host/port в nginx;  
-backend упал;  
-connection refused;  
-DNS не разрешается;  
-backend отвечает некорректно.  
-Сценарий 4. Получаем 504 Gateway Timeout  
+**Найти запросы конкретного пользователя**
 
-504 означает:  
+```bash
+grep "user_id=12345" app.log
+```
 
-Gateway дождался backend, но тот не ответил вовремя.  
+**Найти конкретный request_id**
 
-Проверяем:  
+```bash
+grep "request_id=abc-123" app.log
+```
 
-медленный backend;  
-медленный SQL;  
-недоступная зависимость;  
-высокий CPU;  
-проблемы сети;  
-слишком маленький timeout.  
+Смотреть лог в реальном времени и фильтровать ошибки
 
-### Команды:
+```bash
+tail -f app.log | grep -i "error"
+```
 
-curl -v --max-time 30 http://backend/api  
-top  
-journalctl -u backend -n 200  
+**С несколькими словами**
 
-Ищем:  
+```bash
+tail -f app.log | grep -Ei "error|exception|failed"
+```
 
-grep -Ei "timeout|slow|deadlock|pool" app.log  
+#### 5. sed — поиск и замена текста
 
-### Хороший ответ:
+```bash
+sed — stream editor.
+```
 
-При 504 я проверю, отвечает ли backend напрямую и сколько времени занимает запрос. Затем посмотрю логи backend, состояние БД, внешних сервисов, connection pool и нагрузку. Увеличивать timeout сразу не стоит — сначала нужно найти, почему backend медленный.  
+Он умеет читать текстовый поток, менять строки, удалять строки, печатать нужные участки.
 
-### Сценарий 5. Сервис не запускается
+Для QA sed полезен, когда нужно:
 
-Порядок:  
+- быстро заменить URL в конфиге;
+- подменить параметр окружения;
+- удалить лишние строки;
+- вытащить часть лога;
+- подготовить тестовые данные;
+- заменить значения в .env, .yaml, .json-подобных файлах;
+- поправить временный конфиг в CI.
 
-systemctl status service  
-journalctl -u service -n 200  
+#### 6. Базовый синтаксис sed
 
-Если Docker:  
+**Общий вид**
 
-docker ps -a  
-docker logs container  
+**sed 'команда' file.txt**
 
-Проверяем:  
+**Например**
 
-синтаксис конфига;  
-переменные окружения;  
-занятый порт;  
-права;  
-наличие файла;  
-доступность БД;  
-версию runtime;  
-место на диске.  
+```bash
+sed 's/dev/stage/' config.env
+```
 
-Занятый порт:  
+s означает substitute, то есть заменить.
 
-lsof -i :8080  
-ss -ltnp | grep 8080  
-Сценарий 6. Сервис запущен, но порт недоступен  
+#### 7. Замена текста через sed
 
-Проверяем:  
+Заменить первое совпадение в каждой строке
 
-systemctl status service  
-ss -ltnp | grep 8080  
+```bash
+sed 's/dev/stage/' config.env
+```
 
-Важный момент:  
+**Если строка такая**
 
-127.0.0.1:8080  
+```python
+ENV=dev dev dev
+```
 
-означает доступ только локально.  
+**Результат будет**
 
-0.0.0.0:8080  
+```python
+ENV=stage dev dev
+```
 
-означает прослушивание на всех интерфейсах.  
+Поменяется только первое совпадение в строке.
 
-Дальше firewall:  
+Заменить все совпадения в строке
 
-ufw status  
-iptables -L -n  
+```bash
+sed 's/dev/stage/g' config.env
+```
 
-С клиента:  
+g означает global.
 
-nc -vz server 8080  
-Сценарий 7. Автотесты локально проходят, в CI падают  
+**Теперь**
 
-Проверяем различия:  
+```python
+ENV=dev dev dev
+```
 
-python --version  
-pytest --version  
-pip freeze  
-env  
-pwd  
-ls -la  
+**станет**
 
-Причины:  
+```python
+ENV=stage stage stage
+```
 
-разные версии Python;  
-разные зависимости;  
-отсутствуют env-переменные;  
-другой рабочий каталог;  
-нет тестовых файлов;  
-нет прав;  
-CI не видит сервис;  
-параллельный запуск;  
-timezone/locale;  
-тесты зависят от порядка;  
-нет cleanup.  
+**Заменить URL**
 
-### Хороший ответ:
+```bash
+sed 's|http://dev-api.local|http://stage-api.local|g' config.env
+```
 
-Я сравню окружение локально и в CI: версии Python и зависимостей, переменные, рабочую директорию, права, сеть и доступность стенда. Проверю, не запускаются ли тесты параллельно и нет ли зависимости от порядка или общих тестовых данных.  
+Здесь вместо / используется |.
 
-Сценарий 8. На сервере закончилось место  
-df -h  
-du -sh /*  
-du -h /var | sort -h | tail -n 20  
+Почему?
 
-### Частые причины:
+Потому что URL содержит /, и так команда читается проще.
 
-логи;  
-Docker images;  
-Docker volumes;  
-дампы;  
-артефакты CI;  
-временные файлы.  
+#### Плохо читается:
 
-Docker:  
+```bash
+sed 's/http:\/\/dev-api.local/http:\/\/stage-api.local/g' config.env
+```
 
-docker system df  
+**Лучше**
 
-Нельзя сразу удалять всё подряд. Сначала определить источник.  
+```bash
+sed 's|http://dev-api.local|http://stage-api.local|g' config.env
+```
 
-### Сценарий 9. Сервер тормозит
+#### 8. sed -i — изменить файл на месте
 
-Проверяем:  
+Обычный sed только выводит результат в терминал:
 
-top  
-uptime  
-free -h  
-df -h  
+```bash
+sed 's/dev/stage/g' config.env
+```
 
-Топ по CPU:  
+Файл не меняется.
 
-ps aux --sort=-%cpu | head  
+**Чтобы изменить файл**
 
-Топ по памяти:  
+```bash
+sed -i 's/dev/stage/g' config.env
+```
 
-ps aux --sort=-%mem | head  
+**Безопасный вариант с backup**
 
-Проверить IO:  
+```bash
+sed -i.bak 's/dev/stage/g' config.env
+```
 
-iostat  
+**Появятся два файла**
 
-Если установлен:  
+**config.env**
+config.env.bak
 
-vmstat 1  
+Это полезно на стенде, чтобы можно было откатиться.
 
-Нужно определить, где узкое место:  
+Важный нюанс macOS vs Linux
 
-CPU;  
-память;  
-диск;  
-сеть;  
-БД;  
-конкретный процесс.  
-Сценарий 10. DNS-имя не работает, но по IP сервис доступен  
+**На Linux**
 
-Проверяем:  
+```bash
+sed -i 's/dev/stage/g' config.env
+```
 
-nslookup service.local  
-dig service.local  
-cat /etc/resolv.conf  
-cat /etc/hosts  
+На macOS часто нужно так:
 
-Если:  
+```bash
+sed -i '' 's/dev/stage/g' config.env
+```
 
-curl http://10.0.0.5:8080  
+#### Акцент для собеседования
 
-работает, а:  
+```bash
+sed -i 's/old/new/g' file
+```
 
-curl http://service.local:8080  
+#### 9. Заменить строку целиком через sed
 
-не работает, проблема почти наверняка в DNS или /etc/hosts.  
+**Допустим есть .env**
 
-Универсальная структура ответа на диагностический вопрос  
+```python
+BASE_URL=http://dev.local
+DB_HOST=localhost
+ENV=dev
+```
 
-### На собеседовании можно использовать такой шаблон:
+Нужно заменить строку с BASE_URL.
 
-Сначала я воспроизвожу проблему и фиксирую точное время, запрос, статус и идентификатор запроса. Потом иду по слоям: DNS, сеть, порт, gateway, backend, зависимости. Проверяю логи, состояние сервисов, конфигурацию и переменные окружения. После этого проверяю ресурсы сервера и последние изменения или деплой. Стараюсь не перезапускать сервис сразу, потому что это может скрыть причину и удалить важное состояние.  
+```bash
+sed -i 's|^BASE_URL=.*|BASE_URL=http://stage.local|' .env
+```
 
-Последняя фраза особенно хорошая:  
+**Разбор**
 
-Сначала собираю диагностическую информацию, и только потом перезапускаю сервис.  
+^BASE_URL=  строка начинается с BASE_URL=
+.*          любое значение после =
 
-### Что точно стоит выучить
+Это очень полезная команда для CI/CD.
 
-Для собеседования тебе достаточно уверенно знать:  
+**Заменить DB_HOST**
 
-curl -v  
-ping  
-nc -vz  
-dig  
-nslookup  
-ss -ltnp  
-ps aux  
-top  
-systemctl status  
-journalctl -u  
-docker ps  
-docker logs  
-df -h  
-du -sh  
-free -h  
-env  
-grep  
-tail -f  
+```bash
+sed -i 's|^DB_HOST=.*|DB_HOST=postgres|' .env
+```
 
-И главное — уметь объяснить последовательность:  
+**Заменить ENV**
 
-Воспроизвести → определить слой → найти логи → проверить зависимости →  
-проверить конфиг → проверить ресурсы → проверить последние изменения  
+```bash
+sed -i 's|^ENV=.*|ENV=stage|' .env
+```
+
+#### 10. Удаление строк через sed
+
+Удалить строки, содержащие DEBUG
+
+```bash
+sed '/DEBUG/d' app.log
+```
+
+Файл не изменится, результат будет выведен в консоль.
+
+**Изменить файл**
+
+```bash
+sed -i '/DEBUG/d' app.log
+```
+
+**Удалить пустые строки**
+
+```bash
+sed '/^$/d' file.txt
+```
+
+**Разбор**
+
+^  начало строки
+$  конец строки
+^$ пустая строка
+d  delete
+Удалить строки с комментариями
+
+```bash
+sed '/^#/d' config.env
+```
+
+Удалит строки, которые начинаются с #.
+
+Удалить комментарии и пустые строки:
+
+```bash
+sed '/^#/d; /^$/d' config.env
+```
+
+#### 11. Печать нужных строк через sed
+
+Напечатать конкретную строку
+
+```bash
+sed -n '10p' app.log
+```
+
+-n отключает обычный вывод, p печатает нужное.
+
+**Напечатать диапазон строк**
+
+```bash
+sed -n '10,20p' app.log
+```
+
+Покажет строки с 10 по 20.
+
+Напечатать от совпадения до совпадения
+
+```bash
+sed -n '/START/,/END/p' app.log
+```
+
+Покажет блок от строки с START до строки с END.
+
+#### Практический пример:
+
+```bash
+sed -n '/Traceback/,/AssertionError/p' pytest.log
+```
+
+#### 12. Добавление текста через sed
+
+Добавить строку после совпадения
+
+```bash
+sed '/BASE_URL/a TIMEOUT=30' .env
+```
+
+a — append, добавить после строки.
+
+**Добавить строку перед совпадением**
+
+```bash
+sed '/BASE_URL/i ENV=stage' .env
+```
+
+i — insert, добавить перед строкой.
+
+#### 13. Замена только в строках с условием
+
+Допустим нужно заменить false на true, но только в строке с FEATURE_LOGIN.
+
+```bash
+sed '/FEATURE_LOGIN/s/false/true/' config.env
+```
+
+#### Пример:
+
+```python
+FEATURE_LOGIN=false
+FEATURE_PAYMENT=false
+```
+
+**После команды**
+
+```python
+FEATURE_LOGIN=true
+FEATURE_PAYMENT=false
+```
+
+#### 14. Частые sed команды для QA
+
+Быстро поменять стенд в конфиге
+
+```bash
+sed -i 's|dev-api.company.local|stage-api.company.local|g' config.yml
+```
+
+**Поменять base_url в .env**
+
+```bash
+sed -i 's|^BASE_URL=.*|BASE_URL=http://stage.local|' .env
+```
+
+**Убрать DEBUG-строки из лога**
+
+```bash
+sed '/DEBUG/d' app.log > app_without_debug.log
+```
+
+Достать кусок лога по строкам
+
+```bash
+sed -n '100,200p' app.log
+```
+
+Достать кусок лога между двумя событиями
+
+```bash
+sed -n '/test_login_start/,/test_login_end/p' pytest.log
+```
+
+**Удалить пустые строки**
+
+```bash
+sed '/^$/d' file.txt
+```
+
+Удалить комментарии и пустые строки
+
+```bash
+sed '/^#/d; /^$/d' config.env
+```
+
+#### 15. awk — работа с колонками
+
+awk удобен, когда файл похож на таблицу или лог с колонками.
+
+#### Пример:
+
+2026-07-09 12:00:01 INFO user_id=123 status=200
+2026-07-09 12:00:02 ERROR user_id=456 status=500
+Напечатать первую колонку
+
+```bash
+awk '{print $1}' app.log
+```
+
+Напечатать первую и третью колонку
+
+```bash
+awk '{print $1, $3}' app.log
+```
+
+**Фильтр по значению**
+
+```bash
+awk '$3 == "ERROR" {print $0}' app.log
+```
+
+$0 — вся строка.
+
+#### 16. awk с разделителем
+
+**Допустим CSV**
+
+**id,name,status**
+1,Alex,active
+2,John,blocked
+
+#### Команда:
+
+```bash
+awk -F',' '{print $1, $3}' users.csv
+```
+
+-F',' задаёт разделитель.
+
+Найти строки с HTTP 500 в access.log
+
+Если статус — 9-я колонка:
+
+```bash
+awk '$9 == 500 {print $0}' access.log
+```
+
+Посчитать количество 500
+
+```bash
+awk '$9 == 500 {count++} END {print count}' access.log
+```
+
+Посчитать количество ответов по статусам
+
+```bash
+awk '{print $9}' access.log | sort | uniq -c | sort -nr
+```
+
+#### 17. cut — вытащить колонку
+
+cut проще, чем awk, если нужно просто разрезать строки по разделителю.
+
+Взять первую колонку по :
+
+```bash
+cut -d':' -f1 /etc/passwd
+```
+
+**Взять второй столбец CSV**
+
+```bash
+cut -d',' -f2 users.csv
+```
+
+Взять первый и третий столбец
+
+```bash
+cut -d',' -f1,3 users.csv
+```
+
+#### 18. sort — сортировка
+
+Отсортировать строки
+
+```bash
+sort file.txt
+```
+
+**Числовая сортировка**
+
+```bash
+sort -n numbers.txt
+```
+
+**Обратная сортировка**
+
+```bash
+sort -r file.txt
+```
+
+**Числовая обратная**
+
+```bash
+sort -nr numbers.txt
+```
+
+#### 19. uniq — уникальные строки
+
+#### Важно: uniq работает нормально только с соседними дублями, поэтому обычно используют вместе с sort.
+
+```bash
+sort file.txt | uniq
+```
+
+**Посчитать количество повторов**
+
+```bash
+sort file.txt | uniq -c
+```
+
+**Отсортировать по количеству повторов**
+
+```bash
+sort file.txt | uniq -c | sort -nr
+```
+
+#### Практический пример — самые частые ошибки:
+
+```bash
+grep -i "error" app.log | sort | uniq -c | sort -nr
+```
+
+#### 20. wc — подсчёт строк, слов, байт
+
+Количество строк
+
+```bash
+wc -l app.log
+```
+
+**Количество слов**
+
+```bash
+wc -w file.txt
+```
+
+**Размер в байтах**
+
+```bash
+wc -c file.txt
+```
+
+**Посчитать количество ошибок**
+
+```bash
+grep -i "error" app.log | wc -l
+```
+
+#### 21. find — поиск файлов
+
+Найти файл по имени
+
+```bash
+find . -name "config.yml"
+```
+
+**Найти все .log**
+
+```bash
+find . -name "*.log"
+```
+
+**Найти только файлы**
+
+```bash
+find . -type f -name "*.log"
+```
+
+**Найти только директории**
+
+```bash
+find . -type d -name "reports"
+```
+
+Найти файлы больше 100 MB
+
+```bash
+find . -type f -size +100M
+```
+
+Найти файлы, изменённые за последние сутки
+
+```bash
+find . -type f -mtime -1
+```
+
+Найти файлы старше 7 дней
+
+```bash
+find . -type f -mtime +7
+```
+
+**Найти пустые файлы**
+
+```bash
+find . -type f -empty
+```
+
+#### 22. find + действия
+
+Удалить старые логи
+
+```bash
+find ./logs -type f -name "*.log" -mtime +7 -delete
+```
+
+**Осторожно. Лучше сначала проверить**
+
+```bash
+find ./logs -type f -name "*.log" -mtime +7
+```
+
+**И только потом**
+
+```bash
+find ./logs -type f -name "*.log" -mtime +7 -delete
+```
+
+**Найти и выполнить команду**
+
+```bash
+find . -type f -name "*.log" -exec grep -H "ERROR" {} \;
+```
+
+Но часто удобнее через xargs.
+
+#### 23. xargs — передать список файлов в команду
+
+Найти ошибки во всех логах
+
+```bash
+find . -type f -name "*.log" | xargs grep -i "error"
+```
+
+Безопаснее для файлов с пробелами
+
+```bash
+find . -type f -name "*.log" -print0 | xargs -0 grep -i "error"
+```
+
+**Удалить найденные файлы**
+
+```bash
+find . -type f -name "*.tmp" | xargs rm
+```
+
+**Безопаснее**
+
+```bash
+find . -type f -name "*.tmp" -print0 | xargs -0 rm
+```
+
+#### 24. jq — работа с JSON
+
+Для тестировщика jq очень полезен: API часто возвращает JSON.
+
+**Красиво вывести JSON**
+
+```bash
+cat response.json | jq
+```
+
+**Или**
+
+**jq . response.json**
+Вытащить поле
+
+```bash
+jq '.id' response.json
+jq '.user.name' response.json
+```
+
+Вытащить массив
+
+```bash
+jq '.items' response.json
+```
+
+Вытащить первый элемент массива
+
+```bash
+jq '.items[0]' response.json
+```
+
+Вытащить поле у каждого элемента
+
+```bash
+jq '.items[].id' response.json
+```
+
+Фильтр по значению
+
+```bash
+jq '.items[] | select(.status == "active")' response.json
+```
+
+Вывести только id активных пользователей
+
+```bash
+jq '.items[] | select(.status == "active") | .id' response.json
+```
+
+#### 25. curl + jq
+
+Очень частый QA-сценарий.
+
+GET и красиво вывести JSON
+
+```bash
+curl -s http://localhost:8080/users | jq
+```
+
+**Вытащить статус пользователя**
+
+```bash
+curl -s http://localhost:8080/users/123 | jq '.status'
+```
+
+**Проверить количество элементов**
+
+```bash
+curl -s http://localhost:8080/users | jq '.items | length'
+```
+
+**Получить токен из ответа**
+
+```bash
+TOKEN=$(curl -s -X POST http://localhost:8080/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"test","password":"Password123"}' \
+  | jq -r '.token')
+```
+
+-r убирает кавычки из строки.
+
+#### 26. diff — сравнение файлов
+
+Сравнить два файла
+
+```bash
+diff old.txt new.txt
+```
+
+Удобный формат
+
+```bash
+diff -u old.txt new.txt
+```
+
+-u — unified diff, часто используется в Git.
+
+**Сравнить директории**
+
+```bash
+diff -r dir1 dir2
+```
+
+Только отличающиеся файлы
+
+```bash
+diff -qr dir1 dir2
+```
+
+Полезно для сравнения артефактов, конфигов, отчётов.
+
+#### 27. comm — сравнение отсортированных списков
+
+**Допустим есть два файла**
+
+```text
+expected.txt
+actual.txt
+```
+
+**Сначала сортируем**
+
+```bash
+sort expected.txt > expected_sorted.txt
+sort actual.txt > actual_sorted.txt
+```
+
+**Потом**
+
+**comm expected_sorted.txt actual_sorted.txt**
+
+**Колонки**
+
+- 1-я колонка — только в первом файле
+- 2-я колонка — только во втором файле
+- 3-я колонка — есть в обоих
+
+Только строки, которых нет во втором файле:
+
+```bash
+comm -23 expected_sorted.txt actual_sorted.txt
+```
+
+Только лишние строки во втором:
+
+```bash
+comm -13 expected_sorted.txt actual_sorted.txt
+```
+
+#### 28. tee — вывести и сохранить одновременно
+
+```bash
+pytest -v | tee pytest.log
+```
+
+Ты одновременно видишь вывод и сохраняешь его в файл.
+
+**С ошибками тоже**
+
+```bash
+pytest -v 2>&1 | tee pytest.log
+```
+
+#### 29. Перенаправления вывода
+
+Перезаписать файл
+
+```bash
+command > output.log
+```
+
+Дозаписать в файл
+
+```bash
+command >> output.log
+```
+
+Ошибки в отдельный файл
+
+```bash
+command 2> error.log
+```
+
+stdout и stderr в один файл
+
+```bash
+command > output.log 2>&1
+```
+
+**Или**
+
+**command &> output.log**
+Ничего не выводить
+
+```bash
+command > /dev/null 2>&1
+```
+
+#### 30. watch — периодически выполнять команду
+
+Обновлять команду каждые 2 секунды
+
+```bash
+watch "docker ps"
+```
+
+Смотреть свободное место
+
+```bash
+watch "df -h"
+```
+
+Смотреть количество строк в логе
+
+```bash
+watch "wc -l app.log"
+```
+
+Смотреть, поднялся ли сервис
+
+```bash
+watch "curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/health"
+```
+
+#### 31. file, stat, du
+
+Определить тип файла
+
+```bash
+file app.log
+file archive.tar.gz
+file script.sh
+```
+
+Метаданные файла
+
+```bash
+stat app.log
+```
+
+**Покажет**
+
+- размер;
+- права;
+- владельца;
+- дату изменения;
+- inode.
+Размер файла или директории
+
+```bash
+du -sh app.log
+du -sh reports/
+```
+
+#### 32. tar, gzip, zip
+
+Распаковать .tar.gz
+
+```bash
+tar -xzf archive.tar.gz
+```
+
+**Создать .tar.gz**
+
+```bash
+tar -czf reports.tar.gz reports/
+```
+
+**Посмотреть содержимое архива**
+
+```bash
+tar -tzf archive.tar.gz
+```
+
+**Распаковать zip**
+
+```bash
+unzip archive.zip
+```
+
+Создать zip
+
+```bash
+zip -r reports.zip reports/
+```
+
+#### 33. Работа с кодировками и переносами строк
+
+Иногда тесты падают из-за Windows-переносов строк.
+
+**Посмотреть скрытые символы**
+
+```bash
+cat -A file.txt
+```
+
+Если видишь ^M, значит могут быть Windows-переносы строк.
+
+**Конвертировать Windows → Linux**
+
+```bash
+dos2unix file.txt
+```
+
+Если dos2unix нет:
+
+```bash
+sed -i 's/\r$//' file.txt
+```
+
+**Конвертация кодировки**
+
+```bash
+iconv -f WINDOWS-1251 -t UTF-8 input.txt > output.txt
+```
+
+Полезно, если логи или выгрузки в странной кодировке.
+
+#### 34. Практика: анализ логов
+
+Допустим есть app.log.
+
+**Найти все ошибки**
+
+```bash
+grep -i "error" app.log
+```
+
+**Найти ошибки и сохранить**
+
+```bash
+grep -i "error" app.log > errors.log
+```
+
+**Посчитать ошибки**
+
+```bash
+grep -i "error" app.log | wc -l
+```
+
+**Найти уникальные ошибки**
+
+```bash
+grep -i "error" app.log | sort | uniq -c | sort -nr
+```
+
+Смотреть ошибки в реальном времени
+
+```bash
+tail -f app.log | grep -i "error"
+```
+
+**Найти ошибку с контекстом**
+
+```bash
+grep -C 5 "NullPointerException" app.log
+```
+
+Достать лог за конкретный тест
+
+```bash
+sed -n '/test_create_user/,/test_create_user finished/p' app.log
+```
+
+#### 35. Практика: работа с .env
+
+**Файл**
+
+```python
+BASE_URL=http://dev.local
+DB_HOST=localhost
+DB_PORT=5432
+ENV=dev
+DEBUG=true
+```
+
+Посмотреть без комментариев и пустых строк
+
+```bash
+sed '/^#/d; /^$/d' .env
+```
+
+**Поменять BASE_URL**
+
+```bash
+sed -i 's|^BASE_URL=.*|BASE_URL=http://stage.local|' .env
+```
+
+**Поменять DB_HOST**
+
+```bash
+sed -i 's|^DB_HOST=.*|DB_HOST=postgres|' .env
+```
+
+**Вытащить значение BASE_URL**
+
+```bash
+grep "^BASE_URL=" .env | cut -d'=' -f2
+```
+
+**Или через awk**
+
+```bash
+awk -F'=' '/^BASE_URL=/ {print $2}' .env
+```
+
+#### 36. Практика: найти нужный конфиг в проекте
+
+Найти все env-файлы
+
+```bash
+find . -type f -name "*.env"
+```
+
+Найти все yaml/yml
+
+```bash
+find . -type f \( -name "*.yml" -o -name "*.yaml" \)
+```
+
+**Найти, где используется BASE_URL**
+
+```bash
+grep -rn "BASE_URL" .
+```
+
+**Найти, где прописан dev-стенд**
+
+```bash
+grep -rn "dev-api" .
+```
+
+Массово заменить dev на stage в yaml-файлах
+
+**Сначала проверить**
+
+```bash
+grep -rn "dev-api.company.local" .
+```
+
+**Потом заменить**
+
+```bash
+find . -type f \( -name "*.yml" -o -name "*.yaml" \) \
+  -print0 | xargs -0 sed -i 's|dev-api.company.local|stage-api.company.local|g'
+```
+
+#### 37. Практика: работа с результатами pytest
+
+Запустить тесты и сохранить лог
+
+```bash
+pytest -v 2>&1 | tee pytest.log
+```
+
+**Найти failed**
+
+```bash
+grep -i "failed" pytest.log
+```
+
+**Найти traceback**
+
+```bash
+grep -n "Traceback" pytest.log
+```
+
+**Найти assertion**
+
+```bash
+grep -i "assert" pytest.log
+```
+
+**Найти блок ошибки**
+
+```bash
+grep -C 20 "AssertionError" pytest.log
+```
+
+**Посчитать количество failed**
+
+```bash
+grep -c "FAILED" pytest.log
+```
+
+#### 38. Практика: HTTP access.log
+
+#### Пример access.log условно:
+
+10.0.0.1 - - [09/Jul/2026:12:00:01] "GET /users HTTP/1.1" 200
+10.0.0.2 - - [09/Jul/2026:12:00:02] "POST /login HTTP/1.1" 500
+Найти все 500
+
+```bash
+grep " 500" access.log
+```
+
+Посчитать 500
+
+```bash
+grep " 500" access.log | wc -l
+```
+
+**Посчитать статусы**
+
+```bash
+awk '{print $9}' access.log | sort | uniq -c | sort -nr
+```
+
+**Топ IP-адресов**
+
+```bash
+awk '{print $1}' access.log | sort | uniq -c | sort -nr | head
+```
+
+**Топ URL**
+
+```bash
+awk '{print $7}' access.log | sort | uniq -c | sort -nr | head
+```
+
+#### 39. Полезные пайплайны команд
+
+Найти топ ошибок
+
+```bash
+grep -i "error" app.log | sort | uniq -c | sort -nr | head
+```
+
+**Найти все большие логи**
+
+```bash
+find /var/log -type f -name "*.log" -size +100M
+```
+
+**Посмотреть последние ошибки**
+
+```bash
+grep -i "error" app.log | tail -n 20
+```
+
+Посмотреть ошибки в большом файле через less
+
+```bash
+grep -i "error" app.log | less
+```
+
+Найти файлы, где есть password
+
+```bash
+grep -rn "password" .
+```
+
+**Найти файлы, изменённые сегодня**
+
+```bash
+find . -type f -mtime -1
+```
+
+Найти и удалить старые allure-results
+
+```bash
+find . -type d -name "allure-results"
+```
+
+**Удалить осторожно**
+
+```bash
+find . -type d -name "allure-results" -prune -exec rm -rf {} \;
+```
+
+#### 40. Что обычно нужно тестировщику в Linux
+
+##### 1. Смотреть логи
+
+```bash
+tail -f app.log
+less app.log
+grep -i "error" app.log
+journalctl -u service -f
+docker logs -f container
+```
+
+##### 2. Искать конфиги
+
+```bash
+find . -name "*.yml"
+find . -name ".env"
+grep -rn "BASE_URL" .
+```
+
+##### 3. Менять конфиги
+
+```bash
+sed -i 's|^BASE_URL=.*|BASE_URL=http://stage.local|' .env
+```
+
+##### 4. Проверять результаты тестов
+
+```bash
+pytest -v 2>&1 | tee pytest.log
+grep -i "failed" pytest.log
+```
+
+##### 5. Сравнивать файлы
+
+```bash
+diff -u expected.json actual.json
+```
+
+##### 6. Работать с JSON
+
+```bash
+curl -s http://host/api/users | jq
+```
+
+**jq '.items[].id' response.json**
+
+##### 7. Искать большие файлы
+
+```bash
+du -sh *
+find . -type f -size +100M
+```
+
+##### 8. Чистить старые артефакты
+
+```bash
+find ./reports -type f -mtime +7 -delete
+```
+
+##### 9. Копировать файлы со стенда
+
+```bash
+scp user@host:/var/log/app/app.log .
+```
+
+##### 10. Смотреть права и владельца
+
+```bash
+ls -la
+chmod +x script.sh
+chown user:group file
+```
+
+#### 41. Как красиво объяснить на собеседовании
+
+**Можно сказать так**
+
+В Linux я часто работаю с текстовыми файлами, логами и конфигами. Для просмотра использую less, tail, head, для поиска — grep, для замены и правки конфигов — sed, для работы с колонками — awk и cut, для сортировки и агрегации — sort, uniq, wc. Для поиска файлов использую find, для массовой обработки — xargs. JSON-ответы API удобно проверяю через jq. При анализе проблем обычно смотрю логи, фильтрую ошибки, считаю частотность, сравниваю expected/actual через diff, а при необходимости быстро меняю параметры окружения в .env или yaml через sed.
+
+#### 42. Самый важный минимум команд
+
+Вот это прям стоит знать уверенно:
+
+```bash
+cat file
+less file
+head -n 50 file
+tail -n 100 file
+tail -f file
+
+grep "ERROR" file
+grep -i "error" file
+grep -rn "text" .
+grep -C 5 "Exception" app.log
+
+sed 's/old/new/g' file
+sed -i 's/old/new/g' file
+sed -n '10,20p' file
+sed '/DEBUG/d' file
+
+awk '{print $1}' file
+awk -F',' '{print $2}' file
+
+cut -d',' -f1 file
+sort file
+uniq -c
+wc -l file
+
+find . -name "*.log"
+find . -type f -size +100M
+find . -type f -mtime +7
+```
+
+**xargs**
+
+```bash
+jq .
+diff -u old new
+```
+
+```bash
+tee
+```
+
+#### 43. Мини-блок именно по sed, который стоит выучить
+
+##### Заменить первое совпадение в строке
+
+```bash
+sed 's/old/new/' file
+```
+
+##### Заменить все совпадения
+
+```bash
+sed 's/old/new/g' file
+```
+
+##### Изменить файл на месте
+
+```bash
+sed -i 's/old/new/g' file
+```
+
+##### Изменить файл и создать backup
+
+```bash
+sed -i.bak 's/old/new/g' file
+```
+
+##### Заменить строку с `BASE_URL`
+
+```bash
+sed -i 's|^BASE_URL=.*|BASE_URL=http://stage.local|' .env
+```
+
+##### Удалить строки с `DEBUG`
+
+```bash
+sed '/DEBUG/d' app.log
+```
+
+##### Удалить пустые строки
+
+```bash
+sed '/^$/d' file
+```
+
+##### Вывести строки 10–20
+
+```bash
+sed -n '10,20p' file
+```
+
+##### Вывести блок между `START` и `END`
+
+```bash
+sed -n '/START/,/END/p' file
+```
+
+##### Заменить только в строках с `FEATURE_LOGIN`
+
+```bash
+sed '/FEATURE_LOGIN/s/false/true/' config.env
+```
+
+#### 44. Мини-блок “что я делаю, если надо быстро проанализировать лог”
+
+##### Последние строки
+
+```bash
+tail -n 200 app.log
+```
+
+##### Смотреть в реальном времени
+
+```bash
+tail -f app.log
+```
+
+##### Ошибки
+
+```bash
+grep -Ei "error|exception|failed|traceback" app.log
+```
+
+##### Ошибки с контекстом
+
+```bash
+grep -C 10 "Exception" app.log
+```
+
+##### Количество ошибок
+
+```bash
+grep -Ei "error|exception" app.log | wc -l
+```
+
+##### Уникальные ошибки
+
+```bash
+grep -Ei "error|exception" app.log | sort | uniq -c | sort -nr
+```
+
+##### Сохранить ошибки отдельно
+
+```bash
+grep -Ei "error|exception" app.log > errors.log
+```
+
+#### 45. Что могут спросить на собеседовании
+
+Чем cat отличается от less?
+
+cat выводит весь файл сразу.
+less позволяет удобно смотреть большой файл постранично, искать внутри и не грузить весь вывод в терминал.
+
+Как посмотреть лог в реальном времени?
+
+```bash
+tail -f app.log
+```
+
+**Или для systemd-сервиса**
+
+```bash
+journalctl -u service -f
+```
+
+Как найти ошибку в большом логе?
+
+```bash
+grep -i "error" app.log
+```
+
+**С контекстом**
+
+```bash
+grep -C 5 "error" app.log
+```
+
+Как заменить значение в конфиге?
+
+```bash
+sed -i 's|^BASE_URL=.*|BASE_URL=http://stage.local|' .env
+```
+
+Как удалить пустые строки?
+
+```bash
+sed '/^$/d' file.txt
+```
+
+Как посчитать количество строк в файле?
+
+```bash
+wc -l file.txt
+```
+
+Как найти все .log файлы?
+
+```bash
+find . -type f -name "*.log"
+```
+
+Как найти все большие файлы?
+
+```bash
+find . -type f -size +100M
+```
+
+Как найти уникальные ошибки?
+
+```bash
+grep -i "error" app.log | sort | uniq -c | sort -nr
+```
+
+Как красиво посмотреть JSON?
+
+```bash
+cat response.json | jq
+```
+
+**Или**
+
+**jq . response.json**
+
+#### 46. Самый собеседовательный ответ
+
+**Если тебя спросят**
+
+Какими Linux-командами для работы с файлами и текстом вы пользуетесь?
+
+**Можно ответить так**
+
+Чаще всего использую less, tail, grep, sed, awk, find, xargs, sort, uniq, wc, jq, diff. Например, логи смотрю через tail -f и less, ошибки фильтрую через grep -i или grep -E, конфиги могу быстро поправить через sed -i, JSON-ответы API смотрю через jq, файлы ищу через find, а для массовой обработки использую find вместе с xargs. Для анализа логов часто комбинирую команды через pipe: grep | sort | uniq -c | sort -nr.
+
+Главное для собеса — показать, что ты не просто знаешь команды, а умеешь собрать из них цепочку для реальной задачи: найти лог, отфильтровать ошибку, посчитать количество, достать контекст, сравнить результат и при необходимости быстро поправить конфиг.
+
+### Дополнение. Диагностика проблем на сервере
+
+Да. Если ты уже выучил работу с файлами, grep, sed, awk, find, jq, tail, less, то для собеседования по Linux тебе ещё обязательно нужны процессы, сервисы, сеть, права, ресурсы системы, Docker и диагностика.
+
+#### Что ещё нужно знать по Linux
+
+#### 1. Процессы
+
+#### Основные команды:
+
+```bash
+ps aux
+top
+htop
+pgrep service_name
+kill PID
+kill -9 PID
+```
+
+**Нужно понимать**
+
+- что такое PID;
+- чем процесс отличается от сервиса;
+- SIGTERM и SIGKILL;
+- как найти процесс по имени;
+- как найти процесс, который занял порт.
+
+```bash
+ps aux | grep python
+pgrep -af python
+lsof -i :8080
+ss -ltnp | grep 8080
+```
+
+> **Короткий ответ для собеседования**
+>
+> Сначала процесс стоит завершать через обычный kill, то есть SIGTERM, чтобы он корректно освободил ресурсы. kill -9 использую только если процесс завис и не реагирует.
+
+#### 2. Управление сервисами
+
+```bash
+systemctl status nginx
+systemctl start nginx
+systemctl stop nginx
+systemctl restart nginx
+systemctl reload nginx
+```
+
+**Логи сервиса**
+
+```bash
+journalctl -u nginx
+journalctl -u nginx -n 100
+journalctl -u nginx -f
+```
+
+#### Важно понимать разницу:
+
+restart — полностью перезапустить;
+reload — перечитать конфигурацию без полного перезапуска;
+status — посмотреть состояние и последние ошибки.
+
+#### 3. Сеть
+
+#### Основные команды:
+
+```bash
+ip a
+ip route
+ping host
+nslookup host
+dig host
+nc -vz host 8080
+curl -v http://host:8080/health
+ss -ltnp
+```
+
+Нужно понимать, что проверяет каждая команда:
+
+- ping — доступность хоста по ICMP;
+- nc — доступность конкретного порта;
+- curl — работа приложения на уровне HTTP;
+- ss — какие порты слушает сервер.
+
+```bash
+dig / nslookup — DNS;
+```
+
+ip route — маршрутизация.
+
+#### Хорошая фраза:
+
+Прохождение ping ещё не означает, что сервис работает. Нужно отдельно проверить порт через nc и HTTP-ответ через curl.
+
+#### 4. Права доступа
+
+```bash
+ls -la
+chmod 755 script.sh
+chmod +x script.sh
+chown user:group file
+```
+
+**Нужно знать**
+
+- r — чтение
+- w — запись
+- x — выполнение
+
+**И числовые права**
+
+- 644 — владелец читает и пишет, остальные только читают
+- 755 — владелец всё, остальные читают и выполняют
+- 600 — доступ только владельцу
+
+#### 5. Ресурсы сервера
+
+```bash
+df -h
+du -sh *
+free -h
+top
+uptime
+```
+
+**Нужно уметь проверить**
+
+- закончилось ли место на диске;
+- закончилась ли память;
+- перегружен ли CPU;
+- есть ли высокий load average;
+- какие процессы потребляют ресурсы.
+
+**Полезно**
+
+```bash
+ps aux --sort=-%cpu | head
+ps aux --sort=-%mem | head
+```
+
+#### 6. Переменные окружения
+
+```bash
+env
+printenv
+echo $BASE_URL
+echo $PATH
+```
+
+Очень часто проблема на стенде связана с неправильным окружением:
+
+```bash
+echo $DB_HOST
+echo $DB_PORT
+echo $ENV
+```
+
+#### 7. Exit code
+
+```bash
+echo $?
+```
+
+**Нужно знать**
+
+0 — успешное выполнение
+не 0 — ошибка
+
+Особенно важно для CI/CD.
+
+#### 8. Docker
+
+**Минимум**
+
+```bash
+docker ps
+docker ps -a
+docker logs container
+docker logs -f container
+docker inspect container
+docker exec -it container sh
+docker restart container
+```
+
+**Для диагностики**
+
+```bash
+docker ps -a
+docker logs --tail 200 container
+docker inspect container
+```
+
+**Главная логика диагностики**
+
+#### Акцент для собеседования
+
+**Удобная схема**
+
+**Клиент**
+↓
+DNS
+↓
+Сеть
+↓
+Порт
+↓
+Reverse proxy / API Gateway
+↓
+Приложение
+↓
+Зависимости: БД, брокер, внешние API
+↓
+Ресурсы и конфигурация
+
+То есть идём от внешнего слоя к внутреннему.
+
+#### Сценарий 1. Сервер, много сервисов, запрос возвращает 500
+
+Что означает 500
+
+HTTP 500 — сервер получил запрос, но во время обработки произошла внутренняя ошибка.
+
+**Это обычно значит**
+
+- приложение упало на исключении;
+- недоступна БД;
+- недоступен другой сервис;
+- неправильные данные или конфигурация;
+- отсутствует переменная окружения;
+- закончилась память или место;
+- проблема с правами;
+- ошибка после деплоя;
+- таймаут зависимости.
+Как диагностировать по шагам
+
+##### Шаг 1. Повторить запрос вручную
+
+```bash
+curl -v http://host/api/users
+```
+
+**Для POST**
+
+```bash
+curl -v -X POST http://host/api/users \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Alex"}'
+```
+
+**Проверяем**
+
+- действительно ли статус 500;
+- тело ответа;
+- заголовки;
+- request ID / trace ID;
+- точно ли запрос отправлен на нужный стенд;
+- правильные ли данные и заголовки.
+
+**Если есть request ID**
+
+X-Request-ID: abc-123
+
+Его нужно использовать для поиска по логам.
+
+##### Шаг 2. Понять, какой сервис обрабатывает запрос
+
+Если сервисов много, нужно определить маршрут:
+
+nginx → API Gateway → user-service → database
+
+Проверяем конфиг nginx или gateway, документацию, service discovery, Docker Compose или Kubernetes-манифесты.
+
+**На сервере**
+
+```bash
+ss -ltnp
+docker ps
+systemctl list-units --type=service
+```
+
+##### Шаг 3. Посмотреть логи входного сервиса
+
+**Если nginx**
+
+```bash
+tail -f /var/log/nginx/access.log
+tail -f /var/log/nginx/error.log
+```
+
+**Если systemd**
+
+```bash
+journalctl -u api-gateway -n 200
+```
+
+**Если Docker**
+
+```bash
+docker logs --tail 200 api-gateway
+```
+
+**Ищем request ID**
+
+```bash
+grep "abc-123" app.log
+```
+
+**Или ошибки по времени**
+
+```bash
+grep -Ei "error|exception|traceback|failed" app.log
+```
+
+##### Шаг 4. Посмотреть логи бизнес-сервиса
+
+Допустим запрос дошёл до user-service.
+
+```bash
+journalctl -u user-service -n 200
+```
+
+**Или**
+
+```bash
+docker logs --tail 200 user-service
+```
+
+**Ищем**
+
+- stacktrace;
+- timeout;
+- connection refused;
+- authentication failed;
+- null pointer;
+- key error;
+- database exception;
+- out of memory;
+- permission denied.
+
+##### Шаг 5. Проверить зависимости
+
+Приложение может работать, но падать при обращении к БД или другому сервису.
+
+**Проверить БД**
+
+```bash
+nc -vz db-host 5432
+```
+
+**Проверить другой сервис**
+
+```bash
+curl -v http://payment-service:8080/health
+```
+
+**Проверить брокер**
+
+```bash
+nc -vz kafka-host 9092
+```
+
+**Проверить DNS**
+
+```bash
+dig db-host
+nslookup db-host
+```
+
+##### Шаг 6. Проверить состояние сервиса
+
+```bash
+systemctl status user-service
+```
+
+**Или**
+
+```bash
+docker ps -a
+```
+
+Важно: сервис может быть running, но фактически неработоспособен. Поэтому отдельно проверяем health endpoint:
+
+```bash
+curl -v http://localhost:8080/health
+```
+
+##### Шаг 7. Проверить конфигурацию
+
+```bash
+env
+printenv
+echo $DB_HOST
+echo $DB_USER
+echo $ENV
+```
+
+**Проверить конфиги**
+
+```bash
+cat application.yml
+grep -rn "DB_HOST" .
+```
+
+#### Частые проблемы:
+
+- неверный host;
+- неверный порт;
+- неправильный пароль;
+- переменная отсутствует;
+- сервис направлен на старый стенд;
+- конфиг не перечитан после изменения.
+
+##### Шаг 8. Проверить ресурсы
+
+```bash
+df -h
+free -h
+top
+```
+
+**Ищем**
+
+- диск заполнен на 100%;
+- память закончилась;
+- процесс убит OOM Killer;
+- CPU загружен;
+- слишком много открытых файлов.
+
+**OOM можно искать так**
+
+dmesg | grep -i "out of memory"
+
+```bash
+journalctl -k | grep -i "oom"
+```
+
+##### Шаг 9. Проверить изменения
+
+**Нужно спросить**
+
+- был ли недавно деплой;
+- менялся ли конфиг;
+- менялась ли схема БД;
+- обновлялись ли сертификаты;
+- проблема возникает у всех или только у одного запроса.
+
+Если ошибка появилась после релиза, сравнить версии:
+
+```bash
+docker images
+docker inspect container
+git log -n 5
+```
+
+**Хороший ответ на собеседовании**
+
+Я сначала повторю запрос через curl -v, проверю статус, тело и request ID. Затем определю, какой сервис обрабатывает запрос: gateway, nginx и конкретный backend. По request ID и времени найду запрос в логах gateway и приложения. После этого проверю stacktrace и зависимости сервиса: БД, брокер, внешние API. Также проверю переменные окружения, конфигурацию, состояние процесса, порт и ресурсы сервера — память, CPU и диск. Если ошибка появилась после деплоя, сравню версию и последние изменения.
+
+#### Сценарий 2. Запрос не возвращает ответ и висит
+
+**Возможные причины**
+
+- таймаут зависимости;
+- зависший поток;
+- блокировка в БД;
+- сервис ждёт брокер;
+- сетевой timeout;
+- исчерпан connection pool;
+- высокая нагрузка.
+
+#### Проверки:
+
+```bash
+curl -v --max-time 10 http://host/api
+```
+
+**Проверить порт**
+
+```bash
+nc -vz host 8080
+```
+
+**Проверить нагрузку**
+
+```bash
+top
+free -h
+```
+
+**Проверить соединения**
+
+```bash
+ss -antp
+```
+
+**Проверить логи**
+
+```bash
+grep -Ei "timeout|connection pool|deadlock|blocked" app.log
+```
+
+**Ответ**
+
+Если запрос висит, сначала ограничу его временем через curl --max-time, проверю соединение с портом, затем логи сервиса на timeout и зависшие зависимости. Проверю состояние connection pool, БД, внешние сервисы, количество соединений и нагрузку на сервер.
+
+#### Сценарий 3. Получаем 502 Bad Gateway
+
+502 обычно означает:
+
+Proxy или gateway не получил корректный ответ от backend-сервиса.
+
+**Проверяем**
+
+```bash
+systemctl status nginx
+tail -f /var/log/nginx/error.log
+```
+
+**Проверить backend напрямую**
+
+```bash
+curl -v http://backend-host:8080/health
+```
+
+**Проверить порт**
+
+```bash
+nc -vz backend-host 8080
+```
+
+**Проверить, слушает ли backend**
+
+```bash
+ss -ltnp | grep 8080
+```
+
+**Типовые причины**
+
+- backend не запущен;
+- неправильный host/port в nginx;
+- backend упал;
+- connection refused;
+- DNS не разрешается;
+- backend отвечает некорректно.
+
+#### Сценарий 4. Получаем 504 Gateway Timeout
+
+504 означает:
+
+Gateway дождался backend, но тот не ответил вовремя.
+
+**Проверяем**
+
+- медленный backend;
+- медленный SQL;
+- недоступная зависимость;
+- высокий CPU;
+- проблемы сети;
+- слишком маленький timeout.
+
+#### Команды:
+
+```bash
+curl -v --max-time 30 http://backend/api
+top
+journalctl -u backend -n 200
+```
+
+**Ищем**
+
+```bash
+grep -Ei "timeout|slow|deadlock|pool" app.log
+```
+
+> **Короткий ответ для собеседования**
+>
+> При 504 я проверю, отвечает ли backend напрямую и сколько времени занимает запрос. Затем посмотрю логи backend, состояние БД, внешних сервисов, connection pool и нагрузку. Увеличивать timeout сразу не стоит — сначала нужно найти, почему backend медленный.
+
+#### Сценарий 5. Сервис не запускается
+
+**Порядок**
+
+```bash
+systemctl status service
+journalctl -u service -n 200
+```
+
+**Если Docker**
+
+```bash
+docker ps -a
+docker logs container
+```
+
+**Проверяем**
+
+- синтаксис конфига;
+- переменные окружения;
+- занятый порт;
+- права;
+- наличие файла;
+- доступность БД;
+- версию runtime;
+- место на диске.
+
+**Занятый порт**
+
+```bash
+lsof -i :8080
+ss -ltnp | grep 8080
+```
+
+#### Сценарий 6. Сервис запущен, но порт недоступен
+
+**Проверяем**
+
+```bash
+systemctl status service
+ss -ltnp | grep 8080
+```
+
+**Важный момент**
+
+127.0.0.1:8080
+
+означает доступ только локально.
+
+0.0.0.0:8080
+
+означает прослушивание на всех интерфейсах.
+
+**Дальше firewall**
+
+**ufw status**
+
+```bash
+iptables -L -n
+```
+
+**С клиента**
+
+```bash
+nc -vz server 8080
+```
+
+#### Сценарий 7. Автотесты локально проходят, в CI падают
+
+**Проверяем различия**
+
+```bash
+python --version
+pytest --version
+pip freeze
+env
+pwd
+ls -la
+```
+
+**Причины**
+
+- разные версии Python;
+- разные зависимости;
+- отсутствуют env-переменные;
+- другой рабочий каталог;
+- нет тестовых файлов;
+- нет прав;
+- CI не видит сервис;
+- параллельный запуск;
+- timezone/locale;
+- тесты зависят от порядка;
+- нет cleanup.
+
+> **Короткий ответ для собеседования**
+>
+> Я сравню окружение локально и в CI: версии Python и зависимостей, переменные, рабочую директорию, права, сеть и доступность стенда. Проверю, не запускаются ли тесты параллельно и нет ли зависимости от порядка или общих тестовых данных.
+
+#### Сценарий 8. На сервере закончилось место
+
+```bash
+df -h
+du -sh /*
+du -h /var | sort -h | tail -n 20
+```
+
+#### Частые причины:
+
+- логи;
+- Docker images;
+- Docker volumes;
+- дампы;
+- артефакты CI;
+- временные файлы.
+
+**Docker**
+
+```bash
+docker system df
+```
+
+Нельзя сразу удалять всё подряд. Сначала определить источник.
+
+#### Сценарий 9. Сервер тормозит
+
+**Проверяем**
+
+```bash
+top
+uptime
+free -h
+df -h
+```
+
+**Топ по CPU**
+
+```bash
+ps aux --sort=-%cpu | head
+```
+
+**Топ по памяти**
+
+```bash
+ps aux --sort=-%mem | head
+```
+
+**Проверить IO**
+
+**iostat**
+
+**Если установлен**
+
+vmstat 1
+
+Нужно определить, где узкое место:
+
+- CPU;
+- память;
+- диск;
+- сеть;
+- БД;
+- конкретный процесс.
+
+#### Сценарий 10. DNS-имя не работает, но по IP сервис доступен
+
+**Проверяем**
+
+```bash
+nslookup service.local
+dig service.local
+cat /etc/resolv.conf
+cat /etc/hosts
+```
+
+**Если**
+
+```bash
+curl http://10.0.0.5:8080
+```
+
+**работает, а**
+
+```bash
+curl http://service.local:8080
+```
+
+не работает, проблема почти наверняка в DNS или /etc/hosts.
+
+Универсальная структура ответа на диагностический вопрос
+
+> **Короткий ответ для собеседования**
+>
+> Сначала я воспроизвожу проблему и фиксирую точное время, запрос, статус и идентификатор запроса. Потом иду по слоям: DNS, сеть, порт, gateway, backend, зависимости. Проверяю логи, состояние сервисов, конфигурацию и переменные окружения. После этого проверяю ресурсы сервера и последние изменения или деплой. Стараюсь не перезапускать сервис сразу, потому что это может скрыть причину и удалить важное состояние.
+
+**Последняя фраза особенно хорошая**
+
+Сначала собираю диагностическую информацию, и только потом перезапускаю сервис.
+
+#### Что точно стоит выучить
+
+Для собеседования тебе достаточно уверенно знать:
+
+```bash
+curl -v
+ping
+nc -vz
+dig
+nslookup
+ss -ltnp
+ps aux
+top
+systemctl status
+journalctl -u
+docker ps
+docker logs
+df -h
+du -sh
+free -h
+env
+grep
+tail -f
+```
+
+И главное — уметь объяснить последовательность:
+
+Воспроизвести → определить слой → найти логи → проверить зависимости →
+проверить конфиг → проверить ресурсы → проверить последние изменения

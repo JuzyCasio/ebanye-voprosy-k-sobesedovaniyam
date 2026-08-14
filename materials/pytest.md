@@ -4,2604 +4,2911 @@
 
 Полный материал из присланного конспекта. Сохранены подробные объяснения, примеры, практические сценарии и вопросы для собеседования.
 
-## 1. Что такое pytest
+> **Как пользоваться конспектом**
+>
+> Выбери тему в навигации, прочитай объяснение и затем проговори выделенный короткий ответ своими словами. Код и команды оформлены отдельными блоками, чтобы их можно было быстро найти и скопировать.
+
+## Навигация по разделу
+
+- [Основы и запуск](#основы-и-запуск) — вопросы 1–6
+- [Фикстуры](#фикстуры) — вопросы 7–13
+- [Параметризация и маркеры](#параметризация-и-маркеры) — вопросы 14–20
+- [Встроенные возможности и расширение](#встроенные-возможности-и-расширение) — вопросы 21–27
+- [Архитектура тестов и интеграции](#архитектура-тестов-и-интеграции) — вопросы 28–39
+- [CI, отчёты и стабильность](#ci-отчёты-и-стабильность) — вопросы 40–49
+- [Тестовые данные и качество кода](#тестовые-данные-и-качество-кода) — вопросы 50–62
+- [Внутренние механизмы и практические проверки](#внутренние-механизмы-и-практические-проверки) — вопросы 63–80
+- [Собеседование и итоговое повторение](#собеседование-и-итоговое-повторение) — вопросы 81–89
 
-pytest — это тестовый фреймворк для Python, который используют для unit, integration, API, UI и end-to-end тестов. Его сильные стороны: простые assert, фикстуры, параметризация, плагины, удобный запуск из CLI, интеграция с Allure, CI/CD и параллельный запуск через плагины. В официальной документации pytest отдельно выделены фикстуры, параметризация, marks, плагины, конфигурация и работа с кэшем как основные механизмы фреймворка.  
+## Основы и запуск
+
+### 1. Что такое pytest
 
-### На собеседовании можно сказать так:
+pytest — это тестовый фреймворк для Python, который используют для unit, integration, API, UI и end-to-end тестов. Его сильные стороны: простые assert, фикстуры, параметризация, плагины, удобный запуск из CLI, интеграция с Allure, CI/CD и параллельный запуск через плагины. В официальной документации pytest отдельно выделены фикстуры, параметризация, marks, плагины, конфигурация и работа с кэшем как основные механизмы фреймворка.
+
+> **Короткий ответ для собеседования**
+>
+> pytest удобен тем, что тесты пишутся как обычные Python-функции, зависимости передаются через фикстуры, тестовые данные удобно раскладываются через parametrize, а поведение фреймворка можно расширять через хуки и плагины.
+
+**Простейший тест**
 
-pytest удобен тем, что тесты пишутся как обычные Python-функции, зависимости передаются через фикстуры, тестовые данные удобно раскладываются через parametrize, а поведение фреймворка можно расширять через хуки и плагины.  
+```python
+def test_sum() -> None:
+    assert 1 + 1 == 2
+```
 
-Простейший тест:  
+### 2. Как pytest находит тесты
 
-def test_sum() -> None:  
-    assert 1 + 1 == 2  
+**По умолчанию pytest ищет**
 
-## 2. Как pytest находит тесты
+```text
+test_*.py
+*_test.py
+```
+
+**Внутри файлов**
+
+```python
+def test_something():
+    ...
+
+class TestUser:
+    def test_create_user(self):
+        ...
+```
+
+#### Важно:
+
+```python
+class TestUser:
+    def test_user_created(self):
+        assert True
+```
+
+Но если у класса есть __init__, pytest обычно не будет нормально собирать такой класс как тестовый:
+
+```python
+class TestUser:
+    def __init__(self):
+        ...
+```
+
+> **Короткий ответ для собеседования**
+>
+> pytest собирает тесты по naming convention: файлы test_*.py или *_test.py, функции test_*, классы Test*. Для классов тестов не нужен __init__, состояние лучше готовить через фикстуры.
+
+### 3. Основные команды запуска
+
+| Команда | Что делает |
+|---|---|
+| `pytest` | Запускает все найденные тесты |
+| `pytest tests/test_users.py` | Запускает конкретный файл |
+| `pytest tests/test_users.py::test_create_user` | Запускает конкретную тестовую функцию |
+| `pytest tests/test_users.py::TestUserApi::test_create_user` | Запускает метод тестового класса |
+| `pytest -v` | Показывает подробный вывод |
+| `pytest -q` | Сокращает вывод |
+| `pytest -s` | Не перехватывает `print()` и другой вывод в stdout/stderr |
+| `pytest -x` | Останавливается после первого падения |
+| `pytest --maxfail=3` | Останавливается после трёх падений |
+| `pytest -k "user and not slow"` | Отбирает тесты по выражению в имени |
+| `pytest -m smoke` | Запускает тесты с маркером `smoke` |
+| `pytest --tb=short` | Сокращает traceback |
+| `pytest --collect-only` | Показывает собранные тесты без запуска |
+| `pytest --durations=10` | Показывает десять самых медленных тестов |
+| `pytest --lf` | Запускает только тесты, упавшие в прошлый раз |
+| `pytest --ff` | Сначала запускает ранее упавшие тесты, затем остальные |
 
-По умолчанию pytest ищет:  
+`--lf` — короткая форма `--last-failed`, а `--ff` — короткая форма `--failed-first`. Эти опции и `--cache-clear` используют встроенный кэш pytest.
 
-test_*.py  
-*_test.py  
+### 4. Assert в pytest
 
-Внутри файлов:  
+В pytest не нужно писать специальные assert-методы как в unittest:
 
-def test_something():  
-    ...  
+```python
+def test_user_name() -> None:
+    user = {"name": "Alex"}
+    assert user["name"] == "Alex"
+```
 
-class TestUser:  
-    def test_create_user(self):  
-        ...  
+**pytest сам покажет разницу**
 
-### Важно:
+```python
+def test_lists() -> None:
+    assert [1, 2, 3] == [1, 2, 4]
+```
 
-class TestUser:  
-    def test_user_created(self):  
-        assert True  
+**Можно добавлять сообщение**
 
-Но если у класса есть __init__, pytest обычно не будет нормально собирать такой класс как тестовый:  
+```python
+def test_status_code() -> None:
+    status_code = 500
 
-class TestUser:  
-    def __init__(self):  
-        ...  
+    assert status_code == 200, f"Expected 200, got {status_code}"
+```
 
-### На собесе:
+> **Короткий ответ для собеседования**
+>
+> В pytest используются обычные Python assert, но pytest переписывает assert-выражения и даёт подробный diff при падении.
 
-pytest собирает тесты по naming convention: файлы test_*.py или *_test.py, функции test_*, классы Test*. Для классов тестов не нужен __init__, состояние лучше готовить через фикстуры.  
+### 5. Структура проекта
 
-## 3. Основные команды запуска
+#### Типичная структура:
 
-pytest  
+```text
+project/
+├── app/
+│   └── users.py
+├── tests/
+│   ├── conftest.py
+│   ├── test_users.py
+│   └── test_orders.py
+├── pyproject.toml
+└── requirements.txt
+```
 
-Запустить все тесты.  
+#### Пример pyproject.toml:
 
-pytest tests/test_users.py  
+```toml
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+addopts = "-ra -q"
+markers = [
+    "smoke: быстрые smoke-тесты",
+    "regression: регрессионные тесты",
+    "slow: медленные тесты",
+]
+```
 
-Запустить конкретный файл.  
+Настройки pytest можно хранить в конфигурационных файлах в корне проекта; в актуальной документации перечислены поддерживаемые форматы, включая pytest.toml, pytest.ini, pyproject.toml, tox.ini и setup.cfg.
 
-pytest tests/test_users.py::test_create_user  
+### 6. conftest.py
 
-Запустить конкретный тест.  
+conftest.py — специальный файл pytest, куда обычно кладут:
 
-pytest tests/test_users.py::TestUserApi::test_create_user  
+- фикстуры;
+- хуки;
+- кастомные CLI-опции;
+- общую конфигурацию тестов;
+- подготовку окружения.
 
-Запустить конкретный тест внутри класса.  
+#### Пример:
 
-pytest -v  
+```python
+# tests/conftest.py
 
-Подробный вывод.  
+import pytest
 
-pytest -q  
+@pytest.fixture
+def base_url() -> str:
+    return "https://api.example.com"
+```
 
-### Короткий вывод.
+**Использование**
 
-pytest -s  
+```python
+def test_base_url(base_url: str) -> None:
+    assert base_url.startswith("https://")
+```
 
-Не перехватывать print.  
+> **Короткий ответ для собеседования**
+>
+> conftest.py позволяет объявлять фикстуры и хуки без явного импорта в тестах. pytest сам находит этот файл и делает фикстуры доступными для тестов в текущей директории и ниже.
 
-pytest -x  
+## Фикстуры
 
-Остановиться после первого падения.  
+### 7. Фикстуры
 
-pytest --maxfail=3  
+Фикстура — это способ подготовить данные, объект, подключение, клиент, пользователя, браузер, БД или окружение для теста.
 
-Остановиться после трёх падений.  
+Официальная документация описывает фикстуру как механизм, который даёт тестам заранее определённый и воспроизводимый контекст, например настроенную БД или подготовленные данные.
 
-pytest -k "user and not slow"  
+#### Пример:
 
-Запустить тесты, где имя содержит выражение.  
+```python
+import pytest
 
-pytest -m smoke  
+@pytest.fixture
+def user() -> dict[str, str]:
+    return {"name": "Alex", "role": "admin"}
 
-Запустить тесты с маркером smoke.  
+def test_user_role(user: dict[str, str]) -> None:
+    assert user["role"] == "admin"
+```
 
-pytest --tb=short  
+#### Главная идея:
 
-Сократить traceback.  
+pytest передаёт фикстуру в тест по имени аргумента.
 
-pytest --collect-only  
+**То есть здесь**
 
-Только собрать тесты, не запускать.  
+```python
+def test_user_role(user):
+    ...
+```
 
-pytest --durations=10  
+pytest видит аргумент user, ищет фикстуру с таким именем и выполняет её.
 
-Показать 10 самых медленных тестов.  
+### 8. Scope фикстур
 
-pytest --lf  
-pytest --last-failed  
+У фикстур есть область жизни:
 
-Запустить только тесты, которые упали в прошлый раз.  
+```python
+@pytest.fixture(scope="function")
+def fixture_func():
+    ...
+```
 
-pytest --ff  
-pytest --failed-first  
+#### Основные scope:
 
-Сначала запустить упавшие в прошлый раз, потом остальные.  
+- `function` — на каждый тест;
+- `class` — на класс;
+- `module` — на файл;
+- `package` — на пакет;
+- `session` — на весь запуск pytest.
 
-Опции --lf, --ff и --cache-clear относятся к встроенному cache-механизму pytest.  
+#### Пример:
 
-## 4. Assert в pytest
+```python
+import pytest
 
-В pytest не нужно писать специальные assert-методы как в unittest:  
+@pytest.fixture(scope="session")
+def auth_token() -> str:
+    return "token-123"
 
-def test_user_name() -> None:  
-    user = {"name": "Alex"}  
-    assert user["name"] == "Alex"  
+def test_one(auth_token: str) -> None:
+    assert auth_token
 
-pytest сам покажет разницу:  
+def test_two(auth_token: str) -> None:
+    assert auth_token.startswith("token")
+```
 
-def test_lists() -> None:  
-    assert [1, 2, 3] == [1, 2, 4]  
+> **Короткий ответ для собеседования**
+>
+> Scope определяет, как часто создаётся фикстура. function — перед каждым тестом, session — один раз за весь тестовый запуск. Чем шире scope, тем аккуратнее нужно быть с изменяемым состоянием.
 
-Можно добавлять сообщение:  
+### 9. Yield fixture: setup и teardown
 
-def test_status_code() -> None:  
-    status_code = 500  
+Фикстура может не только вернуть объект, но и подчистить ресурсы после теста.
 
-    assert status_code == 200, f"Expected 200, got {status_code}"  
+```python
+import pytest
 
-### На собеседовании:
+@pytest.fixture
+def db_connection():
+    connection = create_connection()
+    yield connection
+    connection.close()
+```
 
-В pytest используются обычные Python assert, но pytest переписывает assert-выражения и даёт подробный diff при падении.  
+Всё до yield — setup.
+Всё после yield — teardown.
 
-## 5. Структура проекта
+#### Пример попроще:
 
-### Типичная структура:
+```python
+import pytest
 
-project/  
-├── app/  
-│   └── users.py  
-├── tests/  
-│   ├── conftest.py  
-│   ├── test_users.py  
-│   └── test_orders.py  
-├── pyproject.toml  
-└── requirements.txt  
+@pytest.fixture
+def file_resource(tmp_path):
+    file_path = tmp_path / "data.txt"
+    file_path.write_text("hello")
 
-### Пример pyproject.toml:
+    yield file_path
 
-[tool.pytest.ini_options]  
-pythonpath = ["."]  
-testpaths = ["tests"]  
-addopts = "-ra -q"  
-markers = [  
-    "smoke: быстрые smoke-тесты",  
-    "regression: регрессионные тесты",  
-    "slow: медленные тесты",  
-]  
+    # teardown
+    if file_path.exists():
+        file_path.unlink()
+```
 
-Настройки pytest можно хранить в конфигурационных файлах в корне проекта; в актуальной документации перечислены поддерживаемые форматы, включая pytest.toml, pytest.ini, pyproject.toml, tox.ini и setup.cfg.  
+**Тест**
 
-## 6. conftest.py
+```python
+def test_file_content(file_resource) -> None:
+    assert file_resource.read_text() == "hello"
+```
 
-conftest.py — специальный файл pytest, куда обычно кладут:  
+> **Короткий ответ для собеседования**
+>
+> yield-фикстура удобна для ресурсов, которые нужно закрывать: соединение с БД, браузер, временный пользователь, файл, мок-сервер. Код после yield выполнится после завершения теста.
 
-фикстуры;  
-хуки;  
-кастомные CLI-опции;  
-общую конфигурацию тестов;  
-подготовку окружения.  
+### 10. addfinalizer
 
-### Пример:
+Альтернатива yield — request.addfinalizer.
 
-# tests/conftest.py  
+```python
+import pytest
 
-import pytest  
+@pytest.fixture
+def resource(request):
+    item = create_resource()
 
-@pytest.fixture  
-def base_url() -> str:  
-    return "https://api.example.com"  
+    def cleanup() -> None:
+        delete_resource(item)
 
-Использование:  
+    request.addfinalizer(cleanup)
 
-def test_base_url(base_url: str) -> None:  
-    assert base_url.startswith("https://")  
+    return item
+```
 
-### На собеседовании:
+Но чаще в обычных проектах используют yield, потому что он читается проще.
 
-conftest.py позволяет объявлять фикстуры и хуки без явного импорта в тестах. pytest сам находит этот файл и делает фикстуры доступными для тестов в текущей директории и ниже.  
+> **Короткий ответ для собеседования**
+>
+> addfinalizer полезен, когда нужно динамически регистрировать cleanup-функции, но для простого setup/teardown чаще читаемее yield.
 
-## 7. Фикстуры
+### 11. Autouse fixtures
 
-Фикстура — это способ подготовить данные, объект, подключение, клиент, пользователя, браузер, БД или окружение для теста.  
+Autouse fixture применяется автоматически, даже если тест явно её не запросил.
 
-Официальная документация описывает фикстуру как механизм, который даёт тестам заранее определённый и воспроизводимый контекст, например настроенную БД или подготовленные данные.  
+```python
+import pytest
 
-### Пример:
+@pytest.fixture(autouse=True)
+def clean_state() -> None:
+    print("before test")
+```
 
-import pytest  
+Официальная документация описывает autouse-фикстуры как способ автоматически запрашивать фикстуру для тестов, чтобы не дублировать её в аргументах.
 
-@pytest.fixture  
-def user() -> dict[str, str]:  
-    return {"name": "Alex", "role": "admin"}  
+#### Пример реального использования:
 
-def test_user_role(user: dict[str, str]) -> None:  
-    assert user["role"] == "admin"  
+```python
+import pytest
 
-### Главная идея:
+@pytest.fixture(autouse=True)
+def reset_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("DEBUG", raising=False)
+```
 
-pytest передаёт фикстуру в тест по имени аргумента.  
+> **Короткий ответ для собеседования**
+>
+> Autouse хорош для глобальной подготовки: очистка состояния, настройка env, логирование, reset моков. Но им нельзя злоупотреблять, потому что скрытые зависимости ухудшают читаемость тестов.
 
-То есть здесь:  
+### 12. Зависимости между фикстурами
 
-def test_user_role(user):  
-    ...  
+Фикстура может зависеть от другой фикстуры:
 
-pytest видит аргумент user, ищет фикстуру с таким именем и выполняет её.  
+```python
+import pytest
 
-## 8. Scope фикстур
+@pytest.fixture
+def token() -> str:
+    return "secret-token"
 
-У фикстур есть область жизни:  
+@pytest.fixture
+def api_client(token: str):
+    return ApiClient(token=token)
 
-@pytest.fixture(scope="function")  
-def fixture_func():  
-    ...  
+def test_get_user(api_client) -> None:
+    response = api_client.get_user(user_id=1)
+    assert response.status_code == 200
+```
 
-### Основные scope:
+> **Короткий ответ для собеседования**
+>
+> Фикстуры можно строить как граф зависимостей. pytest сам вычисляет порядок выполнения по зависимостям.
 
-function — на каждый тест  
-class    — на класс  
-module   — на файл  
-package  — на пакет  
-session  — на весь запуск pytest  
+### 13. Фабрики через фикстуры
 
-### Пример:
+Иногда фикстура должна не сразу создавать объект, а возвращать функцию-фабрику.
 
-import pytest  
+```python
+import pytest
 
-@pytest.fixture(scope="session")  
-def auth_token() -> str:  
-    return "token-123"  
+@pytest.fixture
+def user_factory():
+    def create_user(name: str = "Alex", role: str = "user") -> dict[str, str]:
+        return {
+            "name": name,
+            "role": role,
+        }
 
-def test_one(auth_token: str) -> None:  
-    assert auth_token  
+    return create_user
 
-def test_two(auth_token: str) -> None:  
-    assert auth_token.startswith("token")  
+def test_admin_user(user_factory) -> None:
+    user = user_factory(name="Ivan", role="admin")
 
-### На собеседовании:
+    assert user["role"] == "admin"
+```
 
-Scope определяет, как часто создаётся фикстура. function — перед каждым тестом, session — один раз за весь тестовый запуск. Чем шире scope, тем аккуратнее нужно быть с изменяемым состоянием.  
+> **Короткий ответ для собеседования**
+>
+> Если в тесте нужно создавать много объектов с разными параметрами, удобно делать fixture factory: фикстура возвращает функцию создания данных.
 
-## 9. Yield fixture: setup и teardown
+## Параметризация и маркеры
 
-Фикстура может не только вернуть объект, но и подчистить ресурсы после теста.  
+### 14. Параметризация тестов
 
-import pytest  
+Параметризация позволяет запустить один тест с разными наборами данных.
 
-@pytest.fixture  
-def db_connection():  
-    connection = create_connection()  
-    yield connection  
-    connection.close()  
+Официальная документация pytest описывает несколько уровней параметризации: через pytest.fixture(params=...), через @pytest.mark.parametrize, а также через pytest_generate_tests для кастомных схем.
 
-Всё до yield — setup.  
-Всё после yield — teardown.  
+#### Пример:
 
-### Пример попроще:
+```python
+import pytest
 
-import pytest  
+@pytest.mark.parametrize(
+    "password, expected",
+    [
+        ("Qwerty123", True),
+        ("short", False),
+        ("withoutdigits", False),
+        ("12345678", False),
+    ],
+)
+def test_password_validation(password: str, expected: bool) -> None:
+    assert is_valid_password(password) is expected
+```
 
-@pytest.fixture  
-def file_resource(tmp_path):  
-    file_path = tmp_path / "data.txt"  
-    file_path.write_text("hello")  
+> **Короткий ответ для собеседования**
+>
+> parametrize уменьшает дублирование и позволяет явно описать наборы тестовых данных. Один тест запускается несколько раз с разными аргументами.
 
-    yield file_path  
+### 15. ids в parametrize
 
-    # teardown  
-    if file_path.exists():  
-        file_path.unlink()  
+Чтобы в отчёте было понятно, какой набор данных упал:
 
-Тест:  
+```python
+import pytest
 
-def test_file_content(file_resource) -> None:  
-    assert file_resource.read_text() == "hello"  
+@pytest.mark.parametrize(
+    "username, expected_status",
+    [
+        ("alex", 201),
+        ("", 400),
+        ("a" * 256, 400),
+    ],
+    ids=[
+        "valid_username",
+        "empty_username",
+        "too_long_username",
+    ],
+)
+def test_create_user(username: str, expected_status: int) -> None:
+    response = create_user(username=username)
 
-### На собеседовании:
+    assert response.status_code == expected_status
+```
 
-yield-фикстура удобна для ресурсов, которые нужно закрывать: соединение с БД, браузер, временный пользователь, файл, мок-сервер. Код после yield выполнится после завершения теста.  
+> **Короткий ответ для собеседования**
+>
+> ids нужны для читаемого вывода в консоли и отчётах, особенно когда параметров много.
 
-## 10. addfinalizer
+### 16. pytest.param
 
-Альтернатива yield — request.addfinalizer.  
+Можно помечать конкретный набор данных:
 
-import pytest  
+```python
+import pytest
 
-@pytest.fixture  
-def resource(request):  
-    item = create_resource()  
+@pytest.mark.parametrize(
+    "value, expected",
+    [
+        (1, 2),
+        (2, 4),
+        pytest.param(3, 6, marks=pytest.mark.smoke),
+        pytest.param(4, 8, marks=pytest.mark.xfail(reason="known bug")),
+    ],
+)
+def test_double(value: int, expected: int) -> None:
+    assert value * 2 == expected
+```
 
-    def cleanup() -> None:  
-        delete_resource(item)  
+> **Короткий ответ для собеседования**
+>
+> pytest.param позволяет повесить mark, xfail, skip или id на конкретный набор параметров.
 
-    request.addfinalizer(cleanup)  
+### 17. Параметризация фикстур
 
-    return item  
+**Фикстуру тоже можно параметризовать**
 
-Но чаще в обычных проектах используют yield, потому что он читается проще.  
+```python
+import pytest
 
-### На собеседовании:
+@pytest.fixture(params=["chrome", "firefox", "webkit"])
+def browser_name(request) -> str:
+    return request.param
 
-addfinalizer полезен, когда нужно динамически регистрировать cleanup-функции, но для простого setup/teardown чаще читаемее yield.  
+def test_open_page(browser_name: str) -> None:
+    assert browser_name in ["chrome", "firefox", "webkit"]
+```
 
-## 11. Autouse fixtures
+> **Короткий ответ для собеседования**
+>
+> Параметризованная фикстура запускает все тесты, которые её используют, для каждого значения из params.
 
-Autouse fixture применяется автоматически, даже если тест явно её не запросил.  
+### 18. indirect parametrization
 
-import pytest  
+```python
+indirect=True означает: параметр передаётся не напрямую в тест, а в фикстуру через request.param.
 
-@pytest.fixture(autouse=True)  
-def clean_state() -> None:  
-    print("before test")  
+import pytest
 
-Официальная документация описывает autouse-фикстуры как способ автоматически запрашивать фикстуру для тестов, чтобы не дублировать её в аргументах.  
+@pytest.fixture
+def user(request) -> dict[str, str]:
+    role = request.param
 
-### Пример реального использования:
+    return {
+        "name": "Alex",
+        "role": role,
+    }
 
-import pytest  
+@pytest.mark.parametrize("user", ["admin", "manager"], indirect=True)
+def test_user_role(user: dict[str, str]) -> None:
+    assert user["role"] in ["admin", "manager"]
+```
 
-@pytest.fixture(autouse=True)  
-def reset_env(monkeypatch: pytest.MonkeyPatch) -> None:  
-    monkeypatch.delenv("DEBUG", raising=False)  
+> **Короткий ответ для собеседования**
+>
+> indirect используют, когда тестовые данные должны пройти через фикстуру, например для создания пользователя, подключения к окружению или подготовки сложного объекта.
 
-### На собеседовании:
+### 19. Маркеры
 
-Autouse хорош для глобальной подготовки: очистка состояния, настройка env, логирование, reset моков. Но им нельзя злоупотреблять, потому что скрытые зависимости ухудшают читаемость тестов.  
+Маркер — это метка на тесте.
 
-## 12. Зависимости между фикстурами
+```python
+import pytest
 
-Фикстура может зависеть от другой фикстуры:  
+@pytest.mark.smoke
+def test_login() -> None:
+    assert True
 
-import pytest  
+@pytest.mark.regression
+def test_create_order() -> None:
+    assert True
+```
 
-@pytest.fixture  
-def token() -> str:  
-    return "secret-token"  
+**Запуск**
 
-@pytest.fixture  
-def api_client(token: str):  
-    return ApiClient(token=token)  
+```bash
+pytest -m smoke
+```
 
-def test_get_user(api_client) -> None:  
-    response = api_client.get_user(user_id=1)  
-    assert response.status_code == 200  
+**Исключить slow**
 
-### На собеседовании:
+```bash
+pytest -m "not slow"
+```
 
-Фикстуры можно строить как граф зависимостей. pytest сам вычисляет порядок выполнения по зависимостям.  
+**Комбинация**
 
-## 13. Фабрики через фикстуры
+```bash
+pytest -m "smoke or critical"
+```
 
-Иногда фикстура должна не сразу создавать объект, а возвращать функцию-фабрику.  
+Лучше регистрировать маркеры в конфиге:
 
-import pytest  
+```toml
+[tool.pytest.ini_options]
+markers = [
+    "smoke: быстрые smoke-тесты",
+    "regression: регрессионные тесты",
+    "critical: критичные тесты",
+    "slow: медленные тесты",
+]
+```
 
-@pytest.fixture  
-def user_factory():  
-    def create_user(name: str = "Alex", role: str = "user") -> dict[str, str]:  
-        return {  
-            "name": name,  
-            "role": role,  
-        }  
+> **Короткий ответ для собеседования**
+>
+> Маркеры позволяют группировать тесты: smoke, regression, slow, api, ui, db. В CI удобно запускать разные наборы тестов по маркерам.
 
-    return create_user  
+### 20. skip, skipif, xfail
 
-def test_admin_user(user_factory) -> None:  
-    user = user_factory(name="Ivan", role="admin")  
+skip — тест не запускаем.
 
-    assert user["role"] == "admin"  
+```python
+import pytest
 
-### На собеседовании:
+@pytest.mark.skip(reason="temporarily disabled")
+def test_old_feature() -> None:
+    assert False
+```
 
-Если в тесте нужно создавать много объектов с разными параметрами, удобно делать fixture factory: фикстура возвращает функцию создания данных.  
+skipif — пропускаем по условию:
 
-## 14. Параметризация тестов
+```python
+import sys
+import pytest
 
-Параметризация позволяет запустить один тест с разными наборами данных.  
+@pytest.mark.skipif(sys.platform == "win32", reason="Linux only test")
+def test_linux_command() -> None:
+    assert True
+```
 
-Официальная документация pytest описывает несколько уровней параметризации: через pytest.fixture(params=...), через @pytest.mark.parametrize, а также через pytest_generate_tests для кастомных схем.  
+xfail — ожидаем, что тест упадёт:
 
-### Пример:
+```python
+import pytest
 
-import pytest  
+@pytest.mark.xfail(reason="known bug")
+def test_known_bug() -> None:
+    assert 1 == 2
+```
 
-@pytest.mark.parametrize(  
-    "password, expected",  
-    [  
-        ("Qwerty123", True),  
-        ("short", False),  
-        ("withoutdigits", False),  
-        ("12345678", False),  
-    ],  
-)  
-def test_password_validation(password: str, expected: bool) -> None:  
-    assert is_valid_password(password) is expected  
+**Разница**
 
-### На собеседовании:
+- skip  — тест не запускается
+- xfail — тест запускается, но падение ожидаемое
+- xpass — тест неожиданно прошёл, хотя был помечен xfail
 
-parametrize уменьшает дублирование и позволяет явно описать наборы тестовых данных. Один тест запускается несколько раз с разными аргументами.  
+Документация pytest формулирует это так: skip используется, когда тест должен проходить только при определённых условиях, а xfail — когда тест ожидаемо падает, например из-за известного бага или ещё не реализованной функциональности.
 
-## 15. ids в parametrize
+> **Короткий ответ для собеседования**
+>
+> xfail лучше использовать для известного бага с ссылкой на задачу. Если баг починили и тест стал проходить, pytest покажет XPASS, и это сигнал убрать xfail.
 
-Чтобы в отчёте было понятно, какой набор данных упал:  
+## Встроенные возможности и расширение
 
-import pytest  
+### 21. Встроенные фикстуры pytest
 
-@pytest.mark.parametrize(  
-    "username, expected_status",  
-    [  
-        ("alex", 201),  
-        ("", 400),  
-        ("a" * 256, 400),  
-    ],  
-    ids=[  
-        "valid_username",  
-        "empty_username",  
-        "too_long_username",  
-    ],  
-)  
-def test_create_user(username: str, expected_status: int) -> None:  
-    response = create_user(username=username)  
+**tmp_path**
 
-    assert response.status_code == expected_status  
+Создаёт временную директорию как pathlib.Path.
 
-### На собеседовании:
+```python
+def test_write_file(tmp_path) -> None:
+    file_path = tmp_path / "test.txt"
+    file_path.write_text("hello")
 
-ids нужны для читаемого вывода в консоли и отчётах, особенно когда параметров много.  
+    assert file_path.read_text() == "hello"
+```
 
-## 16. pytest.param
+**monkeypatch**
 
-Можно помечать конкретный набор данных:  
+**Позволяет временно менять**
 
-import pytest  
+- переменные окружения;
+- атрибуты объектов;
+- функции;
+- словари;
+- sys.path;
+- текущую директорию.
 
-@pytest.mark.parametrize(  
-    "value, expected",  
-    [  
-        (1, 2),  
-        (2, 4),  
-        pytest.param(3, 6, marks=pytest.mark.smoke),  
-        pytest.param(4, 8, marks=pytest.mark.xfail(reason="known bug")),  
-    ],  
-)  
-def test_double(value: int, expected: int) -> None:  
-    assert value * 2 == expected  
+```python
+def test_env(monkeypatch) -> None:
+    monkeypatch.setenv("APP_ENV", "test")
 
-### На собеседовании:
+    assert get_env() == "test"
+```
 
-pytest.param позволяет повесить mark, xfail, skip или id на конкретный набор параметров.  
+**Мок функции**
 
-## 17. Параметризация фикстур
+```python
+def test_get_current_user(monkeypatch) -> None:
+    def fake_get_user_id() -> int:
+        return 123
 
-Фикстуру тоже можно параметризовать:  
+    monkeypatch.setattr("app.auth.get_user_id", fake_get_user_id)
 
-import pytest  
+    assert get_current_user_id() == 123
+```
 
-@pytest.fixture(params=["chrome", "firefox", "webkit"])  
-def browser_name(request) -> str:  
-    return request.param  
+Документация pytest описывает monkeypatch как встроенную фикстуру для временного изменения объектов, словарей и os.environ; изменения автоматически откатываются после теста.
 
-def test_open_page(browser_name: str) -> None:  
-    assert browser_name in ["chrome", "firefox", "webkit"]  
+**capsys**
 
-### На собеседовании:
+Перехват stdout и stderr.
 
-Параметризованная фикстура запускает все тесты, которые её используют, для каждого значения из params.  
+```python
+def test_print(capsys) -> None:
+    print("hello")
 
-## 18. indirect parametrization
+    captured = capsys.readouterr()
 
-indirect=True означает: параметр передаётся не напрямую в тест, а в фикстуру через request.param.  
+    assert captured.out == "hello\n"
+```
 
-import pytest  
+**caplog**
 
-@pytest.fixture  
-def user(request) -> dict[str, str]:  
-    role = request.param  
+#### Проверка логов.
 
-    return {  
-        "name": "Alex",  
-        "role": role,  
-    }  
+```python
+import logging
 
-@pytest.mark.parametrize("user", ["admin", "manager"], indirect=True)  
-def test_user_role(user: dict[str, str]) -> None:  
-    assert user["role"] in ["admin", "manager"]  
+def test_logging(caplog) -> None:
+    with caplog.at_level(logging.INFO):
+        logging.info("User created")
 
-### На собеседовании:
+    assert "User created" in caplog.text
+```
 
-indirect используют, когда тестовые данные должны пройти через фикстуру, например для создания пользователя, подключения к окружению или подготовки сложного объекта.  
+**pytestconfig**
 
-## 19. Маркеры
+Доступ к конфигурации pytest.
 
-Маркер — это метка на тесте.  
+```python
+def test_config(pytestconfig) -> None:
+    verbose = pytestconfig.getoption("verbose")
 
-import pytest  
+    assert isinstance(verbose, int)
+```
 
-@pytest.mark.smoke  
-def test_login() -> None:  
-    assert True  
+**request**
 
-@pytest.mark.regression  
-def test_create_order() -> None:  
-    assert True  
+Доступ к контексту текущего теста или фикстуры.
 
-Запуск:  
+```python
+import pytest
 
-pytest -m smoke  
+@pytest.fixture
+def test_name(request) -> str:
+    return request.node.name
 
-Исключить slow:  
+def test_example(test_name: str) -> None:
+    assert test_name == "test_example"
+```
 
-pytest -m "not slow"  
+### 22. Кастомные CLI-опции
 
-Комбинация:  
+**В conftest.py**
 
-pytest -m "smoke or critical"  
+```python
+def pytest_addoption(parser) -> None:
+    parser.addoption(
+        "--env",
+        action="store",
+        default="dev",
+        help="Environment: dev, stage, prod",
+    )
+```
 
-Лучше регистрировать маркеры в конфиге:  
+**Фикстура**
 
-[tool.pytest.ini_options]  
-markers = [  
-    "smoke: быстрые smoke-тесты",  
-    "regression: регрессионные тесты",  
-    "critical: критичные тесты",  
-    "slow: медленные тесты",  
-]  
+```python
+import pytest
 
-### На собеседовании:
+@pytest.fixture
+def env(pytestconfig) -> str:
+    return pytestconfig.getoption("--env")
+```
 
-Маркеры позволяют группировать тесты: smoke, regression, slow, api, ui, db. В CI удобно запускать разные наборы тестов по маркерам.  
+**Тест**
 
-## 20. skip, skipif, xfail
+```python
+def test_env(env: str) -> None:
+    assert env in ["dev", "stage", "prod"]
+```
 
-skip — тест не запускаем.  
+**Запуск**
 
-import pytest  
+```bash
+pytest --env=stage
+```
 
-@pytest.mark.skip(reason="temporarily disabled")  
-def test_old_feature() -> None:  
-    assert False  
+> **Короткий ответ для собеседования**
+>
+> Кастомные CLI-опции удобно использовать для выбора окружения, base_url, браузера, запуска against mock/real service, включения debug-режима.
 
-skipif — пропускаем по условию:  
+### 23. Пример base_url через CLI
 
-import sys  
-import pytest  
+```python
+# conftest.py
 
-@pytest.mark.skipif(sys.platform == "win32", reason="Linux only test")  
-def test_linux_command() -> None:  
-    assert True  
+import pytest
 
-xfail — ожидаем, что тест упадёт:  
+def pytest_addoption(parser) -> None:
+    parser.addoption(
+        "--base-url",
+        action="store",
+        default="https://api.dev.example.com",
+    )
 
-import pytest  
+@pytest.fixture(scope="session")
+def base_url(pytestconfig) -> str:
+    return pytestconfig.getoption("--base-url")
+```
 
-@pytest.mark.xfail(reason="known bug")  
-def test_known_bug() -> None:  
-    assert 1 == 2  
+**Тест**
 
-Разница:  
+```python
+def test_healthcheck(base_url: str) -> None:
+    response = requests.get(f"{base_url}/health")
 
-skip  — тест не запускается  
-xfail — тест запускается, но падение ожидаемое  
-xpass — тест неожиданно прошёл, хотя был помечен xfail  
+    assert response.status_code == 200
+```
 
-Документация pytest формулирует это так: skip используется, когда тест должен проходить только при определённых условиях, а xfail — когда тест ожидаемо падает, например из-за известного бага или ещё не реализованной функциональности.  
+**Запуск**
 
-### На собеседовании:
+```bash
+pytest --base-url=https://api.stage.example.com
+```
 
-xfail лучше использовать для известного бага с ссылкой на задачу. Если баг починили и тест стал проходить, pytest покажет XPASS, и это сигнал убрать xfail.  
+### 24. Хуки pytest
 
-## 21. Встроенные фикстуры pytest
+Хуки позволяют вмешиваться в жизненный цикл pytest.
 
-tmp_path  
+#### Частые хуки:
 
-Создаёт временную директорию как pathlib.Path.  
+- pytest_addoption              — добавить CLI-опции
+- pytest_configure              — настройка после парсинга конфига
+- pytest_collection_modifyitems — изменить список собранных тестов
+- pytest_generate_tests         — динамическая параметризация
+- pytest_runtest_setup          — перед запуском теста
+- pytest_runtest_call           — сам вызов теста
+- pytest_runtest_teardown       — после теста
+- pytest_sessionstart           — старт сессии
+- pytest_sessionfinish          — конец сессии
 
-def test_write_file(tmp_path) -> None:  
-    file_path = tmp_path / "test.txt"  
-    file_path.write_text("hello")  
+#### Пример: автоматически добавлять marker api всем тестам из папки api.
 
-    assert file_path.read_text() == "hello"  
-monkeypatch  
+```python
+import pytest
 
-Позволяет временно менять:  
+def pytest_collection_modifyitems(items) -> None:
+    for item in items:
+        if "api" in str(item.fspath):
+            item.add_marker(pytest.mark.api)
+```
 
-переменные окружения;  
-атрибуты объектов;  
-функции;  
-словари;  
-sys.path;  
-текущую директорию.  
-def test_env(monkeypatch) -> None:  
-    monkeypatch.setenv("APP_ENV", "test")  
+#### Пример: пропускать slow-тесты без флага.
 
-    assert get_env() == "test"  
+```python
+import pytest
 
-Мок функции:  
+def pytest_addoption(parser) -> None:
+    parser.addoption(
+        "--run-slow",
+        action="store_true",
+        default=False,
+        help="Run slow tests",
+    )
 
-def test_get_current_user(monkeypatch) -> None:  
-    def fake_get_user_id() -> int:  
-        return 123  
+def pytest_collection_modifyitems(config, items) -> None:
+    if config.getoption("--run-slow"):
+        return
 
-    monkeypatch.setattr("app.auth.get_user_id", fake_get_user_id)  
+    skip_slow = pytest.mark.skip(reason="need --run-slow option to run")
 
-    assert get_current_user_id() == 123  
+    for item in items:
+        if "slow" in item.keywords:
+            item.add_marker(skip_slow)
+```
 
-Документация pytest описывает monkeypatch как встроенную фикстуру для временного изменения объектов, словарей и os.environ; изменения автоматически откатываются после теста.  
+Официальная документация описывает хуки как механизм плагинов pytest; один hook может иметь несколько реализаций, а hook wrapper позволяет выполнить код «вокруг» других hook-реализаций.
 
-capsys  
+> **Короткий ответ для собеседования**
+>
+> Хуки нужны, когда стандартных фикстур уже мало: например, нужно менять коллекцию тестов, добавлять опции запуска, динамически параметризовать тесты или интегрироваться с отчётами/CI.
 
-Перехват stdout и stderr.  
+### 25. pytest_generate_tests
 
-def test_print(capsys) -> None:  
-    print("hello")  
+Используется для динамической параметризации.
 
-    captured = capsys.readouterr()  
+```python
+def pytest_addoption(parser) -> None:
+    parser.addoption(
+        "--users",
+        action="store",
+        default="admin,manager",
+    )
 
-    assert captured.out == "hello\n"  
-caplog  
+def pytest_generate_tests(metafunc) -> None:
+    if "role" in metafunc.fixturenames:
+        roles = metafunc.config.getoption("--users").split(",")
+        metafunc.parametrize("role", roles)
+```
 
-### Проверка логов.
+**Тест**
 
-import logging  
+```python
+def test_user_role(role: str) -> None:
+    assert role in ["admin", "manager", "operator"]
+```
 
-def test_logging(caplog) -> None:  
-    with caplog.at_level(logging.INFO):  
-        logging.info("User created")  
+**Запуск**
 
-    assert "User created" in caplog.text  
-pytestconfig  
+```bash
+pytest --users=admin,operator
+```
 
-Доступ к конфигурации pytest.  
+> **Короткий ответ для собеседования**
+>
+> pytest_generate_tests применяют, когда набор параметров неизвестен заранее: например, он приходит из CLI, файла, базы, API или конфигурации окружения.
 
-def test_config(pytestconfig) -> None:  
-    verbose = pytestconfig.getoption("verbose")  
+### 26. Плагины pytest
 
-    assert isinstance(verbose, int)  
-request  
+pytest расширяется плагинами.
 
-Доступ к контексту текущего теста или фикстуры.  
+**Популярные**
 
-import pytest  
+- pytest-xdist      — параллельный запуск
+- pytest-cov        — coverage
+- pytest-rerunfailures — перезапуск flaky-тестов
+- allure-pytest     — Allure-отчёты
+- pytest-mock       — удобная работа с mock
+- pytest-asyncio    — async-тесты
+- pytest-timeout    — timeout на тесты
 
-@pytest.fixture  
-def test_name(request) -> str:  
-    return request.node.name  
+> **Короткий ответ для собеседования**
+>
+> Плагины в pytest — это расширения, которые добавляют фикстуры, хуки, CLI-опции или отчётность. Например, xdist добавляет параллельный запуск, allure-pytest — генерацию Allure results, pytest-cov — coverage.
 
-def test_example(test_name: str) -> None:  
-    assert test_name == "test_example"  
+### 27. pytest-xdist
 
-## 22. Кастомные CLI-опции
+**Установка**
 
-В conftest.py:  
+```bash
+pip install pytest-xdist
+```
 
-def pytest_addoption(parser) -> None:  
-    parser.addoption(  
-        "--env",  
-        action="store",  
-        default="dev",  
-        help="Environment: dev, stage, prod",  
-    )  
+**Запуск**
 
-Фикстура:  
+```bash
+pytest -n auto
+```
 
-import pytest  
+**Или конкретное число воркеров**
 
-@pytest.fixture  
-def env(pytestconfig) -> str:  
-    return pytestconfig.getoption("--env")  
+```bash
+pytest -n 4
+```
 
-Тест:  
+Документация pytest-xdist говорит, что плагин добавляет режимы выполнения тестов, самый частый из которых — распределение тестов по нескольким CPU для ускорения запуска; при pytest -n auto создаются worker-процессы по числу доступных CPU.
 
-def test_env(env: str) -> None:  
-    assert env in ["dev", "stage", "prod"]  
+**Важный вопрос на собесе**
 
-Запуск:  
+#### Как pytest-xdist распределяет тесты?
 
-pytest --env=stage  
+**Обычный ответ**
 
-### На собеседовании:
+xdist запускает несколько worker-процессов. Основной процесс собирает тесты и распределяет их между worker’ами. Поэтому тесты должны быть независимыми, не должны конфликтовать за одни и те же файлы, пользователей, БД-записи или порты.
 
-Кастомные CLI-опции удобно использовать для выбора окружения, base_url, браузера, запуска against mock/real service, включения debug-режима.  
+**Проблемы при параллельном запуске**
 
-## 23. Пример base_url через CLI
+1. Общая БД без изоляции.
+2. Один и тот же тестовый пользователь.
+3. Общий файл для записи.
+4. Общий порт.
+5. Тесты зависят от порядка запуска.
+6. Фикстура session scope создаёт общий mutable state.
 
-# conftest.py  
+#### Как решать:
 
-import pytest  
+```python
+import uuid
 
-def pytest_addoption(parser) -> None:  
-    parser.addoption(  
-        "--base-url",  
-        action="store",  
-        default="https://api.dev.example.com",  
-    )  
+def unique_email() -> str:
+    return f"user_{uuid.uuid4().hex}@example.com"
+```
 
-@pytest.fixture(scope="session")  
-def base_url(pytestconfig) -> str:  
-    return pytestconfig.getoption("--base-url")  
+**Или учитывать worker id**
 
-Тест:  
+```python
+import pytest
 
-def test_healthcheck(base_url: str) -> None:  
-    response = requests.get(f"{base_url}/health")  
+@pytest.fixture
+def user_email(worker_id: str) -> str:
+    return f"user_{worker_id}@example.com"
+```
 
-    assert response.status_code == 200  
+## Архитектура тестов и интеграции
 
-Запуск:  
+### 28. Как изолировать тесты
 
-pytest --base-url=https://api.stage.example.com  
+#### Акцент для собеседования
 
-## 24. Хуки pytest
+**Ответ**
 
-Хуки позволяют вмешиваться в жизненный цикл pytest.  
+Изоляция означает, что тест не зависит от других тестов и не оставляет после себя состояние, которое может повлиять на следующий тест.
 
-### Частые хуки:
+**Способы**
 
-pytest_addoption              — добавить CLI-опции  
-pytest_configure              — настройка после парсинга конфига  
-pytest_collection_modifyitems — изменить список собранных тестов  
-pytest_generate_tests         — динамическая параметризация  
-pytest_runtest_setup          — перед запуском теста  
-pytest_runtest_call           — сам вызов теста  
-pytest_runtest_teardown       — после теста  
-pytest_sessionstart           — старт сессии  
-pytest_sessionfinish          — конец сессии  
+1. Уникальные тестовые данные.
+2. Очистка данных после теста.
+3. Транзакции с rollback.
+4. Отдельная схема/БД на worker.
+5. Моки внешних сервисов.
+6. tmp_path вместо общих файлов.
+7. Не полагаться на порядок тестов.
+8. Не использовать общий mutable state.
+9. Для API — создавать данные через API/fixture и удалять после теста.
+10. Для UI — использовать независимых пользователей или сбрасывать состояние.
 
-### Пример: автоматически добавлять marker api всем тестам из папки api.
+#### Пример cleanup:
 
-import pytest  
+```python
+import pytest
 
-def pytest_collection_modifyitems(items) -> None:  
-    for item in items:  
-        if "api" in str(item.fspath):  
-            item.add_marker(pytest.mark.api)  
+@pytest.fixture
+def created_user(api_client):
+    user = api_client.create_user(name="Alex")
 
-### Пример: пропускать slow-тесты без флага.
+    yield user
 
-import pytest  
+    api_client.delete_user(user["id"])
+```
 
-def pytest_addoption(parser) -> None:  
-    parser.addoption(  
-        "--run-slow",  
-        action="store_true",  
-        default=False,  
-        help="Run slow tests",  
-    )  
+### 29. Как тестировать API через pytest
 
-def pytest_collection_modifyitems(config, items) -> None:  
-    if config.getoption("--run-slow"):  
-        return  
+#### Пример клиента:
 
-    skip_slow = pytest.mark.skip(reason="need --run-slow option to run")  
+```python
+from dataclasses import dataclass
 
-    for item in items:  
-        if "slow" in item.keywords:  
-            item.add_marker(skip_slow)  
+import requests
 
-Официальная документация описывает хуки как механизм плагинов pytest; один hook может иметь несколько реализаций, а hook wrapper позволяет выполнить код «вокруг» других hook-реализаций.  
+@dataclass
+class ApiClient:
+    base_url: str
 
-### На собеседовании:
+    def get_user(self, user_id: int) -> requests.Response:
+        return requests.get(f"{self.base_url}/users/{user_id}", timeout=5)
 
-Хуки нужны, когда стандартных фикстур уже мало: например, нужно менять коллекцию тестов, добавлять опции запуска, динамически параметризовать тесты или интегрироваться с отчётами/CI.  
+    def create_user(self, payload: dict) -> requests.Response:
+        return requests.post(f"{self.base_url}/users", json=payload, timeout=5)
+```
 
-## 25. pytest_generate_tests
+**Фикстура**
 
-Используется для динамической параметризации.  
+```python
+import pytest
 
-def pytest_addoption(parser) -> None:  
-    parser.addoption(  
-        "--users",  
-        action="store",  
-        default="admin,manager",  
-    )  
+@pytest.fixture(scope="session")
+def api_client(base_url: str) -> ApiClient:
+    return ApiClient(base_url=base_url)
+```
 
-def pytest_generate_tests(metafunc) -> None:  
-    if "role" in metafunc.fixturenames:  
-        roles = metafunc.config.getoption("--users").split(",")  
-        metafunc.parametrize("role", roles)  
+**Тест**
 
-Тест:  
+```python
+def test_create_user(api_client: ApiClient) -> None:
+    payload = {
+        "username": "alex",
+        "password": "Qwerty123",
+    }
 
-def test_user_role(role: str) -> None:  
-    assert role in ["admin", "manager", "operator"]  
+    response = api_client.create_user(payload)
 
-Запуск:  
+    assert response.status_code == 201
 
-pytest --users=admin,operator  
+    body = response.json()
 
-### На собеседовании:
+    assert "id" in body
+    assert body["username"] == payload["username"]
+```
 
-pytest_generate_tests применяют, когда набор параметров неизвестен заранее: например, он приходит из CLI, файла, базы, API или конфигурации окружения.  
+#### Что проверять в API:
 
-## 26. Плагины pytest
+1. status code
+2. response body
+3. JSON schema
+4. обязательные поля
+5. типы данных
+6. ошибки валидации
+7. headers
+8. авторизацию
+9. права доступа
+10. идемпотентность
+11. таймауты
+12. негативные сценарии
+13. контракты между сервисами
 
-pytest расширяется плагинами.  
+### 30. Пример параметризованного API-теста
 
-Популярные:  
+```python
+import pytest
 
-pytest-xdist      — параллельный запуск  
-pytest-cov        — coverage  
-pytest-rerunfailures — перезапуск flaky-тестов  
-allure-pytest     — Allure-отчёты  
-pytest-mock       — удобная работа с mock  
-pytest-asyncio    — async-тесты  
-pytest-timeout    — timeout на тесты  
+@pytest.mark.parametrize(
+    "payload, expected_status",
+    [
+        (
+            {"username": "alex", "password": "Qwerty123"},
+            201,
+        ),
+        (
+            {"username": "", "password": "Qwerty123"},
+            400,
+        ),
+        (
+            {"username": "alex", "password": "short"},
+            400,
+        ),
+        (
+            {"username": "a" * 256, "password": "Qwerty123"},
+            400,
+        ),
+    ],
+    ids=[
+        "valid_user",
+        "empty_username",
+        "short_password",
+        "too_long_username",
+    ],
+)
+def test_create_user_validation(api_client, payload: dict, expected_status: int) -> None:
+    response = api_client.create_user(payload)
 
-### На собеседовании:
+    assert response.status_code == expected_status
+```
 
-Плагины в pytest — это расширения, которые добавляют фикстуры, хуки, CLI-опции или отчётность. Например, xdist добавляет параллельный запуск, allure-pytest — генерацию Allure results, pytest-cov — coverage.  
+> **Короткий ответ для собеседования**
+>
+> Я бы вынес API-клиент в отдельный слой, тестовые данные — в фикстуры или фабрики, а проверки — в читаемые assert’ы или helper-функции, если они повторяются.
 
-## 27. pytest-xdist
+### 31. Проверка схемы ответа
 
-Установка:  
+#### Пример без внешних библиотек:
 
-pip install pytest-xdist  
+```python
+def assert_user_schema(body: dict) -> None:
+    assert isinstance(body["id"], int)
+    assert isinstance(body["username"], str)
+    assert isinstance(body["is_active"], bool)
 
-Запуск:  
+def test_get_user(api_client) -> None:
+    response = api_client.get_user(user_id=1)
 
-pytest -n auto  
+    assert response.status_code == 200
 
-Или конкретное число воркеров:  
+    body = response.json()
+    assert_user_schema(body)
+```
 
-pytest -n 4  
+**С jsonschema**
 
-Документация pytest-xdist говорит, что плагин добавляет режимы выполнения тестов, самый частый из которых — распределение тестов по нескольким CPU для ускорения запуска; при pytest -n auto создаются worker-процессы по числу доступных CPU.  
+```python
+from jsonschema import validate
 
-Важный вопрос на собесе:  
+USER_SCHEMA = {
+    "type": "object",
+    "required": ["id", "username", "is_active"],
+    "properties": {
+        "id": {"type": "integer"},
+        "username": {"type": "string"},
+        "is_active": {"type": "boolean"},
+    },
+}
 
-### Как pytest-xdist распределяет тесты?
+def test_get_user_schema(api_client) -> None:
+    response = api_client.get_user(user_id=1)
 
-Обычный ответ:  
+    assert response.status_code == 200
 
-xdist запускает несколько worker-процессов. Основной процесс собирает тесты и распределяет их между worker’ами. Поэтому тесты должны быть независимыми, не должны конфликтовать за одни и те же файлы, пользователей, БД-записи или порты.  
+    validate(instance=response.json(), schema=USER_SCHEMA)
+```
 
-Проблемы при параллельном запуске:  
+### 32. Работа с БД в pytest
 
-1. Общая БД без изоляции.  
-2. Один и тот же тестовый пользователь.  
-3. Общий файл для записи.  
-4. Общий порт.  
-5. Тесты зависят от порядка запуска.  
-6. Фикстура session scope создаёт общий mutable state.  
+#### Типичный подход:
 
-### Как решать:
+1. Поднять тестовую БД.
+2. Накатить миграции.
+3. Перед тестом подготовить данные.
+4. После теста откатить транзакцию или удалить данные.
+5. Не использовать продовую БД.
 
-import uuid  
+#### Пример фикстуры с rollback:
 
-def unique_email() -> str:  
-    return f"user_{uuid.uuid4().hex}@example.com"  
+```python
+import pytest
 
-Или учитывать worker id:  
+@pytest.fixture
+def db_session():
+    session = create_db_session()
+    transaction = session.begin()
 
-import pytest  
+    yield session
 
-@pytest.fixture  
-def user_email(worker_id: str) -> str:  
-    return f"user_{worker_id}@example.com"  
+    transaction.rollback()
+    session.close()
+```
 
-## 28. Как изолировать тесты
+**Тест**
 
-### На собеседовании это прям частый вопрос.
+```python
+def test_user_saved_to_db(db_session) -> None:
+    user = User(name="Alex")
 
-Ответ:  
+    db_session.add(user)
+    db_session.flush()
 
-Изоляция означает, что тест не зависит от других тестов и не оставляет после себя состояние, которое может повлиять на следующий тест.  
+    assert user.id is not None
+```
 
-Способы:  
+> **Короткий ответ для собеседования**
+>
+> Для БД-тестов важно изолировать данные. Обычно используют транзакции с rollback, отдельные схемы, временные таблицы или отдельные БД на worker при параллельном запуске.
 
-1. Уникальные тестовые данные.  
-2. Очистка данных после теста.  
-3. Транзакции с rollback.  
-4. Отдельная схема/БД на worker.  
-5. Моки внешних сервисов.  
-6. tmp_path вместо общих файлов.  
-7. Не полагаться на порядок тестов.  
-8. Не использовать общий mutable state.  
-9. Для API — создавать данные через API/fixture и удалять после теста.  
-10. Для UI — использовать независимых пользователей или сбрасывать состояние.  
+### 33. Моки
 
-### Пример cleanup:
+**Через стандартный unittest.mock**
 
-import pytest  
+```python
+from unittest.mock import Mock
 
-@pytest.fixture  
-def created_user(api_client):  
-    user = api_client.create_user(name="Alex")  
+def test_send_email() -> None:
+    email_sender = Mock()
+    service = UserService(email_sender=email_sender)
 
-    yield user  
+    service.register_user("alex@example.com")
 
-    api_client.delete_user(user["id"])  
+    email_sender.send.assert_called_once_with("alex@example.com")
+```
 
-## 29. Как тестировать API через pytest
+**Через monkeypatch**
 
-### Пример клиента:
+```python
+def test_external_service(monkeypatch) -> None:
+    def fake_get_rate() -> float:
+        return 100.0
 
-from dataclasses import dataclass  
+    monkeypatch.setattr("app.currency.get_rate", fake_get_rate)
 
-import requests  
+    assert calculate_price(10) == 1000.0
+```
 
-@dataclass  
-class ApiClient:  
-    base_url: str  
+> **Короткий ответ для собеседования**
+>
+> Моки нужны, чтобы изолировать тестируемую логику от внешних зависимостей: сети, БД, брокеров, файловой системы, времени, сторонних API.
 
-    def get_user(self, user_id: int) -> requests.Response:  
-        return requests.get(f"{self.base_url}/users/{user_id}", timeout=5)  
+### 34. Тестирование исключений
 
-    def create_user(self, payload: dict) -> requests.Response:  
-        return requests.post(f"{self.base_url}/users", json=payload, timeout=5)  
+```python
+import pytest
 
-Фикстура:  
+def divide(a: int, b: int) -> float:
+    if b == 0:
+        raise ValueError("division by zero")
 
-import pytest  
+    return a / b
 
-@pytest.fixture(scope="session")  
-def api_client(base_url: str) -> ApiClient:  
-    return ApiClient(base_url=base_url)  
+def test_divide_by_zero() -> None:
+    with pytest.raises(ValueError, match="division by zero"):
+        divide(10, 0)
+```
 
-Тест:  
+> **Короткий ответ для собеседования**
+>
+> pytest.raises проверяет, что код выбрасывает ожидаемое исключение. Через match можно проверить текст ошибки.
 
-def test_create_user(api_client: ApiClient) -> None:  
-    payload = {  
-        "username": "alex",  
-        "password": "Qwerty123",  
-    }  
+### 35. Проверка логов
 
-    response = api_client.create_user(payload)  
+```python
+import logging
 
-    assert response.status_code == 201  
+def create_user(name: str) -> None:
+    logging.info("Creating user %s", name)
 
-    body = response.json()  
+def test_create_user_logs(caplog) -> None:
+    with caplog.at_level(logging.INFO):
+        create_user("Alex")
 
-    assert "id" in body  
-    assert body["username"] == payload["username"]  
+    assert "Creating user Alex" in caplog.text
+```
 
-### Что проверять в API:
+> **Короткий ответ для собеседования**
+>
+> caplog полезен, когда часть поведения выражается через логи: ошибки интеграций, audit events, retry, fallback.
 
-1. status code  
-2. response body  
-3. JSON schema  
-4. обязательные поля  
-5. типы данных  
-6. ошибки валидации  
-7. headers  
-8. авторизацию  
-9. права доступа  
-10. идемпотентность  
-11. таймауты  
-12. негативные сценарии  
-13. контракты между сервисами  
+### 36. Проверка print/stdout
 
-## 30. Пример параметризованного API-теста
+```python
+def greet(name: str) -> None:
+    print(f"Hello, {name}")
 
-import pytest  
+def test_greet(capsys) -> None:
+    greet("Alex")
 
-@pytest.mark.parametrize(  
-    "payload, expected_status",  
-    [  
-        (  
-            {"username": "alex", "password": "Qwerty123"},  
-            201,  
-        ),  
-        (  
-            {"username": "", "password": "Qwerty123"},  
-            400,  
-        ),  
-        (  
-            {"username": "alex", "password": "short"},  
-            400,  
-        ),  
-        (  
-            {"username": "a" * 256, "password": "Qwerty123"},  
-            400,  
-        ),  
-    ],  
-    ids=[  
-        "valid_user",  
-        "empty_username",  
-        "short_password",  
-        "too_long_username",  
-    ],  
-)  
-def test_create_user_validation(api_client, payload: dict, expected_status: int) -> None:  
-    response = api_client.create_user(payload)  
+    captured = capsys.readouterr()
 
-    assert response.status_code == expected_status  
+    assert captured.out == "Hello, Alex\n"
+```
 
-### На собеседовании:
+### 37. tmp_path для файлов
 
-Я бы вынес API-клиент в отдельный слой, тестовые данные — в фикстуры или фабрики, а проверки — в читаемые assert’ы или helper-функции, если они повторяются.  
+```python
+def test_report_created(tmp_path) -> None:
+    report_path = tmp_path / "report.txt"
 
-## 31. Проверка схемы ответа
+    report_path.write_text("OK")
 
-### Пример без внешних библиотек:
+    assert report_path.exists()
+    assert report_path.read_text() == "OK"
+```
 
-def assert_user_schema(body: dict) -> None:  
-    assert isinstance(body["id"], int)  
-    assert isinstance(body["username"], str)  
-    assert isinstance(body["is_active"], bool)  
+> **Короткий ответ для собеседования**
+>
+> tmp_path лучше, чем писать в фиксированный путь, потому что каждый тест получает временную директорию, и тесты не конфликтуют между собой.
 
-def test_get_user(api_client) -> None:  
-    response = api_client.get_user(user_id=1)  
+### 38. Тестирование времени
 
-    assert response.status_code == 200  
+#### Плохой вариант:
 
-    body = response.json()  
-    assert_user_schema(body)  
+```python
+from datetime import datetime
 
-С jsonschema:  
+def is_new_year() -> bool:
+    return datetime.now().month == 1
+```
 
-from jsonschema import validate  
+Такой код трудно тестировать.
 
-USER_SCHEMA = {  
-    "type": "object",  
-    "required": ["id", "username", "is_active"],  
-    "properties": {  
-        "id": {"type": "integer"},  
-        "username": {"type": "string"},  
-        "is_active": {"type": "boolean"},  
-    },  
-}  
+**Лучше**
 
-def test_get_user_schema(api_client) -> None:  
-    response = api_client.get_user(user_id=1)  
+```python
+from datetime import datetime
 
-    assert response.status_code == 200  
+def is_new_year(now: datetime) -> bool:
+    return now.month == 1
+```
 
-    validate(instance=response.json(), schema=USER_SCHEMA)  
+**Тест**
 
-## 32. Работа с БД в pytest
+```python
+from datetime import datetime
 
-### Типичный подход:
+def test_is_new_year() -> None:
+    assert is_new_year(datetime(2026, 1, 1))
+```
 
-1. Поднять тестовую БД.  
-2. Накатить миграции.  
-3. Перед тестом подготовить данные.  
-4. После теста откатить транзакцию или удалить данные.  
-5. Не использовать продовую БД.  
+> **Короткий ответ для собеседования**
+>
+> Лучше внедрять время как зависимость, а не вызывать datetime.now() глубоко внутри бизнес-логики. Тогда тесты проще и стабильнее.
 
-### Пример фикстуры с rollback:
+### 39. Async tests
 
-import pytest  
+Для async-тестов часто используют pytest-asyncio.
 
-@pytest.fixture  
-def db_session():  
-    session = create_db_session()  
-    transaction = session.begin()  
+```python
+import pytest
 
-    yield session  
+@pytest.mark.asyncio
+async def test_async_get_user() -> None:
+    user = await get_user(user_id=1)
 
-    transaction.rollback()  
-    session.close()  
+    assert user.id == 1
+```
 
-Тест:  
+> **Короткий ответ для собеседования**
+>
+> Обычный pytest не await’ит async-функции сам по себе. Для async-кода используют плагины, например pytest-asyncio.
 
-def test_user_saved_to_db(db_session) -> None:  
-    user = User(name="Alex")  
+## CI, отчёты и стабильность
 
-    db_session.add(user)  
-    db_session.flush()  
+### 40. Allure + pytest
 
-    assert user.id is not None  
+**Обычно установка**
 
-### На собеседовании:
+```bash
+pip install allure-pytest
+```
 
-Для БД-тестов важно изолировать данные. Обычно используют транзакции с rollback, отдельные схемы, временные таблицы или отдельные БД на worker при параллельном запуске.  
+**Запуск**
 
-## 33. Моки
+```bash
+pytest --alluredir=allure-results
+```
 
-Через стандартный unittest.mock:  
+**Генерация отчёта**
 
-from unittest.mock import Mock  
+```bash
+allure serve allure-results
+```
 
-def test_send_email() -> None:  
-    email_sender = Mock()  
-    service = UserService(email_sender=email_sender)  
+Allure-документация для pytest описывает интеграцию для генерации отчётов, улучшения читаемости и навигации, steps, attachments, histories, retries, visual analytics и quality gate.
 
-    service.register_user("alex@example.com")  
+#### Пример:
 
-    email_sender.send.assert_called_once_with("alex@example.com")  
+```python
+import allure
 
-Через monkeypatch:  
+@allure.feature("Users")
+@allure.story("Create user")
+def test_create_user(api_client) -> None:
+    with allure.step("Create user via API"):
+        response = api_client.create_user(
+            {
+                "username": "alex",
+                "password": "Qwerty123",
+            }
+        )
 
-def test_external_service(monkeypatch) -> None:  
-    def fake_get_rate() -> float:  
-        return 100.0  
+    with allure.step("Check response"):
+        assert response.status_code == 201
 
-    monkeypatch.setattr("app.currency.get_rate", fake_get_rate)  
+Attachment:
 
-    assert calculate_price(10) == 1000.0  
+import allure
 
-### На собеседовании:
+def test_response_body(api_client) -> None:
+    response = api_client.get_user(user_id=1)
 
-Моки нужны, чтобы изолировать тестируемую логику от внешних зависимостей: сети, БД, брокеров, файловой системы, времени, сторонних API.  
+    allure.attach(
+        response.text,
+        name="Response body",
+        attachment_type=allure.attachment_type.JSON,
+    )
 
-## 34. Тестирование исключений
+    assert response.status_code == 200
+```
 
-import pytest  
+> **Короткий ответ для собеседования**
+>
+> В Allure я бы добавлял steps на бизнес-действия, attachments на request/response/logs/screenshots, labels для feature/story/severity и links на задачи или test cases.
 
-def divide(a: int, b: int) -> float:  
-    if b == 0:  
-        raise ValueError("division by zero")  
+### 41. Как запускать pytest в CI
 
-    return a / b  
+#### Пример GitLab CI:
 
-def test_divide_by_zero() -> None:  
-    with pytest.raises(ValueError, match="division by zero"):  
-        divide(10, 0)  
+```yaml
+stages:
+```
 
-### На собеседовании:
+  - test
 
-pytest.raises проверяет, что код выбрасывает ожидаемое исключение. Через match можно проверить текст ошибки.  
+**api_tests**
+  stage: test
 
-## 35. Проверка логов
+```yaml
+  image: python:3.11
+  script:
+    - pip install -r requirements.txt
+    - pytest tests/api -m "smoke" --alluredir=allure-results
+  artifacts:
+    when: always
+    paths:
+      - allure-results
+```
 
-import logging  
+#### Пример Jenkins pipeline:
 
-def create_user(name: str) -> None:  
-    logging.info("Creating user %s", name)  
+```bash
+pipeline {
+    agent any
 
-def test_create_user_logs(caplog) -> None:  
-    with caplog.at_level(logging.INFO):  
-        create_user("Alex")  
+    stages {
+        stage('Install dependencies') {
+            steps {
+                sh 'python -m venv .venv'
+                sh '. .venv/bin/activate && pip install -r requirements.txt'
+            }
+        }
 
-    assert "Creating user Alex" in caplog.text  
+        stage('Run tests') {
+            steps {
+                sh '. .venv/bin/activate && pytest tests -m smoke --alluredir=allure-results'
+            }
+        }
+    }
 
-### На собеседовании:
+    post {
+        always {
+            archiveArtifacts artifacts: 'allure-results/**', allowEmptyArchive: true
+        }
+    }
+}
+```
 
-caplog полезен, когда часть поведения выражается через логи: ошибки интеграций, audit events, retry, fallback.  
+> **Короткий ответ для собеседования**
+>
+> В CI обычно разделяют smoke, regression, nightly, pre-merge тесты. Важно сохранять артефакты: Allure results, логи, скриншоты, видео, request/response dump.
 
-## 36. Проверка print/stdout
+### 42. Flaky tests
 
-def greet(name: str) -> None:  
-    print(f"Hello, {name}")  
+Flaky-тест — тест, который иногда проходит, иногда падает без изменения кода.
 
-def test_greet(capsys) -> None:  
-    greet("Alex")  
+**Причины**
 
-    captured = capsys.readouterr()  
+1. Зависимость от порядка запуска.
+2. Неочищенные тестовые данные.
+3. Race condition.
+4. Асинхронщина без ожиданий.
+5. Нестабильные внешние сервисы.
+6. Общие пользователи/файлы/порты.
+7. Слишком короткие timeout.
+8. Тест зависит от текущего времени.
+9. UI не дождался состояния.
+10. Параллельный запуск ломает общий state.
 
-    assert captured.out == "Hello, Alex\n"  
+#### Что делать:
 
-## 37. tmp_path для файлов
+1. Воспроизвести локально.
+2. Запустить много раз.
+3. Посмотреть логи и артефакты.
+4. Проверить изоляцию данных.
+5. Убрать sleep, заменить на явные ожидания.
+6. Сделать уникальные данные.
+7. Замокать нестабильные внешние зависимости.
+8. Добавить диагностику.
+9. Разделить тест и подготовку данных.
+10. Не прятать проблему бесконечными rerun.
 
-def test_report_created(tmp_path) -> None:  
-    report_path = tmp_path / "report.txt"  
+> **Короткий ответ для собеседования**
+>
+> Rerun может быть временной мерой, но не решением. Сначала нужно понять причину нестабильности.
 
-    report_path.write_text("OK")  
+### 43. pytest-rerunfailures
 
-    assert report_path.exists()  
-    assert report_path.read_text() == "OK"  
+#### Пример:
 
-### На собеседовании:
+```bash
+pytest --reruns 2 --reruns-delay 1
+```
 
-tmp_path лучше, чем писать в фиксированный путь, потому что каждый тест получает временную директорию, и тесты не конфликтуют между собой.  
+> **Короткий ответ для собеседования**
+>
+> Я бы использовал rerun осторожно: например, для нестабильных внешних интеграций, но обязательно с анализом причины flaky.
 
-## 38. Тестирование времени
+### 44. pytest-cov
 
-### Плохой вариант:
+**Запуск**
 
-from datetime import datetime  
+```bash
+pytest --cov=app tests/
+```
 
-def is_new_year() -> bool:  
-    return datetime.now().month == 1  
+**HTML-отчёт**
 
-Такой код трудно тестировать.  
+```bash
+pytest --cov=app --cov-report=html tests/
+```
 
-Лучше:  
+> **Короткий ответ для собеседования**
+>
+> Coverage показывает, какой код был выполнен тестами, но высокий coverage не гарантирует хорошее качество тестов. Важно проверять смысл assert’ов.
 
-from datetime import datetime  
+### 45. Page Object + pytest
 
-def is_new_year(now: datetime) -> bool:  
-    return now.month == 1  
+#### Пример UI-подхода:
 
-Тест:  
+```python
+class LoginPage:
+    def __init__(self, page):
+        self.page = page
 
-from datetime import datetime  
+    def open(self) -> None:
+        self.page.goto("/login")
 
-def test_is_new_year() -> None:  
-    assert is_new_year(datetime(2026, 1, 1))  
+    def login(self, username: str, password: str) -> None:
+        self.page.fill("[data-testid='username']", username)
+        self.page.fill("[data-testid='password']", password)
+        self.page.click("[data-testid='login-button']")
 
-### На собеседовании:
+    def error_message(self) -> str:
+        return self.page.text_content("[data-testid='error']")
+```
 
-Лучше внедрять время как зависимость, а не вызывать datetime.now() глубоко внутри бизнес-логики. Тогда тесты проще и стабильнее.  
+**Тест**
 
-## 39. Async tests
+```python
+def test_login_invalid_password(page) -> None:
+    login_page = LoginPage(page)
 
-Для async-тестов часто используют pytest-asyncio.  
+    login_page.open()
+    login_page.login("alex", "wrong-password")
 
-import pytest  
+    assert login_page.error_message() == "Invalid credentials"
+```
 
-@pytest.mark.asyncio  
-async def test_async_get_user() -> None:  
-    user = await get_user(user_id=1)  
+> **Короткий ответ для собеседования**
+>
+> Page Object нужен, чтобы отделить детали UI-локаторов от тестовой логики. Тест должен описывать сценарий, а не набор низкоуровневых кликов.
 
-    assert user.id == 1  
+### 46. Какие фикстуры делать session scope, а какие function scope
 
-### На собеседовании:
+**session**
 
-Обычный pytest не await’ит async-функции сам по себе. Для async-кода используют плагины, например pytest-asyncio.  
+1. base_url
+2. config
+3. auth token, если он безопасно переиспользуется
+4. подключение к read-only сервису
+5. browser engine
+6. docker/test environment setup
 
-## 40. Allure + pytest
+**function**
 
-Обычно установка:  
+1. тестовый пользователь
+2. заказ
+3. данные в БД
+4. состояние корзины
+5. временный файл
+6. browser context/page
+7. транзакция БД
 
-pip install allure-pytest  
+> **Короткий ответ для собеседования**
+>
+> Всё, что может быть изменено тестом, лучше делать function scope или тщательно очищать. Session scope хорош для дорогих и неизменяемых ресурсов.
 
-Запуск:  
+### 47. Частая ошибка: mutable state в фикстуре
 
-pytest --alluredir=allure-results  
+#### Плохо:
 
-Генерация отчёта:  
+```python
+import pytest
 
-allure serve allure-results  
+@pytest.fixture(scope="session")
+def shared_list() -> list[int]:
+    return []
 
-Allure-документация для pytest описывает интеграцию для генерации отчётов, улучшения читаемости и навигации, steps, attachments, histories, retries, visual analytics и quality gate.  
+def test_one(shared_list: list[int]) -> None:
+    shared_list.append(1)
+    assert shared_list == [1]
 
-### Пример:
+def test_two(shared_list: list[int]) -> None:
+    assert shared_list == []
+```
 
-import allure  
+test_two может упасть, потому что список общий на всю сессию.
 
-@allure.feature("Users")  
-@allure.story("Create user")  
-def test_create_user(api_client) -> None:  
-    with allure.step("Create user via API"):  
-        response = api_client.create_user(  
-            {  
-                "username": "alex",  
-                "password": "Qwerty123",  
-            }  
-        )  
+#### Хорошо:
 
-    with allure.step("Check response"):  
-        assert response.status_code == 201  
+```python
+import pytest
 
-Attachment:  
+@pytest.fixture
+def empty_list() -> list[int]:
+    return []
+```
 
-import allure  
+> **Короткий ответ для собеседования**
+>
+> Нужно аккуратно использовать изменяемые объекты в широких scope, потому что тесты могут влиять друг на друга.
 
-def test_response_body(api_client) -> None:  
-    response = api_client.get_user(user_id=1)  
+### 48. Как ускорять pytest-тесты
 
-    allure.attach(  
-        response.text,  
-        name="Response body",  
-        attachment_type=allure.attachment_type.JSON,  
-    )  
+**Ответ на собеседовании**
 
-    assert response.status_code == 200  
+1. Параллелить через pytest-xdist.
+2. Разделить тесты по маркерам: smoke/regression/slow.
+3. Убрать лишние UI-тесты, часть проверок перенести на API/unit.
+4. Переиспользовать дорогие ресурсы через session fixtures.
+5. Оптимизировать подготовку данных.
+6. Убрать sleep, заменить на ожидания.
+7. Использовать test selection: -k, -m, changed tests.
+8. Не ходить во внешние сервисы там, где можно mock/stub.
+9. Анализировать самые медленные тесты через --durations.
+10. Запускать разные группы тестов в разных CI jobs.
 
-### На собеседовании:
+### 49. Как выбирать тесты для запуска
 
-В Allure я бы добавлял steps на бизнес-действия, attachments на request/response/logs/screenshots, labels для feature/story/severity и links на задачи или test cases.  
+```bash
+pytest -m smoke
+```
 
-## 41. Как запускать pytest в CI
+По marker.
 
-### Пример GitLab CI:
+```bash
+pytest -k "login"
+```
 
-stages:  
-  - test  
+По имени.
 
-api_tests:  
-  stage: test  
-  image: python:3.11  
-  script:  
-    - pip install -r requirements.txt  
-    - pytest tests/api -m "smoke" --alluredir=allure-results  
-  artifacts:  
-    when: always  
-    paths:  
-      - allure-results  
+```bash
+pytest tests/api
+```
 
-### Пример Jenkins pipeline:
+По директории.
 
-pipeline {  
-    agent any  
+```bash
+pytest tests/api/test_users.py::test_create_user
+```
 
-    stages {  
-        stage('Install dependencies') {  
-            steps {  
-                sh 'python -m venv .venv'  
-                sh '. .venv/bin/activate && pip install -r requirements.txt'  
-            }  
-        }  
+Конкретный тест.
 
-        stage('Run tests') {  
-            steps {  
-                sh '. .venv/bin/activate && pytest tests -m smoke --alluredir=allure-results'  
-            }  
-        }  
-    }  
+```bash
+pytest --lf
+```
 
-    post {  
-        always {  
-            archiveArtifacts artifacts: 'allure-results/**', allowEmptyArchive: true  
-        }  
-    }  
-}  
+Только прошлые падения.
 
-### На собеседовании:
+```bash
+pytest --ff
+```
 
-В CI обычно разделяют smoke, regression, nightly, pre-merge тесты. Важно сохранять артефакты: Allure results, логи, скриншоты, видео, request/response dump.  
+Сначала прошлые падения.
 
-## 42. Flaky tests
+> **Короткий ответ для собеседования**
+>
+> В CI я бы запускал smoke на каждый merge request, regression — по расписанию или перед релизом, а тяжёлые e2e/performance — отдельно.
 
-Flaky-тест — тест, который иногда проходит, иногда падает без изменения кода.  
+## Тестовые данные и качество кода
 
-Причины:  
+### 50. Тестовые данные
 
-1. Зависимость от порядка запуска.  
-2. Неочищенные тестовые данные.  
-3. Race condition.  
-4. Асинхронщина без ожиданий.  
-5. Нестабильные внешние сервисы.  
-6. Общие пользователи/файлы/порты.  
-7. Слишком короткие timeout.  
-8. Тест зависит от текущего времени.  
-9. UI не дождался состояния.  
-10. Параллельный запуск ломает общий state.  
+#### Подходы:
 
-### Что делать:
+1. Inline данные прямо в parametrize.
+2. Фабрики.
+3. Faker.
+4. JSON/YAML fixtures.
+5. Builder pattern.
+6. Создание данных через API.
+7. Создание данных напрямую в БД.
+8. Предзагруженный seed.
 
-1. Воспроизвести локально.  
-2. Запустить много раз.  
-3. Посмотреть логи и артефакты.  
-4. Проверить изоляцию данных.  
-5. Убрать sleep, заменить на явные ожидания.  
-6. Сделать уникальные данные.  
-7. Замокать нестабильные внешние зависимости.  
-8. Добавить диагностику.  
-9. Разделить тест и подготовку данных.  
-10. Не прятать проблему бесконечными rerun.  
+#### Пример builder:
 
-### На собеседовании:
+```python
+from dataclasses import dataclass, field
+from uuid import uuid4
 
-Rerun может быть временной мерой, но не решением. Сначала нужно понять причину нестабильности.  
+@dataclass
+class UserPayloadBuilder:
+    username: str = field(default_factory=lambda: f"user_{uuid4().hex}")
+    password: str = "Qwerty123"
 
-## 43. pytest-rerunfailures
+    def with_username(self, username: str) -> "UserPayloadBuilder":
+        self.username = username
+        return self
 
-### Пример:
+    def with_password(self, password: str) -> "UserPayloadBuilder":
+        self.password = password
+        return self
 
-pytest --reruns 2 --reruns-delay 1  
+    def build(self) -> dict[str, str]:
+        return {
+            "username": self.username,
+            "password": self.password,
+        }
+```
 
-### На собеседовании:
+**Тест**
 
-Я бы использовал rerun осторожно: например, для нестабильных внешних интеграций, но обязательно с анализом причины flaky.  
+```python
+def test_create_user(api_client) -> None:
+    payload = UserPayloadBuilder().with_username("alex").build()
 
-## 44. pytest-cov
+    response = api_client.create_user(payload)
 
-Запуск:  
+    assert response.status_code == 201
+```
 
-pytest --cov=app tests/  
+> **Короткий ответ для собеседования**
+>
+> Для API-тестов я люблю factory/builder подход: тестовые данные читаемые, переиспользуемые и легко варьируются.
 
-HTML-отчёт:  
+### 51. Где хранить тестовые данные
 
-pytest --cov=app --cov-report=html tests/  
+#### Плохо:
 
-### На собеседовании:
+```python
+def test_create_user() -> None:
+    payload = {
+        "username": "test_user_1",
+        "password": "123",
+        "email": "test@test.com",
+        "phone": "123",
+        # огромный JSON на 200 строк
+    }
+```
 
-Coverage показывает, какой код был выполнен тестами, но высокий coverage не гарантирует хорошее качество тестов. Важно проверять смысл assert’ов.  
+**Лучше**
 
-## 45. Page Object + pytest
+```python
+def test_create_user(user_payload_factory, api_client) -> None:
+    payload = user_payload_factory(username="alex")
 
-### Пример UI-подхода:
+    response = api_client.create_user(payload)
 
-class LoginPage:  
-    def __init__(self, page):  
-        self.page = page  
+    assert response.status_code == 201
+```
 
-    def open(self) -> None:  
-        self.page.goto("/login")  
+> **Короткий ответ для собеседования**
+>
+> Если данные маленькие — можно держать прямо в тесте. Если данные сложные и переиспользуются — лучше фабрики, билдеры или отдельные test data modules.
 
-    def login(self, username: str, password: str) -> None:  
-        self.page.fill("[data-testid='username']", username)  
-        self.page.fill("[data-testid='password']", password)  
-        self.page.click("[data-testid='login-button']")  
+### 52. Хороший тест в pytest
 
-    def error_message(self) -> str:  
-        return self.page.text_content("[data-testid='error']")  
+#### Хороший тест:
 
-Тест:  
+1. Понятное имя.
+2. Один основной сценарий.
+3. Явная подготовка данных.
+4. Понятное действие.
+5. Понятные проверки.
+6. Не зависит от других тестов.
+7. Убирает за собой данные.
+8. Даёт полезную диагностику при падении.
 
-def test_login_invalid_password(page) -> None:  
-    login_page = LoginPage(page)  
+#### Пример:
 
-    login_page.open()  
-    login_page.login("alex", "wrong-password")  
+```python
+def test_create_user_with_valid_payload_returns_created_user(api_client, user_payload_factory) -> None:
+    payload = user_payload_factory(username="alex")
 
-    assert login_page.error_message() == "Invalid credentials"  
+    response = api_client.create_user(payload)
 
-### На собеседовании:
+    assert response.status_code == 201
 
-Page Object нужен, чтобы отделить детали UI-локаторов от тестовой логики. Тест должен описывать сценарий, а не набор низкоуровневых кликов.  
+    body = response.json()
 
-## 46. Какие фикстуры делать session scope, а какие function scope
+    assert body["username"] == payload["username"]
+    assert isinstance(body["id"], int)
+```
 
-session:  
+### 53. Плохой тест
 
-1. base_url  
-2. config  
-3. auth token, если он безопасно переиспользуется  
-4. подключение к read-only сервису  
-5. browser engine  
-6. docker/test environment setup  
+```python
+def test_1(api_client) -> None:
+    r = api_client.create_user({"u": "a"})
+    assert r.status_code == 200 or r.status_code == 201
+```
 
-function:  
+#### Что плохо:
 
-1. тестовый пользователь  
-2. заказ  
-3. данные в БД  
-4. состояние корзины  
-5. временный файл  
-6. browser context/page  
-7. транзакция БД  
+1. Непонятное имя.
+2. Непонятные данные.
+3. Неясно, какой статус ожидается.
+4. Слишком мягкий assert.
+5. Нет проверки тела ответа.
 
-### На собеседовании:
+**Лучше**
 
-Всё, что может быть изменено тестом, лучше делать function scope или тщательно очищать. Session scope хорош для дорогих и неизменяемых ресурсов.  
+```python
+def test_create_user_with_valid_payload_returns_201(api_client, user_payload_factory) -> None:
+    payload = user_payload_factory()
 
-## 47. Частая ошибка: mutable state в фикстуре
+    response = api_client.create_user(payload)
 
-### Плохо:
+    assert response.status_code == 201
+```
 
-import pytest  
+### 54. Как объяснить fixture vs setup_method
 
-@pytest.fixture(scope="session")  
-def shared_list() -> list[int]:  
-    return []  
+В pytest можно использовать xUnit-style методы:
 
-def test_one(shared_list: list[int]) -> None:  
-    shared_list.append(1)  
-    assert shared_list == [1]  
+```python
+class TestUser:
+    def setup_method(self) -> None:
+        self.user = {"name": "Alex"}
 
-def test_two(shared_list: list[int]) -> None:  
-    assert shared_list == []  
+    def test_user_name(self) -> None:
+        assert self.user["name"] == "Alex"
+```
 
-test_two может упасть, потому что список общий на всю сессию.  
+**Но чаще лучше фикстуры**
 
-### Хорошо:
+```python
+import pytest
 
-import pytest  
+@pytest.fixture
+def user() -> dict[str, str]:
+    return {"name": "Alex"}
 
-@pytest.fixture  
-def empty_list() -> list[int]:  
-    return []  
+def test_user_name(user: dict[str, str]) -> None:
+    assert user["name"] == "Alex"
+```
 
-### На собеседовании:
+> **Короткий ответ для собеседования**
+>
+> xUnit-style setup/teardown поддерживается, но фикстуры гибче: у них есть scope, dependency injection, переиспользование, параметризация и teardown через yield.
 
-Нужно аккуратно использовать изменяемые объекты в широких scope, потому что тесты могут влиять друг на друга.  
+### 55. Как работает порядок setup/teardown фикстур
 
-## 48. Как ускорять pytest-тесты
+#### Пример:
 
-Ответ на собеседовании:  
+```python
+import pytest
 
-1. Параллелить через pytest-xdist.  
-2. Разделить тесты по маркерам: smoke/regression/slow.  
-3. Убрать лишние UI-тесты, часть проверок перенести на API/unit.  
-4. Переиспользовать дорогие ресурсы через session fixtures.  
-5. Оптимизировать подготовку данных.  
-6. Убрать sleep, заменить на ожидания.  
-7. Использовать test selection: -k, -m, changed tests.  
-8. Не ходить во внешние сервисы там, где можно mock/stub.  
-9. Анализировать самые медленные тесты через --durations.  
-10. Запускать разные группы тестов в разных CI jobs.  
+@pytest.fixture
+def first():
+    print("setup first")
+    yield
+    print("teardown first")
 
-## 49. Как выбирать тесты для запуска
+@pytest.fixture
+def second(first):
+    print("setup second")
+    yield
+    print("teardown second")
 
-pytest -m smoke  
+def test_example(second):
+    print("test")
+```
 
-По marker.  
+**Логика**
 
-pytest -k "login"  
+**setup first**
+setup second
+test
+teardown second
+teardown first
 
-По имени.  
+> **Короткий ответ для собеседования**
+>
+> Teardown идёт в обратном порядке setup. Если фикстура зависит от другой, сначала будет создана зависимость.
 
-pytest tests/api  
+### 56. Как работать с внешними сервисами
 
-По директории.  
+#### Подходы:
 
-pytest tests/api/test_users.py::test_create_user  
+1. Реальный сервис на тестовом окружении.
+2. Мок через monkeypatch/mock.
+3. Stub-сервис.
+4. Fake-сервис.
+5. Contract testing.
+6. Запуск зависимости в Docker.
 
-Конкретный тест.  
+> **Короткий ответ для собеседования**
+>
+> Если проверяем интеграцию — нужен реальный сервис или стабильный test env. Если проверяем бизнес-логику нашего сервиса — внешнюю зависимость лучше замокать или заменить stub/fake.
 
-pytest --lf  
+### 57. Пример мок-сервиса
 
-Только прошлые падения.  
+```python
+class FakePaymentService:
+    def __init__(self) -> None:
+        self.payments: list[dict] = []
 
-pytest --ff  
+    def pay(self, user_id: int, amount: int) -> dict:
+        payment = {
+            "user_id": user_id,
+            "amount": amount,
+            "status": "success",
+        }
+        self.payments.append(payment)
+        return payment
+```
 
-Сначала прошлые падения.  
+**Тест**
 
-### На собеседовании:
+```python
+def test_order_payment() -> None:
+    payment_service = FakePaymentService()
+    order_service = OrderService(payment_service=payment_service)
 
-В CI я бы запускал smoke на каждый merge request, regression — по расписанию или перед релизом, а тяжёлые e2e/performance — отдельно.  
+    order = order_service.create_paid_order(user_id=1, amount=100)
 
-## 50. Тестовые данные
+    assert order["payment_status"] == "success"
+```
 
-### Подходы:
+### 58. API client layer
 
-1. Inline данные прямо в parametrize.  
-2. Фабрики.  
-3. Faker.  
-4. JSON/YAML fixtures.  
-5. Builder pattern.  
-6. Создание данных через API.  
-7. Создание данных напрямую в БД.  
-8. Предзагруженный seed.  
+#### Хорошая практика — не писать requests.get прямо в каждом тесте.
 
-### Пример builder:
+#### Плохо:
 
-from dataclasses import dataclass, field  
-from uuid import uuid4  
+```python
+def test_get_user(base_url) -> None:
+    response = requests.get(f"{base_url}/users/1")
+    assert response.status_code == 200
+```
 
-@dataclass  
-class UserPayloadBuilder:  
-    username: str = field(default_factory=lambda: f"user_{uuid4().hex}")  
-    password: str = "Qwerty123"  
+**Лучше**
 
-    def with_username(self, username: str) -> "UserPayloadBuilder":  
-        self.username = username  
-        return self  
+```python
+class UserApiClient:
+    def __init__(self, base_url: str) -> None:
+        self.base_url = base_url
 
-    def with_password(self, password: str) -> "UserPayloadBuilder":  
-        self.password = password  
-        return self  
+    def get_user(self, user_id: int):
+        return requests.get(f"{self.base_url}/users/{user_id}", timeout=5)
 
-    def build(self) -> dict[str, str]:  
-        return {  
-            "username": self.username,  
-            "password": self.password,  
-        }  
+    def create_user(self, payload: dict):
+        return requests.post(f"{self.base_url}/users", json=payload, timeout=5)
+```
 
-Тест:  
+**Тест**
 
-def test_create_user(api_client) -> None:  
-    payload = UserPayloadBuilder().with_username("alex").build()  
+```python
+def test_get_user(user_api_client: UserApiClient) -> None:
+    response = user_api_client.get_user(user_id=1)
 
-    response = api_client.create_user(payload)  
+    assert response.status_code == 200
+```
 
-    assert response.status_code == 201  
+> **Короткий ответ для собеседования**
+>
+> API client layer уменьшает дублирование, централизует base_url, headers, auth, timeout, logging и обработку response.
 
-### На собеседовании:
+### 59. Проверка негативных сценариев
 
-Для API-тестов я люблю factory/builder подход: тестовые данные читаемые, переиспользуемые и легко варьируются.  
+#### Пример:
 
-## 51. Где хранить тестовые данные
+```python
+import pytest
 
-### Плохо:
+@pytest.mark.parametrize(
+    "payload, expected_error",
+    [
+        ({}, "username_required"),
+        ({"username": ""}, "username_empty"),
+        ({"username": "alex"}, "password_required"),
+    ],
+)
+def test_create_user_invalid_payload(api_client, payload: dict, expected_error: str) -> None:
+    response = api_client.create_user(payload)
 
-def test_create_user() -> None:  
-    payload = {  
-        "username": "test_user_1",  
-        "password": "123",  
-        "email": "test@test.com",  
-        "phone": "123",  
-        # огромный JSON на 200 строк  
-    }  
+    assert response.status_code == 400
 
-Лучше:  
+    body = response.json()
 
-def test_create_user(user_payload_factory, api_client) -> None:  
-    payload = user_payload_factory(username="alex")  
+    assert body["error_type"] == expected_error
+```
 
-    response = api_client.create_user(payload)  
+> **Короткий ответ для собеседования**
+>
+> В негативных тестах важно проверять не только статус, но и понятную ошибку: code/error_type/message/details.
 
-    assert response.status_code == 201  
+### 60. Timeout в API-тестах
 
-### На собеседовании:
+#### Плохо:
 
-Если данные маленькие — можно держать прямо в тесте. Если данные сложные и переиспользуются — лучше фабрики, билдеры или отдельные test data modules.  
+```python
+requests.get(url)
+```
 
-## 52. Хороший тест в pytest
+**Лучше**
 
-### Хороший тест:
+```python
+requests.get(url, timeout=5)
+```
 
-1. Понятное имя.  
-2. Один основной сценарий.  
-3. Явная подготовка данных.  
-4. Понятное действие.  
-5. Понятные проверки.  
-6. Не зависит от других тестов.  
-7. Убирает за собой данные.  
-8. Даёт полезную диагностику при падении.  
+> **Короткий ответ для собеседования**
+>
+> В тестовом фреймворке обязательно ставлю timeout на сетевые запросы, чтобы тесты не зависали бесконечно.
 
-### Пример:
+### 61. Логирование request/response
 
-def test_create_user_with_valid_payload_returns_created_user(api_client, user_payload_factory) -> None:  
-    payload = user_payload_factory(username="alex")  
+```python
+import logging
 
-    response = api_client.create_user(payload)  
+logger = logging.getLogger(__name__)
 
-    assert response.status_code == 201  
+class ApiClient:
+    def __init__(self, base_url: str) -> None:
+        self.base_url = base_url
 
-    body = response.json()  
+    def post(self, path: str, json: dict):
+        url = f"{self.base_url}{path}"
 
-    assert body["username"] == payload["username"]  
-    assert isinstance(body["id"], int)  
+        logger.info("POST %s payload=%s", url, json)
 
-## 53. Плохой тест
+        response = requests.post(url, json=json, timeout=5)
 
-def test_1(api_client) -> None:  
-    r = api_client.create_user({"u": "a"})  
-    assert r.status_code == 200 or r.status_code == 201  
+        logger.info(
+            "Response status=%s body=%s",
+            response.status_code,
+            response.text,
+        )
 
-### Что плохо:
+        return response
+```
 
-1. Непонятное имя.  
-2. Непонятные данные.  
-3. Неясно, какой статус ожидается.  
-4. Слишком мягкий assert.  
-5. Нет проверки тела ответа.  
+> **Короткий ответ для собеседования**
+>
+> При падении API-теста нужны request, response, status code, headers, body, correlation id. Это сильно ускоряет разбор.
 
-Лучше:  
+### 62. Как оформлять helper assertions
 
-def test_create_user_with_valid_payload_returns_201(api_client, user_payload_factory) -> None:  
-    payload = user_payload_factory()  
+```python
+def assert_error_response(response, expected_status: int, expected_error_type: str) -> None:
+    assert response.status_code == expected_status
 
-    response = api_client.create_user(payload)  
+    body = response.json()
 
-    assert response.status_code == 201  
+    assert body["error_type"] == expected_error_type
+```
 
-## 54. Как объяснить fixture vs setup_method
+**Использование**
 
-В pytest можно использовать xUnit-style методы:  
+```python
+def test_create_duplicate_user(api_client, existing_user) -> None:
+    response = api_client.create_user(existing_user)
 
-class TestUser:  
-    def setup_method(self) -> None:  
-        self.user = {"name": "Alex"}  
+    assert_error_response(
+        response=response,
+        expected_status=409,
+        expected_error_type="user_already_exists",
+    )
+```
 
-    def test_user_name(self) -> None:  
-        assert self.user["name"] == "Alex"  
+> **Короткий ответ для собеседования**
+>
+> Повторяющиеся проверки можно выносить в helper assertions, но не надо прятать всю суть теста. Тест должен оставаться читаемым.
 
-Но чаще лучше фикстуры:  
+## Внутренние механизмы и практические проверки
 
-import pytest  
+### 63. Что такое request fixture
 
-@pytest.fixture  
-def user() -> dict[str, str]:  
-    return {"name": "Alex"}  
+request даёт доступ к текущему тестовому контексту.
 
-def test_user_name(user: dict[str, str]) -> None:  
-    assert user["name"] == "Alex"  
+#### Пример с именем теста:
 
-### На собеседовании:
+```python
+import pytest
 
-xUnit-style setup/teardown поддерживается, но фикстуры гибче: у них есть scope, dependency injection, переиспользование, параметризация и teardown через yield.  
+@pytest.fixture
+def current_test_name(request) -> str:
+    return request.node.name
+```
 
-## 55. Как работает порядок setup/teardown фикстур
+#### Пример с параметром:
 
-### Пример:
+```python
+import pytest
 
-import pytest  
+@pytest.fixture
+def role(request) -> str:
+    return request.param
 
-@pytest.fixture  
-def first():  
-    print("setup first")  
-    yield  
-    print("teardown first")  
+@pytest.mark.parametrize("role", ["admin", "user"], indirect=True)
+def test_role(role: str) -> None:
+    assert role in ["admin", "user"]
+```
 
-@pytest.fixture  
-def second(first):  
-    print("setup second")  
-    yield  
-    print("teardown second")  
+> **Короткий ответ для собеседования**
+>
+> request нужен, когда фикстуре нужен доступ к контексту: параметрам, имени теста, markers, config, node.
 
-def test_example(second):  
-    print("test")  
+### 64. Доступ к markers из фикстуры
 
-Логика:  
+```python
+import pytest
 
-setup first  
-setup second  
-test  
-teardown second  
-teardown first  
+@pytest.fixture
+def user_role(request) -> str:
+    marker = request.node.get_closest_marker("role")
 
-### На собеседовании:
+    if marker is None:
+        return "user"
 
-Teardown идёт в обратном порядке setup. Если фикстура зависит от другой, сначала будет создана зависимость.  
+    return marker.args[0]
 
-## 56. Как работать с внешними сервисами
+@pytest.mark.role("admin")
+def test_admin_permissions(user_role: str) -> None:
+    assert user_role == "admin"
+```
 
-### Подходы:
+> **Короткий ответ для собеседования**
+>
+> Иногда фикстура может менять поведение в зависимости от marker на тесте.
 
-1. Реальный сервис на тестовом окружении.  
-2. Мок через monkeypatch/mock.  
-3. Stub-сервис.  
-4. Fake-сервис.  
-5. Contract testing.  
-6. Запуск зависимости в Docker.  
+### 65. Пример роли через marker
 
-### На собеседовании:
+```python
+import pytest
 
-Если проверяем интеграцию — нужен реальный сервис или стабильный test env. Если проверяем бизнес-логику нашего сервиса — внешнюю зависимость лучше замокать или заменить stub/fake.  
+@pytest.fixture
+def user(request, api_client):
+    marker = request.node.get_closest_marker("user_role")
+    role = marker.args[0] if marker else "user"
 
-## 57. Пример мок-сервиса
+    created_user = api_client.create_user({"role": role}).json()
 
-class FakePaymentService:  
-    def __init__(self) -> None:  
-        self.payments: list[dict] = []  
+    yield created_user
 
-    def pay(self, user_id: int, amount: int) -> dict:  
-        payment = {  
-            "user_id": user_id,  
-            "amount": amount,  
-            "status": "success",  
-        }  
-        self.payments.append(payment)  
-        return payment  
+    api_client.delete_user(created_user["id"])
 
-Тест:  
+@pytest.mark.user_role("admin")
+def test_admin_can_create_user(user) -> None:
+    assert user["role"] == "admin"
+```
 
-def test_order_payment() -> None:  
-    payment_service = FakePaymentService()  
-    order_service = OrderService(payment_service=payment_service)  
+### 66. pytest.ini vs pyproject.toml
 
-    order = order_service.create_paid_order(user_id=1, amount=100)  
+**pytest.ini**
 
-    assert order["payment_status"] == "success"  
+```toml
+[pytest]
+addopts = -ra -q
+testpaths =
+    tests
+markers =
+    smoke: smoke tests
+    regression: regression tests
 
-## 58. API client layer
+pyproject.toml:
 
-### Хорошая практика — не писать requests.get прямо в каждом тесте.
+[tool.pytest.ini_options]
+addopts = "-ra -q"
+testpaths = ["tests"]
+markers = [
+    "smoke: smoke tests",
+    "regression: regression tests",
+]
+```
 
-### Плохо:
+> **Короткий ответ для собеседования**
+>
+> В современных проектах часто используют pyproject.toml, потому что там можно держать настройки разных инструментов: pytest, black, ruff, mypy. Но pytest.ini тоже нормальный вариант.
 
-def test_get_user(base_url) -> None:  
-    response = requests.get(f"{base_url}/users/1")  
-    assert response.status_code == 200  
+### 67. Что такое -ra
 
-Лучше:  
+```bash
+pytest -ra
+```
 
-class UserApiClient:  
-    def __init__(self, base_url: str) -> None:  
-        self.base_url = base_url  
+**Показывает дополнительную summary-информацию**
 
-    def get_user(self, user_id: int):  
-        return requests.get(f"{self.base_url}/users/{user_id}", timeout=5)  
+- s — skipped
+- x — xfailed
+- X — xpassed
+- f — failed
+- E — error
 
-    def create_user(self, payload: dict):  
-        return requests.post(f"{self.base_url}/users", json=payload, timeout=5)  
+Полезно в CI.
 
-Тест:  
+### 68. Разница FAILED и ERROR
 
-def test_get_user(user_api_client: UserApiClient) -> None:  
-    response = user_api_client.get_user(user_id=1)  
+FAILED — тест запустился, но assert упал.
+ERROR  — ошибка случилась на setup/teardown/fixture/collection.
 
-    assert response.status_code == 200  
+#### Пример FAILED:
 
-### На собеседовании:
+```python
+def test_failed() -> None:
+    assert 1 == 2
+```
 
-API client layer уменьшает дублирование, централизует base_url, headers, auth, timeout, logging и обработку response.  
+#### Пример ERROR:
 
-## 59. Проверка негативных сценариев
+```python
+import pytest
 
-### Пример:
+@pytest.fixture
+def broken_fixture():
+    raise RuntimeError("Cannot prepare data")
 
-import pytest  
+def test_error(broken_fixture) -> None:
+    assert True
+```
 
-@pytest.mark.parametrize(  
-    "payload, expected_error",  
-    [  
-        ({}, "username_required"),  
-        ({"username": ""}, "username_empty"),  
-        ({"username": "alex"}, "password_required"),  
-    ],  
-)  
-def test_create_user_invalid_payload(api_client, payload: dict, expected_error: str) -> None:  
-    response = api_client.create_user(payload)  
+> **Короткий ответ для собеседования**
+>
+> Failed — это проблема проверки. Error — тест даже нормально не дошёл до проверки, например упала фикстура.
 
-    assert response.status_code == 400  
+### 69. Collection errors
 
-    body = response.json()  
+#### Пример:
 
-    assert body["error_type"] == expected_error  
+```python
+import not_existing_module
 
-### На собеседовании:
+def test_example() -> None:
+    assert True
+```
 
-В негативных тестах важно проверять не только статус, но и понятную ошибку: code/error_type/message/details.  
+pytest может упасть ещё на этапе collection.
 
-## 60. Timeout в API-тестах
+> **Короткий ответ для собеседования**
+>
+> Collection error возникает до запуска теста: например, ошибка импорта, синтаксиса, неправильная параметризация.
 
-### Плохо:
+### 70. Как дебажить pytest
 
-requests.get(url)  
+#### Команды:
 
-Лучше:  
+```bash
+pytest -s
+pytest -vv
+pytest --tb=long
+pytest --pdb
+pytest --maxfail=1
+pytest tests/test_file.py::test_name
+pytest --collect-only
+```
 
-requests.get(url, timeout=5)  
+**В коде**
 
-### На собеседовании:
+```python
+def test_debug() -> None:
+    value = calculate()
 
-В тестовом фреймворке обязательно ставлю timeout на сетевые запросы, чтобы тесты не зависали бесконечно.  
+    breakpoint()
 
-## 61. Логирование request/response
+    assert value == 10
+```
 
-import logging  
+> **Короткий ответ для собеседования**
+>
+> Я обычно сужаю запуск до одного теста, включаю подробный traceback, смотрю фикстуры, данные, request/response, логи и при необходимости запускаю с --pdb или breakpoint().
 
-logger = logging.getLogger(__name__)  
+### 71. Как понять, какие фикстуры доступны
 
-class ApiClient:  
-    def __init__(self, base_url: str) -> None:  
-        self.base_url = base_url  
+```bash
+pytest --fixtures
+```
 
-    def post(self, path: str, json: dict):  
-        url = f"{self.base_url}{path}"  
+**Или для конкретного пути**
 
-        logger.info("POST %s payload=%s", url, json)  
+```bash
+pytest --fixtures tests/api
+```
 
-        response = requests.post(url, json=json, timeout=5)  
+> **Короткий ответ для собеседования**
+>
+> pytest --fixtures показывает доступные фикстуры, включая встроенные и добавленные плагинами.
 
-        logger.info(  
-            "Response status=%s body=%s",  
-            response.status_code,  
-            response.text,  
-        )  
+### 72. pytest.importorskip
 
-        return response  
+```python
+import pytest
 
-### На собеседовании:
+numpy = pytest.importorskip("numpy")
 
-При падении API-теста нужны request, response, status code, headers, body, correlation id. Это сильно ускоряет разбор.  
+def test_numpy_available() -> None:
+    assert numpy.array([1, 2, 3]).sum() == 6
+```
 
-## 62. Как оформлять helper assertions
+> **Короткий ответ для собеседования**
+>
+> importorskip полезен, если тест зависит от необязательной библиотеки.
 
-def assert_error_response(response, expected_status: int, expected_error_type: str) -> None:  
-    assert response.status_code == expected_status  
+### 73. Как тестировать CLI
 
-    body = response.json()  
+#### Пример функции:
 
-    assert body["error_type"] == expected_error_type  
+```python
+def main(args: list[str]) -> int:
+    if "--help" in args:
+        print("Usage: app")
+        return 0
 
-Использование:  
+    return 1
+```
 
-def test_create_duplicate_user(api_client, existing_user) -> None:  
-    response = api_client.create_user(existing_user)  
+**Тест**
 
-    assert_error_response(  
-        response=response,  
-        expected_status=409,  
-        expected_error_type="user_already_exists",  
-    )  
+```python
+def test_main_help(capsys) -> None:
+    exit_code = main(["--help"])
 
-### На собеседовании:
+    captured = capsys.readouterr()
 
-Повторяющиеся проверки можно выносить в helper assertions, но не надо прятать всю суть теста. Тест должен оставаться читаемым.  
+    assert exit_code == 0
+    assert "Usage" in captured.out
+```
 
-## 63. Что такое request fixture
+### 74. Как тестировать файлы
 
-request даёт доступ к текущему тестовому контексту.  
+```python
+def parse_file(path) -> list[str]:
+    return path.read_text().splitlines()
 
-### Пример с именем теста:
+def test_parse_file(tmp_path) -> None:
+    file_path = tmp_path / "users.txt"
+    file_path.write_text("alex\nivan\n")
 
-import pytest  
+    result = parse_file(file_path)
 
-@pytest.fixture  
-def current_test_name(request) -> str:  
-    return request.node.name  
+    assert result == ["alex", "ivan"]
+```
 
-### Пример с параметром:
+### 75. Как тестировать переменные окружения
 
-import pytest  
+```python
+import os
 
-@pytest.fixture  
-def role(request) -> str:  
-    return request.param  
+def get_mode() -> str:
+    return os.getenv("APP_MODE", "dev")
 
-@pytest.mark.parametrize("role", ["admin", "user"], indirect=True)  
-def test_role(role: str) -> None:  
-    assert role in ["admin", "user"]  
+def test_get_mode(monkeypatch) -> None:
+    monkeypatch.setenv("APP_MODE", "test")
 
-### На собеседовании:
+    assert get_mode() == "test"
 
-request нужен, когда фикстуре нужен доступ к контексту: параметрам, имени теста, markers, config, node.  
+def test_get_mode_default(monkeypatch) -> None:
+    monkeypatch.delenv("APP_MODE", raising=False)
 
-## 64. Доступ к markers из фикстуры
+    assert get_mode() == "dev"
+```
 
-import pytest  
+### 76. Как тестировать retry
 
-@pytest.fixture  
-def user_role(request) -> str:  
-    marker = request.node.get_closest_marker("role")  
+```python
+from unittest.mock import Mock
 
-    if marker is None:  
-        return "user"  
+def test_retry_success_on_second_attempt() -> None:
+    client = Mock()
+    client.get.side_effect = [TimeoutError, {"status": "ok"}]
 
-    return marker.args[0]  
+    result = get_with_retry(client)
 
-@pytest.mark.role("admin")  
-def test_admin_permissions(user_role: str) -> None:  
-    assert user_role == "admin"  
+    assert result == {"status": "ok"}
+    assert client.get.call_count == 2
+```
 
-### На собеседовании:
+> **Короткий ответ для собеседования**
+>
+> Для retry удобно мокать зависимость и через side_effect задавать последовательность: сначала ошибка, потом успех.
 
-Иногда фикстура может менять поведение в зависимости от marker на тесте.  
+### 77. Как тестировать брокеры
 
-## 65. Пример роли через marker
+Для Kafka/Rabbit/NATS можно использовать разные уровни:
 
-import pytest  
+1. Unit: мок producer/consumer.
+2. Integration: поднять брокер в Docker.
+3. Contract: проверить формат сообщения.
+4. E2E: отправить событие и дождаться результата в другой системе.
 
-@pytest.fixture  
-def user(request, api_client):  
-    marker = request.node.get_closest_marker("user_role")  
-    role = marker.args[0] if marker else "user"  
+#### Пример unit-теста producer:
 
-    created_user = api_client.create_user({"role": role}).json()  
+```python
+from unittest.mock import Mock
 
-    yield created_user  
+def test_publish_user_created_event() -> None:
+    producer = Mock()
+    service = UserEventService(producer=producer)
 
-    api_client.delete_user(created_user["id"])  
+    service.publish_user_created(user_id=123)
 
-@pytest.mark.user_role("admin")  
-def test_admin_can_create_user(user) -> None:  
-    assert user["role"] == "admin"  
+    producer.publish.assert_called_once_with(
+        topic="user.created",
+        message={"user_id": 123},
+    )
+```
 
-## 66. pytest.ini vs pyproject.toml
+> **Короткий ответ для собеседования**
+>
+> Для брокеров важно проверять topic/queue, payload, headers, key, schema, idempotency, retry, dead letter queue и обработку дублей.
 
-pytest.ini:  
+### 78. Как тестировать конкурентное выполнение
 
-[pytest]  
-addopts = -ra -q  
-testpaths =  
-    tests  
-markers =  
-    smoke: smoke tests  
-    regression: regression tests  
+#### Пример:
 
-pyproject.toml:  
+```python
+from concurrent.futures import ThreadPoolExecutor
 
-[tool.pytest.ini_options]  
-addopts = "-ra -q"  
-testpaths = ["tests"]  
-markers = [  
-    "smoke: smoke tests",  
-    "regression: regression tests",  
-]  
+def test_concurrent_create_user(api_client) -> None:
+    payloads = [
+        {"username": f"user_{i}", "password": "Qwerty123"}
+        for i in range(10)
+    ]
 
-### На собеседовании:
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        responses = list(executor.map(api_client.create_user, payloads))
 
-В современных проектах часто используют pyproject.toml, потому что там можно держать настройки разных инструментов: pytest, black, ruff, mypy. Но pytest.ini тоже нормальный вариант.  
+    assert all(response.status_code == 201 for response in responses)
+```
 
-## 67. Что такое -ra
+> **Короткий ответ для собеседования**
+>
+> Конкурентные тесты нужны для проверки race condition, уникальности, блокировок, идемпотентности, дублей и конфликтов.
 
-pytest -ra  
+### 79. Как тестировать права доступа
 
-Показывает дополнительную summary-информацию:  
+```python
+import pytest
 
-s — skipped  
-x — xfailed  
-X — xpassed  
-f — failed  
-E — error  
+@pytest.mark.parametrize(
+    "role, expected_status",
+    [
+        ("admin", 200),
+        ("manager", 403),
+        ("user", 403),
+    ],
+)
+def test_delete_user_permissions(api_client_factory, role: str, expected_status: int) -> None:
+    client = api_client_factory(role=role)
 
-Полезно в CI.  
+    response = client.delete_user(user_id=123)
 
-## 68. Разница FAILED и ERROR
+    assert response.status_code == expected_status
+```
 
-FAILED — тест запустился, но assert упал.  
-ERROR  — ошибка случилась на setup/teardown/fixture/collection.  
+> **Короткий ответ для собеседования**
+>
+> Права доступа хорошо ложатся на параметризацию: роль, действие, ожидаемый статус.
 
-### Пример FAILED:
+### 80. Как тестировать валидацию
 
-def test_failed() -> None:  
-    assert 1 == 2  
+```python
+import pytest
 
-### Пример ERROR:
+@pytest.mark.parametrize(
+    "username",
+    [
+        "",
+        " ",
+        "a" * 256,
+        "admin<script>",
+        "тест",
+    ],
+)
+def test_invalid_username(api_client, username: str) -> None:
+    response = api_client.create_user(
+        {
+            "username": username,
+            "password": "Qwerty123",
+        }
+    )
 
-import pytest  
+    assert response.status_code == 400
+```
 
-@pytest.fixture  
-def broken_fixture():  
-    raise RuntimeError("Cannot prepare data")  
+> **Короткий ответ для собеседования**
+>
+> Для валидации удобно использовать классы эквивалентности и граничные значения, а в pytest это хорошо выражается через parametrize.
 
-def test_error(broken_fixture) -> None:  
-    assert True  
+## Собеседование и итоговое повторение
 
-### На собеседовании:
+### 81. Что спрашивают на собеседовании по pytest
 
-Failed — это проблема проверки. Error — тест даже нормально не дошёл до проверки, например упала фикстура.  
+Вопрос: что такое fixture?
 
-## 69. Collection errors
+**Ответ**
 
-### Пример:
+Fixture — это функция подготовки тестового окружения или данных. pytest вызывает её по имени аргумента теста. Фикстура может возвращать объект, иметь scope, зависеть от других фикстур и выполнять teardown через yield.
 
-import not_existing_module  
+Вопрос: какие бывают scope?
 
-def test_example() -> None:  
-    assert True  
+**Ответ**
 
-pytest может упасть ещё на этапе collection.  
+function, class, module, package, session. Чем шире scope, тем реже создаётся фикстура. Но с широким scope нужно аккуратно обращаться с изменяемым состоянием.
 
-### На собеседовании:
+Вопрос: чем fixture лучше setup_method?
 
-Collection error возникает до запуска теста: например, ошибка импорта, синтаксиса, неправильная параметризация.  
+**Ответ**
 
-## 70. Как дебажить pytest
+Фикстуры гибче: их можно переиспользовать между файлами, параметризовать, строить зависимости между фикстурами, задавать scope и делать teardown через yield.
 
-### Команды:
+Вопрос: что такое autouse?
 
-pytest -s  
-pytest -vv  
-pytest --tb=long  
-pytest --pdb  
-pytest --maxfail=1  
-pytest tests/test_file.py::test_name  
-pytest --collect-only  
+**Ответ**
 
-В коде:  
+Это фикстура, которая применяется автоматически без явного указания в аргументах теста. Полезна для глобальной подготовки или очистки, но может ухудшить читаемость, если её использовать слишком часто.
 
-def test_debug() -> None:  
-    value = calculate()  
+Вопрос: как работает parametrize?
 
-    breakpoint()  
+**Ответ**
 
-    assert value == 10  
+`@pytest.mark.parametrize` запускает один тест несколько раз с разными наборами аргументов. Это удобно для проверок валидации, ролей, статусов и граничных значений.
 
-### На собеседовании:
+Вопрос: чем skip отличается от xfail?
 
-Я обычно сужаю запуск до одного теста, включаю подробный traceback, смотрю фикстуры, данные, request/response, логи и при необходимости запускаю с --pdb или breakpoint().  
+**Ответ**
 
-## 71. Как понять, какие фикстуры доступны
+skip — тест не запускается. xfail — тест запускается, но его падение ожидается. Если xfail-тест неожиданно прошёл, pytest покажет XPASS.
 
-pytest --fixtures  
+Вопрос: что такое conftest.py?
 
-Или для конкретного пути:  
+**Ответ**
 
-pytest --fixtures tests/api  
+Это специальный файл pytest для общих фикстур, хуков и настроек. Его не нужно импортировать вручную, pytest сам его подхватывает.
 
-### На собеседовании:
+Вопрос: как передать base_url в тесты?
 
-pytest --fixtures показывает доступные фикстуры, включая встроенные и добавленные плагинами.  
+**Ответ**
 
-## 72. pytest.importorskip
+Через CLI option в pytest_addoption, потом получить через pytestconfig.getoption и завернуть в fixture.
 
-import pytest  
+Вопрос: как распараллелить тесты?
 
-numpy = pytest.importorskip("numpy")  
+**Ответ**
 
-def test_numpy_available() -> None:  
-    assert numpy.array([1, 2, 3]).sum() == 6  
+Через pytest-xdist: pytest -n auto или pytest -n 4. Но тесты должны быть независимыми: уникальные данные, отдельные ресурсы, отсутствие зависимости от порядка.
 
-### На собеседовании:
+Вопрос: почему тесты могут падать только в параллельном запуске?
 
-importorskip полезен, если тест зависит от необязательной библиотеки.  
+**Ответ**
 
-## 73. Как тестировать CLI
+Обычно из-за общего состояния: один пользователь, одна запись в БД, общий файл, общий порт, session fixture с mutable state или зависимость от порядка выполнения.
 
-### Пример функции:
+Вопрос: как сделать teardown?
 
-def main(args: list[str]) -> int:  
-    if "--help" in args:  
-        print("Usage: app")  
-        return 0  
+**Ответ**
 
-    return 1  
+Через yield fixture: до yield setup, после yield cleanup. Ещё можно через request.addfinalizer, но yield обычно проще.
 
-Тест:  
+Вопрос: как мокать зависимости?
 
-def test_main_help(capsys) -> None:  
-    exit_code = main(["--help"])  
+**Ответ**
 
-    captured = capsys.readouterr()  
+Через unittest.mock, pytest-mock или monkeypatch. Например, можно заменить функцию, переменную окружения, метод класса или внешний API-клиент.
 
-    assert exit_code == 0  
-    assert "Usage" in captured.out  
+Вопрос: как проверить исключение?
 
-## 74. Как тестировать файлы
+**Ответ**
 
-def parse_file(path) -> list[str]:  
-    return path.read_text().splitlines()  
+Через pytest.raises.
 
-def test_parse_file(tmp_path) -> None:  
-    file_path = tmp_path / "users.txt"  
-    file_path.write_text("alex\nivan\n")  
+```sql
+with pytest.raises(ValueError):
+    func()
+```
 
-    result = parse_file(file_path)  
+Вопрос: как проверить логи?
 
-    assert result == ["alex", "ivan"]  
+**Ответ**
 
-## 75. Как тестировать переменные окружения
+Через встроенную фикстуру caplog.
 
-import os  
+Вопрос: как проверить stdout?
 
-def get_mode() -> str:  
-    return os.getenv("APP_MODE", "dev")  
+**Ответ**
 
-def test_get_mode(monkeypatch) -> None:  
-    monkeypatch.setenv("APP_MODE", "test")  
+Через capsys.
 
-    assert get_mode() == "test"  
+Вопрос: как временно создать файл?
 
-def test_get_mode_default(monkeypatch) -> None:  
-    monkeypatch.delenv("APP_MODE", raising=False)  
+**Ответ**
 
-    assert get_mode() == "dev"  
+Через tmp_path.
 
-## 76. Как тестировать retry
+Вопрос: как запускать только smoke?
 
-from unittest.mock import Mock  
+**Ответ**
 
-def test_retry_success_on_second_attempt() -> None:  
-    client = Mock()  
-    client.get.side_effect = [TimeoutError, {"status": "ok"}]  
+Пометить тесты @pytest.mark.smoke, зарегистрировать marker в конфиге и запускать pytest -m smoke.
 
-    result = get_with_retry(client)  
+Вопрос: как сделать динамическую параметризацию?
 
-    assert result == {"status": "ok"}  
-    assert client.get.call_count == 2  
+**Ответ**
 
-### На собеседовании:
+Через pytest_generate_tests, особенно если данные приходят из CLI, файла, БД или API.
 
-Для retry удобно мокать зависимость и через side_effect задавать последовательность: сначала ошибка, потом успех.  
+### 82. Мини-шаблон тестового фреймворка
 
-## 77. Как тестировать брокеры
+```text
+tests/
+├── conftest.py
+├── api/
+│   ├── clients/
+│   │   └── user_client.py
+│   ├── test_users.py
+│   └── test_orders.py
+├── data/
+│   └── user_payloads.py
+├── helpers/
+│   └── assertions.py
+└── factories/
+    └── user_factory.py
+```
 
-Для Kafka/Rabbit/NATS можно использовать разные уровни:  
+#### `clients/user_client.py`
 
-1. Unit: мок producer/consumer.  
-2. Integration: поднять брокер в Docker.  
-3. Contract: проверить формат сообщения.  
-4. E2E: отправить событие и дождаться результата в другой системе.  
+```python
+import requests
 
-### Пример unit-теста producer:
+class UserClient:
+    def __init__(self, base_url: str, token: str | None = None) -> None:
+        self.base_url = base_url
+        self.token = token
 
-from unittest.mock import Mock  
+    def _headers(self) -> dict[str, str]:
+        headers = {"Content-Type": "application/json"}
 
-def test_publish_user_created_event() -> None:  
-    producer = Mock()  
-    service = UserEventService(producer=producer)  
+        if self.token:
+            headers["Authorization"] = f"Bearer {self.token}"
 
-    service.publish_user_created(user_id=123)  
+        return headers
 
-    producer.publish.assert_called_once_with(  
-        topic="user.created",  
-        message={"user_id": 123},  
-    )  
+    def create_user(self, payload: dict) -> requests.Response:
+        return requests.post(
+            f"{self.base_url}/users",
+            json=payload,
+            headers=self._headers(),
+            timeout=5,
+        )
 
-### На собеседовании:
+    def get_user(self, user_id: int) -> requests.Response:
+        return requests.get(
+            f"{self.base_url}/users/{user_id}",
+            headers=self._headers(),
+            timeout=5,
+        )
+```
 
-Для брокеров важно проверять topic/queue, payload, headers, key, schema, idempotency, retry, dead letter queue и обработку дублей.  
+#### `conftest.py`
 
-## 78. Как тестировать конкурентное выполнение
+```python
+import pytest
 
-### Пример:
+from tests.api.clients.user_client import UserClient
 
-from concurrent.futures import ThreadPoolExecutor  
+def pytest_addoption(parser) -> None:
+    parser.addoption("--base-url", action="store", default="https://api.dev.example.com")
+    parser.addoption("--token", action="store", default=None)
 
-def test_concurrent_create_user(api_client) -> None:  
-    payloads = [  
-        {"username": f"user_{i}", "password": "Qwerty123"}  
-        for i in range(10)  
-    ]  
+@pytest.fixture(scope="session")
+def base_url(pytestconfig) -> str:
+    return pytestconfig.getoption("--base-url")
 
-    with ThreadPoolExecutor(max_workers=5) as executor:  
-        responses = list(executor.map(api_client.create_user, payloads))  
+@pytest.fixture(scope="session")
+def token(pytestconfig) -> str | None:
+    return pytestconfig.getoption("--token")
 
-    assert all(response.status_code == 201 for response in responses)  
+@pytest.fixture
+def user_client(base_url: str, token: str | None) -> UserClient:
+    return UserClient(base_url=base_url, token=token)
+```
 
-### На собеседовании:
+#### `factories/user_factory.py`
 
-Конкурентные тесты нужны для проверки race condition, уникальности, блокировок, идемпотентности, дублей и конфликтов.  
+```python
+from uuid import uuid4
 
-## 79. Как тестировать права доступа
+def build_user_payload(
+    username: str | None = None,
+    password: str = "Qwerty123",
+) -> dict[str, str]:
+    return {
+        "username": username or f"user_{uuid4().hex}",
+        "password": password,
+    }
+```
 
-import pytest  
+#### `helpers/assertions.py`
 
-@pytest.mark.parametrize(  
-    "role, expected_status",  
-    [  
-        ("admin", 200),  
-        ("manager", 403),  
-        ("user", 403),  
-    ],  
-)  
-def test_delete_user_permissions(api_client_factory, role: str, expected_status: int) -> None:  
-    client = api_client_factory(role=role)  
+```python
+def assert_error_response(response, expected_status: int, expected_error_type: str) -> None:
+    assert response.status_code == expected_status
 
-    response = client.delete_user(user_id=123)  
+    body = response.json()
 
-    assert response.status_code == expected_status  
+    assert body["error_type"] == expected_error_type
+```
 
-### На собеседовании:
+#### `test_users.py`
 
-Права доступа хорошо ложатся на параметризацию: роль, действие, ожидаемый статус.  
+```python
+import pytest
 
-## 80. Как тестировать валидацию
+from tests.factories.user_factory import build_user_payload
+from tests.helpers.assertions import assert_error_response
 
-import pytest  
+def test_create_user_with_valid_payload(user_client) -> None:
+    payload = build_user_payload()
 
-@pytest.mark.parametrize(  
-    "username",  
-    [  
-        "",  
-        " ",  
-        "a" * 256,  
-        "admin<script>",  
-        "тест",  
-    ],  
-)  
-def test_invalid_username(api_client, username: str) -> None:  
-    response = api_client.create_user(  
-        {  
-            "username": username,  
-            "password": "Qwerty123",  
-        }  
-    )  
+    response = user_client.create_user(payload)
 
-    assert response.status_code == 400  
+    assert response.status_code == 201
 
-### На собеседовании:
+    body = response.json()
 
-Для валидации удобно использовать классы эквивалентности и граничные значения, а в pytest это хорошо выражается через parametrize.  
+    assert isinstance(body["id"], int)
+    assert body["username"] == payload["username"]
 
-## 81. Что спрашивают на собеседовании по pytest
+@pytest.mark.parametrize(
+    "payload, expected_error",
+    [
+        ({}, "username_required"),
+        ({"username": ""}, "username_empty"),
+        ({"username": "alex", "password": "short"}, "password_invalid"),
+    ],
+)
+def test_create_user_with_invalid_payload(
+    user_client,
+    payload: dict,
+    expected_error: str,
+) -> None:
+    response = user_client.create_user(payload)
 
-Вопрос: что такое fixture?  
+    assert_error_response(
+        response=response,
+        expected_status=400,
+        expected_error_type=expected_error,
+    )
+```
 
-Ответ:  
+### 83. Что сказать, если спросят «как бы ты построил pytest-фреймворк?»
 
-Fixture — это функция подготовки тестового окружения или данных. pytest вызывает её по имени аргумента теста. Фикстура может возвращать объект, иметь scope, зависеть от других фикстур и выполнять teardown через yield.  
+> **Короткий ответ для собеседования**
+>
+> Я бы разделил проект на слои. В тестах оставил бы только сценарии и проверки. Работу с API вынес бы в client layer, генерацию данных — в factories/builders, общие проверки — в helpers, подготовку окружения — в fixtures внутри conftest.py. Для запуска добавил бы CLI-опции вроде --base-url, --env, --browser. Для группировки использовал бы markers: smoke, regression, slow. Для отчётности подключил бы Allure, а в CI сохранял бы allure-results, логи и request/response attachments.
 
-Вопрос: какие бывают scope?  
+### 84. Что сказать, если спросят «как бороться с flaky?»
 
-Ответ:  
+> **Короткий ответ для собеседования**
+>
+> Сначала нужно понять причину, а не просто добавить rerun. Я бы проверил изоляцию данных, порядок запуска, параллельность, внешние зависимости, ожидания, timeout, текущую дату/время и артефакты. Потом добавил бы уникальные тестовые данные, явные ожидания, cleanup, моки или стабилизировал test environment. Rerun — только временная мера.
 
-function, class, module, package, session. Чем шире scope, тем реже создаётся фикстура. Но с широким scope нужно аккуратно обращаться с изменяемым состоянием.  
+### 85. Что сказать, если спросят «как тесты запускаются в CI?»
 
-Вопрос: чем fixture лучше setup_method?  
+> **Короткий ответ для собеседования**
+>
+> В CI обычно есть несколько уровней запуска. На merge request — быстрые smoke/API/unit. По расписанию — regression. Перед релизом — полный набор. Тесты запускаются командой pytest с нужными маркерами и параметрами окружения. После запуска сохраняются отчёты: Allure results, логи, скриншоты, request/response, coverage.
 
-Ответ:  
+### 86. Что сказать, если спросят «как ускорить автотесты?»
 
-Фикстуры гибче: их можно переиспользовать между файлами, параметризовать, строить зависимости между фикстурами, задавать scope и делать teardown через yield.  
+> **Короткий ответ для собеседования**
+>
+> Сначала измерить: --durations, отчёты CI, Allure timeline. Потом разделить тесты по уровням и маркерам, убрать лишние end-to-end проверки, параллелить через xdist, переиспользовать дорогие ресурсы, оптимизировать подготовку данных, заменить sleep на ожидания и мокать внешние зависимости там, где не проверяется интеграция.
 
-Вопрос: что такое autouse?  
+### 87. Частые ошибки новичков в pytest
 
-Ответ:  
+1. Держать всю логику в одном огромном conftest.py.
+2. Делать слишком много autouse fixtures.
+3. Использовать session fixture для изменяемых данных.
+4. Не чистить данные после теста.
+5. Писать sleep вместо ожиданий.
+6. Не ставить timeout на API-запросы.
+7. Делать тесты зависимыми от порядка.
+8. Использовать один и тот же user/email во всех тестах.
+9. Прятать важные assert’ы в непонятных helper’ах.
+10. Не регистрировать custom markers.
+11. Проверять только status code и не проверять body.
+12. Игнорировать flaky, просто добавляя rerun.
+13. Писать UI-тесты на всё подряд вместо API/unit.
 
-Это фикстура, которая применяется автоматически без явного указания в аргументах теста. Полезна для глобальной подготовки или очистки, но может ухудшить читаемость, если её использовать слишком часто.  
+### 88. Короткая финальная шпаргалка перед собеседованием
 
-Вопрос: как работает parametrize?  
+pytest — тестовый фреймворк Python.
 
-Ответ:  
+#### Тесты
 
-@pytest.mark.parametrize запускает один тест несколько раз с разными наборами аргументов. Это удобно для проверок валидации, ролей, статусов, граничных значений.  
+- test_*.py
+- *_test.py
+- test_* функции
+- Test* классы
 
-Вопрос: чем skip отличается от xfail?  
+**Запуск**
+- pytest
+- pytest -v
+- pytest -s
+- pytest -k "login"
+- pytest -m smoke
+- pytest -x
+- pytest --maxfail=1
+- pytest --lf
+- pytest --ff
+- pytest --collect-only
+- pytest --durations=10
 
-Ответ:  
+#### Фикстуры
 
-skip — тест не запускается. xfail — тест запускается, но его падение ожидается. Если xfail-тест неожиданно прошёл, pytest покажет XPASS.  
+- @pytest.fixture
+- передаются по имени аргумента
+- scope: function/class/module/package/session
+- yield для teardown
+- autouse=True для автоматического применения
+- params для параметризации фикстур
+- request для доступа к контексту
 
-Вопрос: что такое conftest.py?  
+#### Параметризация
 
-Ответ:  
+- @pytest.mark.parametrize
+- ids для читаемых названий
+- pytest.param для marks на конкретном кейсе
+- indirect=True для передачи параметра в фикстуру
 
-Это специальный файл pytest для общих фикстур, хуков и настроек. Его не нужно импортировать вручную, pytest сам его подхватывает.  
+#### Marks
 
-Вопрос: как передать base_url в тесты?  
+- @pytest.mark.smoke
+- @pytest.mark.regression
+- @pytest.mark.skip
+- @pytest.mark.skipif
+- @pytest.mark.xfail
 
-Ответ:  
+#### `conftest.py`
 
-Через CLI option в pytest_addoption, потом получить через pytestconfig.getoption и завернуть в fixture.  
+- фикстуры
+- хуки
+- CLI options
+- общая настройка тестов
 
-Вопрос: как распараллелить тесты?  
+#### Хуки
 
-Ответ:  
+- pytest_addoption
+- pytest_configure
+- pytest_collection_modifyitems
+- pytest_generate_tests
+- pytest_sessionstart
+- pytest_sessionfinish
 
-Через pytest-xdist: pytest -n auto или pytest -n 4. Но тесты должны быть независимыми: уникальные данные, отдельные ресурсы, отсутствие зависимости от порядка.  
+#### Встроенные фикстуры
 
-Вопрос: почему тесты могут падать только в параллельном запуске?  
+- tmp_path
+- monkeypatch
+- caplog
+- capsys
+- pytestconfig
+- request
 
-Ответ:  
+#### Параллельность
 
-Обычно из-за общего состояния: один пользователь, одна запись в БД, общий файл, общий порт, session fixture с mutable state или зависимость от порядка выполнения.  
+- pytest-xdist
+- pytest -n auto
+- тесты должны быть независимыми
 
-Вопрос: как сделать teardown?  
+#### Allure
 
-Ответ:  
+- pytest --alluredir=allure-results
+- steps
+- attachments
+- feature/story/severity
 
-Через yield fixture: до yield setup, после yield cleanup. Ещё можно через request.addfinalizer, но yield обычно проще.  
+#### CI
 
-Вопрос: как мокать зависимости?  
+- smoke на MR
+- regression по расписанию
+- Allure/logs/screenshots как artifacts
 
-Ответ:  
+### 89. Самый сильный ответ про pytest на собесе
 
-Через unittest.mock, pytest-mock или monkeypatch. Например, можно заменить функцию, переменную окружения, метод класса или внешний API-клиент.  
+**Можно выучить почти дословно**
 
-Вопрос: как проверить исключение?  
-
-Ответ:  
-
-Через pytest.raises.  
-
-with pytest.raises(ValueError):  
-    func()  
-Вопрос: как проверить логи?  
-
-Ответ:  
-
-Через встроенную фикстуру caplog.  
-
-Вопрос: как проверить stdout?  
-
-Ответ:  
-
-Через capsys.  
-
-Вопрос: как временно создать файл?  
-
-Ответ:  
-
-Через tmp_path.  
-
-Вопрос: как запускать только smoke?  
-
-Ответ:  
-
-Пометить тесты @pytest.mark.smoke, зарегистрировать marker в конфиге и запускать pytest -m smoke.  
-
-Вопрос: как сделать динамическую параметризацию?  
-
-Ответ:  
-
-Через pytest_generate_tests, особенно если данные приходят из CLI, файла, БД или API.  
-
-## 82. Мини-шаблон тестового фреймворка
-
-tests/  
-├── conftest.py  
-├── api/  
-│   ├── clients/  
-│   │   └── user_client.py  
-│   ├── test_users.py  
-│   └── test_orders.py  
-├── data/  
-│   └── user_payloads.py  
-├── helpers/  
-│   └── assertions.py  
-└── factories/  
-    └── user_factory.py  
-
-clients/user_client.py:  
-
-import requests  
-
-class UserClient:  
-    def __init__(self, base_url: str, token: str | None = None) -> None:  
-        self.base_url = base_url  
-        self.token = token  
-
-    def _headers(self) -> dict[str, str]:  
-        headers = {"Content-Type": "application/json"}  
-
-        if self.token:  
-            headers["Authorization"] = f"Bearer {self.token}"  
-
-        return headers  
-
-    def create_user(self, payload: dict) -> requests.Response:  
-        return requests.post(  
-            f"{self.base_url}/users",  
-            json=payload,  
-            headers=self._headers(),  
-            timeout=5,  
-        )  
-
-    def get_user(self, user_id: int) -> requests.Response:  
-        return requests.get(  
-            f"{self.base_url}/users/{user_id}",  
-            headers=self._headers(),  
-            timeout=5,  
-        )  
-
-conftest.py:  
-
-import pytest  
-
-from tests.api.clients.user_client import UserClient  
-
-def pytest_addoption(parser) -> None:  
-    parser.addoption("--base-url", action="store", default="https://api.dev.example.com")  
-    parser.addoption("--token", action="store", default=None)  
-
-@pytest.fixture(scope="session")  
-def base_url(pytestconfig) -> str:  
-    return pytestconfig.getoption("--base-url")  
-
-@pytest.fixture(scope="session")  
-def token(pytestconfig) -> str | None:  
-    return pytestconfig.getoption("--token")  
-
-@pytest.fixture  
-def user_client(base_url: str, token: str | None) -> UserClient:  
-    return UserClient(base_url=base_url, token=token)  
-
-factories/user_factory.py:  
-
-from uuid import uuid4  
-
-def build_user_payload(  
-    username: str | None = None,  
-    password: str = "Qwerty123",  
-) -> dict[str, str]:  
-    return {  
-        "username": username or f"user_{uuid4().hex}",  
-        "password": password,  
-    }  
-
-helpers/assertions.py:  
-
-def assert_error_response(response, expected_status: int, expected_error_type: str) -> None:  
-    assert response.status_code == expected_status  
-
-    body = response.json()  
-
-    assert body["error_type"] == expected_error_type  
-
-test_users.py:  
-
-import pytest  
-
-from tests.factories.user_factory import build_user_payload  
-from tests.helpers.assertions import assert_error_response  
-
-def test_create_user_with_valid_payload(user_client) -> None:  
-    payload = build_user_payload()  
-
-    response = user_client.create_user(payload)  
-
-    assert response.status_code == 201  
-
-    body = response.json()  
-
-    assert isinstance(body["id"], int)  
-    assert body["username"] == payload["username"]  
-
-@pytest.mark.parametrize(  
-    "payload, expected_error",  
-    [  
-        ({}, "username_required"),  
-        ({"username": ""}, "username_empty"),  
-        ({"username": "alex", "password": "short"}, "password_invalid"),  
-    ],  
-)  
-def test_create_user_with_invalid_payload(  
-    user_client,  
-    payload: dict,  
-    expected_error: str,  
-) -> None:  
-    response = user_client.create_user(payload)  
-
-    assert_error_response(  
-        response=response,  
-        expected_status=400,  
-        expected_error_type=expected_error,  
-    )  
-
-## 83. Что сказать, если спросят «как бы ты построил pytest-фреймворк?»
-
-### Хороший ответ:
-
-Я бы разделил проект на слои. В тестах оставил бы только сценарии и проверки. Работу с API вынес бы в client layer, генерацию данных — в factories/builders, общие проверки — в helpers, подготовку окружения — в fixtures внутри conftest.py. Для запуска добавил бы CLI-опции вроде --base-url, --env, --browser. Для группировки использовал бы markers: smoke, regression, slow. Для отчётности подключил бы Allure, а в CI сохранял бы allure-results, логи и request/response attachments.  
-
-## 84. Что сказать, если спросят «как бороться с flaky?»
-
-Ответ:  
-
-Сначала нужно понять причину, а не просто добавить rerun. Я бы проверил изоляцию данных, порядок запуска, параллельность, внешние зависимости, ожидания, timeout, текущую дату/время и артефакты. Потом добавил бы уникальные тестовые данные, явные ожидания, cleanup, моки или стабилизировал test environment. Rerun — только временная мера.  
-
-## 85. Что сказать, если спросят «как тесты запускаются в CI?»
-
-Ответ:  
-
-В CI обычно есть несколько уровней запуска. На merge request — быстрые smoke/API/unit. По расписанию — regression. Перед релизом — полный набор. Тесты запускаются командой pytest с нужными маркерами и параметрами окружения. После запуска сохраняются отчёты: Allure results, логи, скриншоты, request/response, coverage.  
-
-## 86. Что сказать, если спросят «как ускорить автотесты?»
-
-Ответ:  
-
-Сначала измерить: --durations, отчёты CI, Allure timeline. Потом разделить тесты по уровням и маркерам, убрать лишние end-to-end проверки, параллелить через xdist, переиспользовать дорогие ресурсы, оптимизировать подготовку данных, заменить sleep на ожидания и мокать внешние зависимости там, где не проверяется интеграция.  
-
-## 87. Частые ошибки новичков в pytest
-
-1. Держать всю логику в одном огромном conftest.py.  
-2. Делать слишком много autouse fixtures.  
-3. Использовать session fixture для изменяемых данных.  
-4. Не чистить данные после теста.  
-5. Писать sleep вместо ожиданий.  
-6. Не ставить timeout на API-запросы.  
-7. Делать тесты зависимыми от порядка.  
-8. Использовать один и тот же user/email во всех тестах.  
-9. Прятать важные assert’ы в непонятных helper’ах.  
-10. Не регистрировать custom markers.  
-11. Проверять только status code и не проверять body.  
-12. Игнорировать flaky, просто добавляя rerun.  
-13. Писать UI-тесты на всё подряд вместо API/unit.  
-
-## 88. Короткая финальная шпаргалка перед собеседованием
-
-pytest — тестовый фреймворк Python.  
-
-Тесты:  
-- test_*.py  
-- *_test.py  
-- test_* функции  
-- Test* классы  
-
-Запуск:  
-- pytest  
-- pytest -v  
-- pytest -s  
-- pytest -k "login"  
-- pytest -m smoke  
-- pytest -x  
-- pytest --maxfail=1  
-- pytest --lf  
-- pytest --ff  
-- pytest --collect-only  
-- pytest --durations=10  
-
-Фикстуры:  
-- @pytest.fixture  
-- передаются по имени аргумента  
-- scope: function/class/module/package/session  
-- yield для teardown  
-- autouse=True для автоматического применения  
-- params для параметризации фикстур  
-- request для доступа к контексту  
-
-Параметризация:  
-- @pytest.mark.parametrize  
-- ids для читаемых названий  
-- pytest.param для marks на конкретном кейсе  
-- indirect=True для передачи параметра в фикстуру  
-
-Marks:  
-- @pytest.mark.smoke  
-- @pytest.mark.regression  
-- @pytest.mark.skip  
-- @pytest.mark.skipif  
-- @pytest.mark.xfail  
-
-conftest.py:  
-- фикстуры  
-- хуки  
-- CLI options  
-- общая настройка тестов  
-
-Хуки:  
-- pytest_addoption  
-- pytest_configure  
-- pytest_collection_modifyitems  
-- pytest_generate_tests  
-- pytest_sessionstart  
-- pytest_sessionfinish  
-
-Встроенные фикстуры:  
-- tmp_path  
-- monkeypatch  
-- caplog  
-- capsys  
-- pytestconfig  
-- request  
-
-Параллельность:  
-- pytest-xdist  
-- pytest -n auto  
-- тесты должны быть независимыми  
-
-Allure:  
-- pytest --alluredir=allure-results  
-- steps  
-- attachments  
-- feature/story/severity  
-
-CI:  
-- smoke на MR  
-- regression по расписанию  
-- Allure/logs/screenshots как artifacts  
-
-## 89. Самый сильный ответ про pytest на собесе
-
-Можно выучить почти дословно:  
-
-Я использую pytest как основу автотестового фреймворка. Обычно разделяю тесты, API-клиенты, фикстуры, фабрики тестовых данных и helper assertions. Через фикстуры готовлю окружение, пользователей, токены, БД-сессии и клиентов. Через parametrize покрываю валидацию, роли и граничные значения. Через markers разделяю smoke, regression и slow тесты. Для CI добавляю параметры запуска вроде --base-url и --env, отчётность через Allure, а для ускорения — xdist. При этом слежу за изоляцией тестов: уникальные данные, cleanup, rollback транзакций, отсутствие зависимости от порядка и аккуратное использование session fixtures.  
+Я использую pytest как основу автотестового фреймворка. Обычно разделяю тесты, API-клиенты, фикстуры, фабрики тестовых данных и helper assertions. Через фикстуры готовлю окружение, пользователей, токены, БД-сессии и клиентов. Через parametrize покрываю валидацию, роли и граничные значения. Через markers разделяю smoke, regression и slow тесты. Для CI добавляю параметры запуска вроде --base-url и --env, отчётность через Allure, а для ускорения — xdist. При этом слежу за изоляцией тестов: уникальные данные, cleanup, rollback транзакций, отсутствие зависимости от порядка и аккуратное использование session fixtures.

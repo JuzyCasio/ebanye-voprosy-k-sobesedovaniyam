@@ -4,2472 +4,3074 @@
 
 Полный материал из присланного конспекта. Сохранены подробные объяснения, примеры, практические сценарии и вопросы для собеседования.
 
-## 1. Что такое SQL
+> **Как пользоваться конспектом**
+>
+> Выбери тему в навигации, прочитай объяснение и затем проговори выделенный короткий ответ своими словами. Код и команды оформлены отдельными блоками, чтобы их можно было быстро найти и скопировать.
 
-SQL — язык для работы с реляционными базами данных.  
+## Навигация по разделу
 
-Он используется для:  
+- [Основы SELECT и агрегация](#основы-select-и-агрегация) — вопросы 1–15
+- [JOIN, подзапросы и аналитика](#join-подзапросы-и-аналитика) — вопросы 16–27
+- [Изменение данных и схема](#изменение-данных-и-схема) — вопросы 28–35
+- [Производительность, транзакции и архитектура БД](#производительность-транзакции-и-архитектура-бд) — вопросы 36–48
+- [Практика SQL для QA/SDET](#практика-sql-для-qasdet) — вопросы 49–56
+- [Собеседование и самопроверка](#собеседование-и-самопроверка) — вопросы 57–64
 
-получения данных;  
-добавления, изменения и удаления данных;  
-создания таблиц, индексов, ограничений;  
-управления транзакциями;  
-настройки прав доступа.  
+## Основы SELECT и агрегация
 
-### Основные СУБД:
+### 1. Что такое SQL
 
-PostgreSQL;  
-MySQL;  
-Oracle;  
-MS SQL Server;  
-SQLite;  
-ClickHouse — чаще аналитическая БД, SQL-подобный язык.  
+SQL — язык для работы с реляционными базами данных.
 
-## 2. Основные группы SQL-команд
+**Он используется для**
 
-DQL — запросы данных  
-SELECT * FROM users;  
+- получения данных;
+- добавления, изменения и удаления данных;
+- создания таблиц, индексов, ограничений;
+- управления транзакциями;
+- настройки прав доступа.
 
-Используется для чтения данных.  
+#### Основные СУБД:
 
-DML — изменение данных  
-INSERT INTO users (name, email) VALUES ('Alex', 'alex@test.com');  
+- PostgreSQL;
+- MySQL;
+- Oracle;
+- MS SQL Server;
+- SQLite;
+- ClickHouse — чаще аналитическая БД, SQL-подобный язык.
 
-UPDATE users  
-SET name = 'Alexander'  
-WHERE id = 1;  
+### 2. Основные группы SQL-команд
 
-DELETE FROM users  
-WHERE id = 1;  
+**DQL — запросы данных**
 
-DML работает с содержимым таблиц.  
+```sql
+SELECT * FROM users;
+```
 
-DDL — структура базы  
-CREATE TABLE users (  
-    id SERIAL PRIMARY KEY,  
-    name TEXT NOT NULL,  
-    email TEXT UNIQUE  
-);  
+Используется для чтения данных.
 
-ALTER TABLE users ADD COLUMN age INT;  
+**DML — изменение данных**
 
-DROP TABLE users;  
+```sql
+INSERT INTO users (name, email) VALUES ('Alex', 'alex@test.com');
 
-DDL меняет структуру БД.  
+UPDATE users
+SET name = 'Alexander'
+WHERE id = 1;
 
-TCL — транзакции  
-BEGIN;  
+DELETE FROM users
+WHERE id = 1;
+```
 
-UPDATE accounts SET balance = balance - 100 WHERE id = 1;  
-UPDATE accounts SET balance = balance + 100 WHERE id = 2;  
+DML работает с содержимым таблиц.
 
-COMMIT;  
+**DDL — структура базы**
 
-Или откат:  
+```bash
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    email TEXT UNIQUE
+);
 
-ROLLBACK;  
-DCL — права  
-GRANT SELECT ON users TO readonly_user;  
+ALTER TABLE users ADD COLUMN age INT;
 
-REVOKE SELECT ON users FROM readonly_user;  
+DROP TABLE users;
+```
 
-## 3. Базовый SELECT
+DDL меняет структуру БД.
 
-SELECT id, name, email  
-FROM users;  
+**TCL — транзакции**
 
-Получить все поля:  
+```sql
+BEGIN;
 
-SELECT *  
-FROM users;  
+UPDATE accounts SET balance = balance - 100 WHERE id = 1;
+UPDATE accounts SET balance = balance + 100 WHERE id = 2;
 
-### На собеседовании лучше говорить:
+COMMIT;
+```
 
-В реальном коде SELECT * лучше избегать, потому что он тянет лишние данные, ломает явный контракт и может ухудшить производительность.  
+**Или откат**
 
-## 4. Логический порядок выполнения SELECT
+```sql
+ROLLBACK;
+```
 
-### Важно: SQL пишется в одном порядке, а выполняется логически в другом.
+**DCL — права**
 
-Пишем:  
+```sql
+GRANT SELECT ON users TO readonly_user;
 
-SELECT name, COUNT(*)  
-FROM users  
-WHERE is_active = true  
-GROUP BY name  
-HAVING COUNT(*) > 1  
-ORDER BY name  
-LIMIT 10;  
+REVOKE SELECT ON users FROM readonly_user;
+```
+
+### 3. Базовый SELECT
+
+```sql
+SELECT id, name, email
+FROM users;
+```
+
+**Получить все поля**
+
+```sql
+SELECT *
+FROM users;
+```
+
+> **Короткий ответ для собеседования**
+>
+> В реальном коде SELECT * лучше избегать, потому что он тянет лишние данные, ломает явный контракт и может ухудшить производительность.
+
+### 4. Логический порядок выполнения SELECT
+
+#### Важно: SQL пишется в одном порядке, а выполняется логически в другом.
+
+**Пишем**
+
+```sql
+SELECT name, COUNT(*)
+FROM users
+WHERE is_active = true
+GROUP BY name
+HAVING COUNT(*) > 1
+ORDER BY name
+LIMIT 10;
+```
 
-Логически выполняется так:  
+**Логически выполняется так**
 
-FROM  
-JOIN  
-WHERE  
-GROUP BY  
-HAVING  
-SELECT  
-DISTINCT  
-ORDER BY  
-LIMIT / OFFSET  
+```sql
+FROM
+JOIN
+WHERE
+GROUP BY
+HAVING
+SELECT
+```
 
-Это часто спрашивают.  
+**DISTINCT**
 
-## 5. WHERE — фильтрация строк
+```sql
+ORDER BY
+LIMIT / OFFSET
+```
 
-SELECT *  
-FROM users  
-WHERE age >= 18;  
-Основные операторы  
-=       -- равно  
-!=      -- не равно  
-<>      -- не равно  
->       -- больше  
-<       -- меньше  
->=      -- больше или равно  
-<=      -- меньше или равно  
+Это часто спрашивают.
 
-### Пример:
+### 5. WHERE — фильтрация строк
 
-SELECT *  
-FROM orders  
-WHERE total > 1000;  
-AND / OR / NOT  
-SELECT *  
-FROM users  
-WHERE age >= 18 AND is_active = true;  
-SELECT *  
-FROM users  
-WHERE city = 'Moscow' OR city = 'Saint Petersburg';  
-SELECT *  
-FROM users  
-WHERE NOT is_active;  
+```sql
+SELECT *
+FROM users
+WHERE age >= 18;
+```
 
-### Важно помнить про скобки:
+**Основные операторы**
+=       -- равно
+!=      -- не равно
+<>      -- не равно
+>       -- больше
+<       -- меньше
+>=      -- больше или равно
+<=      -- меньше или равно
 
-SELECT *  
-FROM users  
-WHERE age >= 18  
-  AND (city = 'Moscow' OR city = 'Saint Petersburg');  
+#### Пример:
 
-## 6. IN
+```sql
+SELECT *
+FROM orders
+WHERE total > 1000;
+```
 
-SELECT *  
-FROM users  
-WHERE city IN ('Moscow', 'Saint Petersburg', 'Kazan');  
+AND / OR / NOT
 
-То же самое, что:  
+```sql
+SELECT *
+FROM users
+WHERE age >= 18 AND is_active = true;
+SELECT *
+FROM users
+WHERE city = 'Moscow' OR city = 'Saint Petersburg';
+SELECT *
+FROM users
+WHERE NOT is_active;
+```
 
-WHERE city = 'Moscow'  
-   OR city = 'Saint Petersburg'  
-   OR city = 'Kazan'  
+#### Важно помнить про скобки:
 
-## 7. BETWEEN
+```sql
+SELECT *
+FROM users
+WHERE age >= 18
+```
 
-SELECT *  
-FROM orders  
-WHERE total BETWEEN 1000 AND 5000;  
+  AND (city = 'Moscow' OR city = 'Saint Petersburg');
 
-### Важно:
+### 6. IN
 
-BETWEEN 1000 AND 5000  
+```sql
+SELECT *
+FROM users
+WHERE city IN ('Moscow', 'Saint Petersburg', 'Kazan');
+```
 
-включает обе границы:  
+**То же самое, что**
 
-total >= 1000 AND total <= 5000  
+```sql
+WHERE city = 'Moscow'
+   OR city = 'Saint Petersburg'
+   OR city = 'Kazan'
+```
 
-Для дат часто безопаснее писать так:  
+### 7. BETWEEN
 
-SELECT *  
-FROM orders  
-WHERE created_at >= '2026-07-01'  
-  AND created_at <  '2026-08-01';  
+```sql
+SELECT *
+FROM orders
+WHERE total BETWEEN 1000 AND 5000;
+```
 
-### Почему лучше так?
+#### Важно:
 
-Потому что если написать:  
+BETWEEN 1000 AND 5000
 
-WHERE created_at BETWEEN '2026-07-01' AND '2026-07-31'  
+**включает обе границы**
 
-можно случайно потерять записи за 2026-07-31 12:30:00, если тип поля содержит время.  
+total >= 1000 AND total <= 5000
 
-## 8. LIKE / ILIKE
+Для дат часто безопаснее писать так:
 
-SELECT *  
-FROM users  
-WHERE email LIKE '%@gmail.com';  
+```sql
+SELECT *
+FROM orders
+WHERE created_at >= '2026-07-01'
+```
 
-Шаблоны:  
+  AND created_at <  '2026-08-01';
 
-%  -- любое количество символов  
-_  -- один символ  
+#### Почему лучше так?
 
-### Примеры:
+**Потому что если написать**
 
--- начинается с Alex  
-WHERE name LIKE 'Alex%'  
+```sql
+WHERE created_at BETWEEN '2026-07-01' AND '2026-07-31'
+```
 
--- заканчивается на gmail.com  
-WHERE email LIKE '%gmail.com'  
+можно случайно потерять записи за 2026-07-31 12:30:00, если тип поля содержит время.
 
--- содержит test  
-WHERE email LIKE '%test%'  
+### 8. LIKE / ILIKE
 
-В PostgreSQL есть ILIKE — поиск без учёта регистра:  
+```sql
+SELECT *
+FROM users
+WHERE email LIKE '%@gmail.com';
+```
 
-SELECT *  
-FROM users  
-WHERE name ILIKE 'alex%';  
+**Шаблоны**
 
-## 9. NULL
+%  -- любое количество символов
+_  -- один символ
 
-NULL — это отсутствие значения, не ноль и не пустая строка.  
+#### Примеры:
 
-Неправильно:  
+-- начинается с Alex
 
-WHERE deleted_at = NULL  
+```sql
+WHERE name LIKE 'Alex%'
+```
 
-Правильно:  
+-- заканчивается на gmail.com
 
-WHERE deleted_at IS NULL  
+```sql
+WHERE email LIKE '%gmail.com'
+```
 
-И наоборот:  
+-- содержит test
 
-WHERE deleted_at IS NOT NULL  
+```sql
+WHERE email LIKE '%test%'
+```
 
-### Важно:
+В PostgreSQL есть ILIKE — поиск без учёта регистра:
 
-NULL = NULL  
+```sql
+SELECT *
+FROM users
+WHERE name ILIKE 'alex%';
+```
 
-не возвращает true.  
+### 9. NULL
 
-Потому что NULL означает неизвестное значение.  
+NULL — это отсутствие значения, не ноль и не пустая строка.
 
-COALESCE  
+**Неправильно**
 
-Возвращает первое не-NULL значение.  
+```sql
+WHERE deleted_at = NULL
+```
 
-SELECT COALESCE(phone, email, 'no contact')  
-FROM users;  
+**Правильно**
 
-### Пример:
+```sql
+WHERE deleted_at IS NULL
+```
 
-SELECT id, COALESCE(discount, 0) AS discount  
-FROM orders;  
+**И наоборот**
 
-Если discount равен NULL, вернётся 0.  
+```sql
+WHERE deleted_at IS NOT NULL
+```
 
-NULLIF  
-SELECT NULLIF(status, 'unknown')  
-FROM orders;  
+#### Важно:
 
-Если status = 'unknown', вернётся NULL.  
+```sql
+NULL = NULL
+```
 
-### Частый пример — защита от деления на ноль:
+не возвращает true.
 
-SELECT revenue / NULLIF(users_count, 0)  
-FROM stats;  
+Потому что NULL означает неизвестное значение.
 
-## 10. DISTINCT
+**COALESCE**
 
-Убирает дубликаты.  
+Возвращает первое не-NULL значение.
 
-SELECT DISTINCT city  
-FROM users;  
+```sql
+SELECT COALESCE(phone, email, 'no contact')
+FROM users;
+```
 
-По нескольким колонкам:  
+#### Пример:
 
-SELECT DISTINCT city, age  
-FROM users;  
+```sql
+SELECT id, COALESCE(discount, 0) AS discount
+FROM orders;
+```
 
-Тут уникальность считается по паре city + age.  
+Если discount равен NULL, вернётся 0.
 
-## 11. ORDER BY
+**NULLIF**
 
-SELECT *  
-FROM users  
-ORDER BY created_at DESC;  
+```sql
+SELECT NULLIF(status, 'unknown')
+FROM orders;
+```
 
-Сортировка:  
+Если status = 'unknown', вернётся NULL.
 
-ASC   -- по возрастанию  
-DESC  -- по убыванию  
+#### Частый пример — защита от деления на ноль:
 
-Несколько условий:  
+```sql
+SELECT revenue / NULLIF(users_count, 0)
+FROM stats;
+```
 
-SELECT *  
-FROM users  
-ORDER BY city ASC, age DESC;  
+### 10. DISTINCT
 
-Сначала сортировка по городу, внутри города — по возрасту.  
+Убирает дубликаты.
 
-## 12. LIMIT / OFFSET
+```sql
+SELECT DISTINCT city
+FROM users;
+```
 
-SELECT *  
-FROM users  
-ORDER BY id  
-LIMIT 10;  
+**По нескольким колонкам**
 
-Пропустить первые 10:  
+```sql
+SELECT DISTINCT city, age
+FROM users;
+```
 
-SELECT *  
-FROM users  
-ORDER BY id  
-LIMIT 10 OFFSET 10;  
+Тут уникальность считается по паре city + age.
 
-Используется для пагинации.  
+### 11. ORDER BY
 
-Но для больших таблиц OFFSET может быть дорогим, потому что БД всё равно должна пройти пропускаемые строки.  
+```sql
+SELECT *
+FROM users
+ORDER BY created_at DESC;
+```
 
-Лучше для больших данных использовать keyset pagination:  
+**Сортировка**
 
-SELECT *  
-FROM users  
-WHERE id > 1000  
-ORDER BY id  
-LIMIT 10;  
+**ASC   -- по возрастанию**
+DESC  -- по убыванию
 
-## 13. Агрегатные функции
+**Несколько условий**
 
-COUNT()  
-SUM()  
-AVG()  
-MIN()  
-MAX()  
+```sql
+SELECT *
+FROM users
+ORDER BY city ASC, age DESC;
+```
 
-### Пример:
+Сначала сортировка по городу, внутри города — по возрасту.
 
-SELECT COUNT(*)  
-FROM users;  
+### 12. LIMIT / OFFSET
 
-Сумма заказов:  
+```sql
+SELECT *
+FROM users
+ORDER BY id
+LIMIT 10;
+```
 
-SELECT SUM(total)  
-FROM orders;  
+Пропустить первые 10:
 
-Средний чек:  
+```sql
+SELECT *
+FROM users
+ORDER BY id
+LIMIT 10 OFFSET 10;
+```
 
-SELECT AVG(total)  
-FROM orders;  
+Используется для пагинации.
 
-Минимальный и максимальный заказ:  
+Но для больших таблиц OFFSET может быть дорогим, потому что БД всё равно должна пройти пропускаемые строки.
 
-SELECT MIN(total), MAX(total)  
-FROM orders;  
-COUNT(*), COUNT(column), COUNT(DISTINCT column)  
-SELECT COUNT(*)  
-FROM users;  
+Лучше для больших данных использовать keyset pagination:
 
-Считает все строки.  
+```sql
+SELECT *
+FROM users
+WHERE id > 1000
+ORDER BY id
+LIMIT 10;
+```
 
-SELECT COUNT(email)  
-FROM users;  
+### 13. Агрегатные функции
 
-Считает строки, где email IS NOT NULL.  
+```sql
+COUNT()
+SUM()
+AVG()
+MIN()
+MAX()
+```
 
-SELECT COUNT(DISTINCT city)  
-FROM users;  
+#### Пример:
 
-Считает количество уникальных городов.  
+```sql
+SELECT COUNT(*)
+FROM users;
+```
 
-## 14. GROUP BY
+**Сумма заказов**
 
-Группировка данных.  
+```sql
+SELECT SUM(total)
+FROM orders;
+```
 
-Например, есть таблица:  
+**Средний чек**
 
-orders  
+```sql
+SELECT AVG(total)
+FROM orders;
+```
 
-id | user_id | total  
----+---------+------  
-1  | 1       | 100  
-2  | 1       | 300  
-3  | 2       | 500  
+**Минимальный и максимальный заказ**
 
-Запрос:  
+```sql
+SELECT MIN(total), MAX(total)
+FROM orders;
+COUNT(*), COUNT(column), COUNT(DISTINCT column)
+SELECT COUNT(*)
+FROM users;
+```
 
-SELECT user_id, SUM(total)  
-FROM orders  
-GROUP BY user_id;  
+Считает все строки.
 
-Результат:  
+```sql
+SELECT COUNT(email)
+FROM users;
+```
 
-user_id | sum  
---------+-----  
-1       | 400  
-2       | 500  
-Частый вопрос  
+Считает строки, где email IS NOT NULL.
 
-### Почему нельзя так?
+```sql
+SELECT COUNT(DISTINCT city)
+FROM users;
+```
 
-SELECT user_id, id, SUM(total)  
-FROM orders  
-GROUP BY user_id;  
+Считает количество уникальных городов.
 
-Потому что для одного user_id может быть много разных id.  
+### 14. GROUP BY
 
-БД не понимает, какой именно id показать.  
+Группировка данных.
 
-Правильно:  
+**Например, есть таблица**
 
-SELECT user_id, SUM(total)  
-FROM orders  
-GROUP BY user_id;  
+**orders**
 
-Или надо добавить id в группировку:  
+```bash
+id | user_id | total
+```
 
-SELECT user_id, id, SUM(total)  
-FROM orders  
-GROUP BY user_id, id;  
+---+---------+------
+1  | 1       | 100
+2  | 1       | 300
+3  | 2       | 500
 
-Но это уже другая логика.  
+**Запрос**
 
-## 15. HAVING
+```sql
+SELECT user_id, SUM(total)
+FROM orders
+GROUP BY user_id;
+```
 
-WHERE фильтрует строки до группировки.  
+**Результат**
 
-HAVING фильтрует группы после группировки.  
+**user_id | sum**
+--------+-----
+1       | 400
+2       | 500
+Частый вопрос
 
-### Пример: найти пользователей, у которых больше 3 заказов.
+#### Почему нельзя так?
 
-SELECT user_id, COUNT(*) AS orders_count  
-FROM orders  
-GROUP BY user_id  
-HAVING COUNT(*) > 3;  
+```sql
+SELECT user_id, id, SUM(total)
+FROM orders
+GROUP BY user_id;
+```
 
-Неправильно:  
+Потому что для одного user_id может быть много разных id.
 
-SELECT user_id, COUNT(*)  
-FROM orders  
-WHERE COUNT(*) > 3  
-GROUP BY user_id;  
+БД не понимает, какой именно id показать.
 
-Так нельзя, потому что WHERE выполняется до агрегации.  
+**Правильно**
 
-## 16. JOIN
+```sql
+SELECT user_id, SUM(total)
+FROM orders
+GROUP BY user_id;
+```
 
-JOIN объединяет данные из разных таблиц.  
+Или надо добавить id в группировку:
 
-Допустим:  
+```sql
+SELECT user_id, id, SUM(total)
+FROM orders
+GROUP BY user_id, id;
+```
 
-users  
+Но это уже другая логика.
 
-id | name  
----+------  
-1  | Alex  
-2  | Ivan  
-3  | Maria  
-orders  
+### 15. HAVING
 
-id | user_id | total  
----+---------+------  
-1  | 1       | 100  
-2  | 1       | 200  
-3  | 2       | 500  
-INNER JOIN  
+```sql
+WHERE фильтрует строки до группировки.
 
-Возвращает только совпадающие записи.  
+HAVING фильтрует группы после группировки.
+```
 
-SELECT users.name, orders.total  
-FROM users  
-INNER JOIN orders ON users.id = orders.user_id;  
+#### Пример: найти пользователей, у которых больше 3 заказов.
 
-Результат:  
+```sql
+SELECT user_id, COUNT(*) AS orders_count
+FROM orders
+GROUP BY user_id
+HAVING COUNT(*) > 3;
+```
 
-Alex | 100  
-Alex | 200  
-Ivan | 500  
+**Неправильно**
 
-Maria не попадёт, потому что у неё нет заказов.  
+```sql
+SELECT user_id, COUNT(*)
+FROM orders
+WHERE COUNT(*) > 3
+GROUP BY user_id;
+```
 
-LEFT JOIN  
+Так нельзя, потому что WHERE выполняется до агрегации.
 
-Возвращает все строки из левой таблицы и совпадения из правой.  
+## JOIN, подзапросы и аналитика
 
-SELECT users.name, orders.total  
-FROM users  
-LEFT JOIN orders ON users.id = orders.user_id;  
+### 16. JOIN
 
-Результат:  
+`JOIN` объединяет данные из разных таблиц.
 
-Alex  | 100  
-Alex  | 200  
-Ivan  | 500  
-Maria | NULL  
-RIGHT JOIN  
+**Допустим**
 
-Возвращает все строки из правой таблицы и совпадения из левой.  
+**Таблица `users`:**
 
-SELECT users.name, orders.total  
-FROM users  
-RIGHT JOIN orders ON users.id = orders.user_id;  
+| id | name |
+|---:|---|
+| 1 | Alex |
+| 2 | Ivan |
+| 3 | Maria |
 
-На практике чаще используют LEFT JOIN, потому что его проще читать.  
+**Таблица `orders`:**
 
-FULL OUTER JOIN  
+| id | user_id | total |
+|---:|---:|---:|
+| 1 | 1 | 100 |
+| 2 | 1 | 200 |
+| 3 | 2 | 500 |
 
-Возвращает все строки из обеих таблиц.  
+#### `INNER JOIN`
 
-SELECT users.name, orders.total  
-FROM users  
-FULL OUTER JOIN orders ON users.id = orders.user_id;  
+Возвращает только совпадающие записи.
 
-Полезно для сверок данных.  
+```sql
+SELECT users.name, orders.total
+FROM users
+INNER JOIN orders ON users.id = orders.user_id;
+```
 
-Например:  
+**Результат**
 
-есть пользователь без заказа;  
-есть заказ с битым user_id.  
-CROSS JOIN  
+| name | total |
+|---|---:|
+| Alex | 100 |
+| Alex | 200 |
+| Ivan | 500 |
 
-Декартово произведение.  
+Maria не попадёт, потому что у неё нет заказов.
 
-SELECT *  
-FROM colors  
-CROSS JOIN sizes;  
+#### `LEFT JOIN`
 
-Если в colors 3 строки, а в sizes 4 строки, результат будет 12 строк.  
+Возвращает все строки из левой таблицы и совпадения из правой.
 
-SELF JOIN  
+```sql
+SELECT users.name, orders.total
+FROM users
+LEFT JOIN orders ON users.id = orders.user_id;
+```
 
-Таблица джойнится сама с собой.  
+**Результат**
 
-### Пример: сотрудники и их руководители.
+| name | total |
+|---|---:|
+| Alex | 100 |
+| Alex | 200 |
+| Ivan | 500 |
+| Maria | `NULL` |
 
-SELECT e.name AS employee,  
-       m.name AS manager  
-FROM employees e  
-LEFT JOIN employees m ON e.manager_id = m.id;  
+#### `RIGHT JOIN`
 
-## 17. Важная ловушка с LEFT JOIN
+Возвращает все строки из правой таблицы и совпадения из левой.
 
-Допустим, нужно найти всех пользователей и их оплаченные заказы.  
+```sql
+SELECT users.name, orders.total
+FROM users
+RIGHT JOIN orders ON users.id = orders.user_id;
+```
 
-### Плохо:
+На практике чаще используют LEFT JOIN, потому что его проще читать.
 
-SELECT u.id, u.name, o.id AS order_id  
-FROM users u  
-LEFT JOIN orders o ON u.id = o.user_id  
-WHERE o.status = 'paid';  
+#### `FULL OUTER JOIN`
 
-Проблема: WHERE o.status = 'paid' убьёт строки, где заказа нет. В итоге LEFT JOIN фактически превратится в INNER JOIN.  
+Возвращает все строки из обеих таблиц.
 
-Правильно:  
+```sql
+SELECT users.name, orders.total
+FROM users
+FULL OUTER JOIN orders ON users.id = orders.user_id;
+```
 
-SELECT u.id, u.name, o.id AS order_id  
-FROM users u  
-LEFT JOIN orders o  
-    ON u.id = o.user_id  
-   AND o.status = 'paid';  
+Полезно для сверок данных.
 
-## 18. Найти записи без связи
+**Например**
 
-Например, пользователи без заказов.  
+- есть пользователь без заказа;
+- есть заказ с некорректным `user_id`.
 
-SELECT u.*  
-FROM users u  
-LEFT JOIN orders o ON u.id = o.user_id  
-WHERE o.id IS NULL;  
+#### `CROSS JOIN`
 
-Альтернатива через NOT EXISTS:  
+Декартово произведение.
 
-SELECT u.*  
-FROM users u  
-WHERE NOT EXISTS (  
-    SELECT 1  
-    FROM orders o  
-    WHERE o.user_id = u.id  
-);  
+```sql
+SELECT *
+FROM colors
+CROSS JOIN sizes;
+```
 
-### На собеседовании можно сказать:
+Если в colors 3 строки, а в sizes 4 строки, результат будет 12 строк.
 
-Для поиска отсутствующих связей часто использую LEFT JOIN ... IS NULL или NOT EXISTS. На больших данных NOT EXISTS часто читается лучше и может быть эффективнее в зависимости от плана запроса.  
+#### `SELF JOIN`
 
-## 19. Алиасы
+Таблица джойнится сама с собой.
 
-SELECT u.id, u.name  
-FROM users AS u;  
+#### Пример: сотрудники и их руководители.
 
-Можно без AS:  
+```sql
+SELECT e.name AS employee,
+       m.name AS manager
+FROM employees e
+LEFT JOIN employees m ON e.manager_id = m.id;
+```
 
-SELECT u.id, u.name  
-FROM users u;  
+### 17. Важная ловушка с LEFT JOIN
 
-Алиасы особенно важны при JOIN.  
+Допустим, нужно найти всех пользователей и их оплаченные заказы.
 
-## 20. CASE WHEN
+#### Плохо:
 
-Условная логика в SQL.  
+```sql
+SELECT u.id, u.name, o.id AS order_id
+FROM users u
+LEFT JOIN orders o ON u.id = o.user_id
+WHERE o.status = 'paid';
+```
 
-SELECT id,  
-       total,  
-       CASE  
-           WHEN total >= 10000 THEN 'big'  
-           WHEN total >= 1000 THEN 'medium'  
-           ELSE 'small'  
-       END AS order_size  
-FROM orders;  
+Проблема: WHERE o.status = 'paid' убьёт строки, где заказа нет. В итоге LEFT JOIN фактически превратится в INNER JOIN.
 
-### Пример для тестирования:
+**Правильно**
 
-SELECT id,  
-       status,  
-       CASE  
-           WHEN status = 'paid' THEN true  
-           ELSE false  
-       END AS is_paid  
-FROM orders;  
+```sql
+SELECT u.id, u.name, o.id AS order_id
+FROM users u
+LEFT JOIN orders o
+    ON u.id = o.user_id
+   AND o.status = 'paid';
+```
 
-## 21. Подзапросы
+### 18. Найти записи без связи
 
-Подзапрос в WHERE  
+Например, пользователи без заказов.
 
-Найти пользователей, у которых есть заказы.  
+```sql
+SELECT u.*
+FROM users u
+LEFT JOIN orders o ON u.id = o.user_id
+WHERE o.id IS NULL;
+```
 
-SELECT *  
-FROM users  
-WHERE id IN (  
-    SELECT user_id  
-    FROM orders  
-);  
-Подзапрос в FROM  
-SELECT user_id, total_sum  
-FROM (  
-    SELECT user_id, SUM(total) AS total_sum  
-    FROM orders  
-    GROUP BY user_id  
-) AS user_orders  
-WHERE total_sum > 1000;  
-Подзапрос в SELECT  
-SELECT u.id,  
-       u.name,  
-       (  
-           SELECT COUNT(*)  
-           FROM orders o  
-           WHERE o.user_id = u.id  
-       ) AS orders_count  
-FROM users u;  
+**Альтернатива через NOT EXISTS**
 
-Работает, но на больших данных может быть хуже, чем JOIN + GROUP BY.  
+```sql
+SELECT u.*
+FROM users u
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM orders o
+    WHERE o.user_id = u.id
+);
+```
 
-## 22. EXISTS / NOT EXISTS
+> **Короткий ответ для собеседования**
+>
+> Для поиска отсутствующих связей часто использую LEFT JOIN ... IS NULL или NOT EXISTS. На больших данных NOT EXISTS часто читается лучше и может быть эффективнее в зависимости от плана запроса.
 
-EXISTS проверяет факт существования строк.  
+### 19. Алиасы
 
-SELECT *  
-FROM users u  
-WHERE EXISTS (  
-    SELECT 1  
-    FROM orders o  
-    WHERE o.user_id = u.id  
-);  
+```sql
+SELECT u.id, u.name
+FROM users AS u;
+```
 
-SELECT 1 здесь значит: нам не нужны конкретные данные, нам важно только наличие строки.  
+**Можно без AS**
 
-Пользователи без заказов:  
+```sql
+SELECT u.id, u.name
+FROM users u;
+```
 
-SELECT *  
-FROM users u  
-WHERE NOT EXISTS (  
-    SELECT 1  
-    FROM orders o  
-    WHERE o.user_id = u.id  
-);  
-IN vs EXISTS  
-WHERE id IN (SELECT user_id FROM orders)  
+Алиасы особенно важны при JOIN.
 
-и  
+### 20. CASE WHEN
 
-WHERE EXISTS (  
-    SELECT 1 FROM orders WHERE orders.user_id = users.id  
-)  
+Условная логика в SQL.
 
-### часто решают похожую задачу.
+```sql
+SELECT id,
+       total,
+       CASE
+           WHEN total >= 10000 THEN 'big'
+           WHEN total >= 1000 THEN 'medium'
+           ELSE 'small'
+       END AS order_size
+FROM orders;
+```
 
-Общее правило:  
+#### Пример для тестирования:
 
-IN удобно, когда подзапрос возвращает список значений;  
-EXISTS удобно, когда проверяем наличие связанной строки;  
-с NULL у NOT IN могут быть неприятные сюрпризы.  
-Ловушка NOT IN и NULL  
-SELECT *  
-FROM users  
-WHERE id NOT IN (  
-    SELECT user_id  
-    FROM orders  
-);  
+```sql
+SELECT id,
+       status,
+       CASE
+           WHEN status = 'paid' THEN true
+           ELSE false
+       END AS is_paid
+FROM orders;
+```
 
-Если в orders.user_id есть NULL, результат может быть неожиданным.  
+### 21. Подзапросы
 
-Надёжнее:  
+**Подзапрос в WHERE**
 
-SELECT *  
-FROM users u  
-WHERE NOT EXISTS (  
-    SELECT 1  
-    FROM orders o  
-    WHERE o.user_id = u.id  
-);  
+Найти пользователей, у которых есть заказы.
 
-## 23. CTE — WITH
+```sql
+SELECT *
+FROM users
+WHERE id IN (
+    SELECT user_id
+    FROM orders
+);
+```
 
-CTE делает запрос читаемее.  
+**Подзапрос в FROM**
 
-WITH user_orders AS (  
-    SELECT user_id, SUM(total) AS total_sum  
-    FROM orders  
-    GROUP BY user_id  
-)  
-SELECT *  
-FROM user_orders  
-WHERE total_sum > 1000;  
+```sql
+SELECT user_id, total_sum
+FROM (
+    SELECT user_id, SUM(total) AS total_sum
+    FROM orders
+    GROUP BY user_id
+) AS user_orders
+WHERE total_sum > 1000;
+```
 
-### Хорошо использовать, когда:
+**Подзапрос в SELECT**
 
-сложная логика;  
-несколько промежуточных шагов;  
-нужно повысить читаемость;  
-один результат используется дальше.  
-Несколько CTE  
-WITH paid_orders AS (  
-    SELECT *  
-    FROM orders  
-    WHERE status = 'paid'  
-),  
-user_totals AS (  
-    SELECT user_id, SUM(total) AS total_sum  
-    FROM paid_orders  
-    GROUP BY user_id  
-)  
-SELECT *  
-FROM user_totals  
-WHERE total_sum > 5000;  
+```sql
+SELECT u.id,
+       u.name,
+       (
+           SELECT COUNT(*)
+           FROM orders o
+           WHERE o.user_id = u.id
+       ) AS orders_count
+FROM users u;
+```
 
-## 24. Рекурсивный CTE
+Работает, но на больших данных может быть хуже, чем JOIN + GROUP BY.
 
-Используется для деревьев, иерархий, категорий, оргструктур.  
+### 22. EXISTS / NOT EXISTS
 
-WITH RECURSIVE category_tree AS (  
-    SELECT id, name, parent_id  
-    FROM categories  
-    WHERE id = 1  
+EXISTS проверяет факт существования строк.
 
-    UNION ALL  
+```sql
+SELECT *
+FROM users u
+WHERE EXISTS (
+    SELECT 1
+    FROM orders o
+    WHERE o.user_id = u.id
+);
 
-    SELECT c.id, c.name, c.parent_id  
-    FROM categories c  
-    JOIN category_tree ct ON c.parent_id = ct.id  
-)  
-SELECT *  
-FROM category_tree;  
+SELECT 1 здесь значит: нам не нужны конкретные данные, нам важно только наличие строки.
+```
 
-### На собеседовании достаточно понимать идею:
+**Пользователи без заказов**
 
-Рекурсивный CTE позволяет обходить иерархические данные, например дерево категорий или сотрудников.  
+```sql
+SELECT *
+FROM users u
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM orders o
+    WHERE o.user_id = u.id
+);
+```
 
-## 25. UNION / UNION ALL / INTERSECT / EXCEPT
+**IN vs EXISTS**
 
-UNION  
+```sql
+WHERE id IN (SELECT user_id FROM orders)
+```
 
-Объединяет результаты и убирает дубликаты.  
+**и**
 
-SELECT email FROM customers  
-UNION  
-SELECT email FROM users;  
-UNION ALL  
+```sql
+WHERE EXISTS (
+    SELECT 1 FROM orders WHERE orders.user_id = users.id
+)
+```
 
-Объединяет результаты, не убирая дубликаты.  
+#### часто решают похожую задачу.
 
-SELECT email FROM customers  
-UNION ALL  
-SELECT email FROM users;  
+**Общее правило**
 
-UNION ALL быстрее, потому что не делает deduplication.  
+IN удобно, когда подзапрос возвращает список значений;
+EXISTS удобно, когда проверяем наличие связанной строки;
+с NULL у NOT IN могут быть неприятные сюрпризы.
+Ловушка NOT IN и NULL
 
-INTERSECT  
+```sql
+SELECT *
+FROM users
+WHERE id NOT IN (
+    SELECT user_id
+    FROM orders
+);
+```
 
-Возвращает пересечение.  
+Если в orders.user_id есть NULL, результат может быть неожиданным.
 
-SELECT email FROM customers  
-INTERSECT  
-SELECT email FROM users;  
-EXCEPT  
+**Надёжнее**
 
-Возвращает строки из первого запроса, которых нет во втором.  
+```sql
+SELECT *
+FROM users u
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM orders o
+    WHERE o.user_id = u.id
+);
+```
 
-SELECT email FROM users  
-EXCEPT  
-SELECT email FROM blocked_users;  
+### 23. CTE — WITH
 
-## 26. Оконные функции
+CTE делает запрос читаемее.
 
-Оконные функции позволяют считать значения по группе строк, но не схлопывать результат как GROUP BY.  
+```sql
+WITH user_orders AS (
+    SELECT user_id, SUM(total) AS total_sum
+    FROM orders
+    GROUP BY user_id
+)
+SELECT *
+FROM user_orders
+WHERE total_sum > 1000;
+```
 
-### Главная форма:
+#### Хорошо использовать, когда:
 
-FUNCTION() OVER (  
-    PARTITION BY ...  
-    ORDER BY ...  
-)  
-ROW_NUMBER  
+- сложная логика;
+- несколько промежуточных шагов;
+- нужно повысить читаемость;
+- один результат используется дальше.
+Несколько CTE
 
-Нумерует строки.  
+```sql
+WITH paid_orders AS (
+    SELECT *
+    FROM orders
+    WHERE status = 'paid'
+),
+```
 
-SELECT user_id,  
-       total,  
-       ROW_NUMBER() OVER (  
-           PARTITION BY user_id  
-           ORDER BY total DESC  
-       ) AS rn  
-FROM orders;  
+**user_totals AS (**
 
-Для каждого пользователя заказы будут пронумерованы по убыванию суммы.  
+```sql
+    SELECT user_id, SUM(total) AS total_sum
+    FROM paid_orders
+    GROUP BY user_id
+)
+SELECT *
+FROM user_totals
+WHERE total_sum > 5000;
+```
 
-Найти самый дорогой заказ каждого пользователя  
-WITH ranked_orders AS (  
-    SELECT id,  
-           user_id,  
-           total,  
-           ROW_NUMBER() OVER (  
-               PARTITION BY user_id  
-               ORDER BY total DESC  
-           ) AS rn  
-    FROM orders  
-)  
-SELECT *  
-FROM ranked_orders  
-WHERE rn = 1;  
-RANK и DENSE_RANK  
-SELECT user_id,  
-       total,  
-       RANK() OVER (ORDER BY total DESC) AS rank,  
-       DENSE_RANK() OVER (ORDER BY total DESC) AS dense_rank  
-FROM orders;  
+### 24. Рекурсивный CTE
 
-Разница:  
+Используется для деревьев, иерархий, категорий, оргструктур.
 
-total | RANK | DENSE_RANK  
-------+------|-----------  
-1000  | 1    | 1  
-1000  | 1    | 1  
-900   | 3    | 2  
-800   | 4    | 3  
+```sql
+WITH RECURSIVE category_tree AS (
+    SELECT id, name, parent_id
+    FROM categories
+    WHERE id = 1
 
-RANK оставляет пропуски.  
+    UNION ALL
 
-DENSE_RANK не оставляет.  
+    SELECT c.id, c.name, c.parent_id
+    FROM categories c
+    JOIN category_tree ct ON c.parent_id = ct.id
+)
+SELECT *
+FROM category_tree;
+```
 
-LAG / LEAD  
+> **Короткий ответ для собеседования**
+>
+> Рекурсивный CTE позволяет обходить иерархические данные, например дерево категорий или сотрудников.
 
-Получить предыдущее или следующее значение.  
+### 25. UNION / UNION ALL / INTERSECT / EXCEPT
 
-SELECT id,  
-       user_id,  
-       total,  
-       LAG(total) OVER (  
-           PARTITION BY user_id  
-           ORDER BY created_at  
-       ) AS previous_total  
-FROM orders;  
+```sql
+UNION
+```
 
-LEAD — следующее значение:  
+Объединяет результаты и убирает дубликаты.
 
-SELECT id,  
-       user_id,  
-       total,  
-       LEAD(total) OVER (  
-           PARTITION BY user_id  
-           ORDER BY created_at  
-       ) AS next_total  
-FROM orders;  
-Сумма накопительным итогом  
-SELECT id,  
-       user_id,  
-       created_at,  
-       total,  
-       SUM(total) OVER (  
-           PARTITION BY user_id  
-           ORDER BY created_at  
-       ) AS running_total  
-FROM orders;  
-COUNT OVER  
+```sql
+SELECT email FROM customers
+UNION
+SELECT email FROM users;
+UNION ALL
+```
 
-Можно посчитать количество заказов пользователя, не схлопывая строки.  
+Объединяет результаты, не убирая дубликаты.
 
-SELECT id,  
-       user_id,  
-       total,  
-       COUNT(*) OVER (  
-           PARTITION BY user_id  
-       ) AS user_orders_count  
-FROM orders;  
+```sql
+SELECT email FROM customers
+UNION ALL
+SELECT email FROM users;
 
-## 27. Чем GROUP BY отличается от оконных функций
+UNION ALL быстрее, потому что не делает deduplication.
 
-GROUP BY уменьшает количество строк.  
+INTERSECT
+```
 
-SELECT user_id, SUM(total)  
-FROM orders  
-GROUP BY user_id;  
+Возвращает пересечение.
 
-Было 100 заказов, стало 10 пользователей.  
+```sql
+SELECT email FROM customers
+INTERSECT
+SELECT email FROM users;
+EXCEPT
+```
 
-Оконная функция оставляет строки.  
+Возвращает строки из первого запроса, которых нет во втором.
 
-SELECT id,  
-       user_id,  
-       total,  
-       SUM(total) OVER (PARTITION BY user_id) AS user_total  
-FROM orders;  
+```sql
+SELECT email FROM users
+EXCEPT
+SELECT email FROM blocked_users;
+```
 
-Было 100 заказов, осталось 100 строк, но к каждой добавилась сумма по пользователю.  
+### 26. Оконные функции
 
-## 28. INSERT
+Оконные функции позволяют считать значения по группе строк, но не схлопывать результат как GROUP BY.
 
-INSERT INTO users (name, email)  
-VALUES ('Alex', 'alex@test.com');  
+#### Главная форма:
 
-Несколько строк:  
+**FUNCTION() OVER (**
 
-INSERT INTO users (name, email)  
-VALUES  
-    ('Alex', 'alex@test.com'),  
-    ('Ivan', 'ivan@test.com'),  
-    ('Maria', 'maria@test.com');  
-INSERT RETURNING в PostgreSQL  
-INSERT INTO users (name, email)  
-VALUES ('Alex', 'alex@test.com')  
-RETURNING id;  
+```sql
+    PARTITION BY ...
+    ORDER BY ...
+)
+```
 
-Очень удобно в автотестах: создали тестовые данные и сразу получили id.  
+**ROW_NUMBER**
 
-## 29. UPDATE
+Нумерует строки.
 
-UPDATE users  
-SET is_active = false  
-WHERE id = 1;  
+```sql
+SELECT user_id,
+       total,
+       ROW_NUMBER() OVER (
+           PARTITION BY user_id
+           ORDER BY total DESC
+       ) AS rn
+FROM orders;
+```
 
-Несколько полей:  
+Для каждого пользователя заказы будут пронумерованы по убыванию суммы.
 
-UPDATE users  
-SET name = 'Alexander',  
-    updated_at = NOW()  
-WHERE id = 1;  
+Найти самый дорогой заказ каждого пользователя
 
-### Важно:
+```sql
+WITH ranked_orders AS (
+    SELECT id,
+           user_id,
+           total,
+           ROW_NUMBER() OVER (
+               PARTITION BY user_id
+               ORDER BY total DESC
+           ) AS rn
+    FROM orders
+)
+SELECT *
+FROM ranked_orders
+WHERE rn = 1;
+```
 
-Перед UPDATE без уверенности лучше сначала выполнить SELECT с таким же WHERE.  
+**RANK и DENSE_RANK**
 
-SELECT *  
-FROM users  
-WHERE id = 1;  
+```sql
+SELECT user_id,
+       total,
+       RANK() OVER (ORDER BY total DESC) AS rank,
+       DENSE_RANK() OVER (ORDER BY total DESC) AS dense_rank
+FROM orders;
+```
 
-Потом:  
+**Разница**
 
-UPDATE users  
-SET is_active = false  
-WHERE id = 1;  
+total | RANK | DENSE_RANK
+------+------|-----------
+1000  | 1    | 1
+1000  | 1    | 1
+900   | 3    | 2
+800   | 4    | 3
 
-Без WHERE обновятся все строки.  
+RANK оставляет пропуски.
 
-## 30. DELETE
+DENSE_RANK не оставляет.
 
-DELETE FROM users  
-WHERE id = 1;  
+LAG / LEAD
 
-Без WHERE удалит все строки:  
+Получить предыдущее или следующее значение.
 
-DELETE FROM users;  
+```sql
+SELECT id,
+       user_id,
+       total,
+       LAG(total) OVER (
+           PARTITION BY user_id
+           ORDER BY created_at
+       ) AS previous_total
+FROM orders;
+```
 
-## 31. DELETE vs TRUNCATE vs DROP
+**LEAD — следующее значение**
 
-DELETE  
+```sql
+SELECT id,
+       user_id,
+       total,
+       LEAD(total) OVER (
+           PARTITION BY user_id
+           ORDER BY created_at
+       ) AS next_total
+FROM orders;
+```
 
-Удаляет строки.  
+**Сумма накопительным итогом**
 
-DELETE FROM users WHERE id = 1;  
+```sql
+SELECT id,
+       user_id,
+       created_at,
+       total,
+       SUM(total) OVER (
+           PARTITION BY user_id
+           ORDER BY created_at
+       ) AS running_total
+FROM orders;
+```
 
-Особенности:  
+**COUNT OVER**
 
-можно использовать WHERE;  
-обычно логируется построчно;  
-можно откатить в транзакции;  
-триггеры могут сработать.  
-TRUNCATE  
+Можно посчитать количество заказов пользователя, не схлопывая строки.
 
-Быстро очищает всю таблицу.  
+```sql
+SELECT id,
+       user_id,
+       total,
+       COUNT(*) OVER (
+           PARTITION BY user_id
+       ) AS user_orders_count
+FROM orders;
+```
 
-TRUNCATE TABLE users;  
+### 27. Чем GROUP BY отличается от оконных функций
 
-Особенности:  
+```sql
+GROUP BY уменьшает количество строк.
 
-нельзя указать WHERE;  
-обычно быстрее DELETE;  
-очищает всю таблицу;  
-может сбрасывать sequence/id;  
-может быть ограничен foreign key.  
+SELECT user_id, SUM(total)
+FROM orders
+GROUP BY user_id;
+```
 
-В PostgreSQL:  
+Было 100 заказов, стало 10 пользователей.
 
-TRUNCATE TABLE users RESTART IDENTITY;  
-DROP  
+Оконная функция оставляет строки.
 
-Удаляет саму таблицу.  
+```sql
+SELECT id,
+       user_id,
+       total,
+       SUM(total) OVER (PARTITION BY user_id) AS user_total
+FROM orders;
+```
 
-DROP TABLE users;  
+Было 100 заказов, осталось 100 строк, но к каждой добавилась сумма по пользователю.
 
-После DROP таблицы больше нет.  
+## Изменение данных и схема
 
-## 32. CREATE TABLE
+### 28. INSERT
 
-CREATE TABLE users (  
-    id BIGSERIAL PRIMARY KEY,  
-    name TEXT NOT NULL,  
-    email TEXT UNIQUE NOT NULL,  
-    age INT CHECK (age >= 0),  
-    created_at TIMESTAMP DEFAULT NOW()  
-);  
+```sql
+INSERT INTO users (name, email)
+VALUES ('Alex', 'alex@test.com');
+```
 
-## 33. Типы данных
+**Несколько строк**
 
-Частые типы  
-INT  
-BIGINT  
-NUMERIC  
-DECIMAL  
-FLOAT  
-BOOLEAN  
-TEXT  
-VARCHAR(n)  
-DATE  
-TIME  
-TIMESTAMP  
-UUID  
-JSON  
-JSONB  
-VARCHAR vs TEXT  
+```sql
+INSERT INTO users (name, email)
+VALUES
+    ('Alex', 'alex@test.com'),
+    ('Ivan', 'ivan@test.com'),
+    ('Maria', 'maria@test.com');
+INSERT RETURNING в PostgreSQL
+INSERT INTO users (name, email)
+VALUES ('Alex', 'alex@test.com')
+```
 
-В PostgreSQL разницы по производительности почти нет.  
+RETURNING id;
 
-name VARCHAR(255)  
-description TEXT  
+Очень удобно в автотестах: создали тестовые данные и сразу получили id.
 
-VARCHAR(n) ограничивает длину.  
+### 29. UPDATE
 
-TEXT — произвольная строка.  
+```sql
+UPDATE users
+SET is_active = false
+WHERE id = 1;
+```
 
-NUMERIC vs FLOAT  
+**Несколько полей**
 
-Для денег лучше:  
+```sql
+UPDATE users
+SET name = 'Alexander',
+    updated_at = NOW()
+WHERE id = 1;
+```
 
-NUMERIC(10, 2)  
+#### Важно:
 
-А не FLOAT.  
+Перед UPDATE без уверенности лучше сначала выполнить SELECT с таким же WHERE.
 
-Почему?  
+```sql
+SELECT *
+FROM users
+WHERE id = 1;
+```
 
-FLOAT хранит приблизительные значения и может давать ошибки округления.  
+**Потом**
 
-DATE vs TIMESTAMP  
-DATE       -- только дата  
-TIMESTAMP  -- дата + время  
+```sql
+UPDATE users
+SET is_active = false
+WHERE id = 1;
+```
 
-### Пример:
+Без WHERE обновятся все строки.
 
-created_at TIMESTAMP DEFAULT NOW()  
-UUID  
-id UUID PRIMARY KEY  
+### 30. DELETE
 
-### Часто используется в распределённых системах, когда ID генерируется не одной БД.
+```sql
+DELETE FROM users
+WHERE id = 1;
+```
 
-## 34. Constraints — ограничения
+Без WHERE удалит все строки:
 
-PRIMARY KEY  
+```sql
+DELETE FROM users;
+```
 
-Уникальный идентификатор строки.  
+### 31. DELETE vs TRUNCATE vs DROP
 
-id BIGSERIAL PRIMARY KEY  
+```sql
+DELETE
+```
 
-Особенности:  
+Удаляет строки.
 
-уникальный;  
-не может быть NULL;  
-обычно по нему строится индекс.  
-FOREIGN KEY  
+```sql
+DELETE FROM users WHERE id = 1;
+```
 
-Связь с другой таблицей.  
+**Особенности**
 
-CREATE TABLE orders (  
-    id BIGSERIAL PRIMARY KEY,  
-    user_id BIGINT REFERENCES users(id),  
-    total NUMERIC(10, 2)  
-);  
-NOT NULL  
-email TEXT NOT NULL  
+- можно использовать WHERE;
+- обычно логируется построчно;
+- можно откатить в транзакции;
+- триггеры могут сработать.
 
-Поле обязательно.  
+```sql
+TRUNCATE
+```
 
-UNIQUE  
-email TEXT UNIQUE  
+Быстро очищает всю таблицу.
 
-Значение должно быть уникальным.  
+```sql
+TRUNCATE TABLE users;
+```
 
-CHECK  
-age INT CHECK (age >= 0)  
+**Особенности**
 
-Проверяет условие.  
+- нельзя указать WHERE;
+- обычно быстрее DELETE;
+- очищает всю таблицу;
+- может сбрасывать sequence/id;
+- может быть ограничен foreign key.
 
-DEFAULT  
-created_at TIMESTAMP DEFAULT NOW()  
+**В PostgreSQL**
 
-Значение по умолчанию.  
+```sql
+TRUNCATE TABLE users RESTART IDENTITY;
+DROP
+```
 
-## 35. Foreign key actions
+Удаляет саму таблицу.
 
-ON DELETE CASCADE  
-ON DELETE SET NULL  
-ON DELETE RESTRICT  
-ON DELETE CASCADE  
+```sql
+DROP TABLE users;
+```
 
-Если удаляем пользователя, удаляются его заказы.  
+После DROP таблицы больше нет.
 
-CREATE TABLE orders (  
-    id BIGSERIAL PRIMARY KEY,  
-    user_id BIGINT REFERENCES users(id) ON DELETE CASCADE  
-);  
-ON DELETE SET NULL  
+### 32. CREATE TABLE
 
-Если пользователь удалён, в заказе user_id станет NULL.  
+```bash
+CREATE TABLE users (
+    id BIGSERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    email TEXT UNIQUE NOT NULL,
+    age INT CHECK (age >= 0),
+    created_at TIMESTAMP DEFAULT NOW()
+);
+```
 
-user_id BIGINT REFERENCES users(id) ON DELETE SET NULL  
-ON DELETE RESTRICT  
+### 33. Типы данных
 
-Нельзя удалить пользователя, если на него есть ссылки.  
+**Частые типы**
+INT
+BIGINT
+NUMERIC
+DECIMAL
+FLOAT
+BOOLEAN
+TEXT
 
-user_id BIGINT REFERENCES users(id) ON DELETE RESTRICT  
+```sql
+VARCHAR(n)
+```
 
-## 36. Индексы
+**DATE**
+TIME
+TIMESTAMP
+UUID
+JSON
+JSONB
+VARCHAR vs TEXT
 
-Индекс — структура данных, которая ускоряет поиск, сортировку и JOIN.  
+В PostgreSQL разницы по производительности почти нет.
 
-### Пример:
+name VARCHAR(255)
+description TEXT
 
-CREATE INDEX idx_users_email ON users(email);  
-Когда индекс полезен  
-SELECT *  
-FROM users  
-WHERE email = 'alex@test.com';  
+VARCHAR(n) ограничивает длину.
 
-Если по email есть индекс, БД может быстро найти строку.  
+TEXT — произвольная строка.
 
-Когда индекс может не помочь  
-SELECT *  
-FROM users  
-WHERE LOWER(email) = 'alex@test.com';  
+**NUMERIC vs FLOAT**
 
-Обычный индекс по email может не использоваться, потому что применена функция.  
+**Для денег лучше**
 
-Можно создать функциональный индекс:  
+```sql
+NUMERIC(10, 2)
+```
 
-CREATE INDEX idx_users_lower_email ON users(LOWER(email));  
-Индекс замедляет запись  
+А не FLOAT.
 
-Индексы ускоряют чтение, но замедляют:  
+Почему?
 
-INSERT;  
-UPDATE;  
-DELETE.  
+FLOAT хранит приблизительные значения и может давать ошибки округления.
 
-Потому что БД должна обновлять не только таблицу, но и индексы.  
+**DATE vs TIMESTAMP**
+DATE       -- только дата
+TIMESTAMP  -- дата + время
 
-### На собеседовании:
+#### Пример:
 
-Индекс — это компромисс между скоростью чтения и стоимостью записи/хранения.  
+created_at TIMESTAMP DEFAULT NOW()
+UUID
 
-Уникальный индекс  
-CREATE UNIQUE INDEX idx_users_email_unique ON users(email);  
+```bash
+id UUID PRIMARY KEY
+```
 
-Похож на UNIQUE constraint.  
+#### Часто используется в распределённых системах, когда ID генерируется не одной БД.
 
-Составной индекс  
-CREATE INDEX idx_orders_user_status ON orders(user_id, status);  
+### 34. Constraints — ограничения
 
-### Хорошо работает для:
+**PRIMARY KEY**
 
-WHERE user_id = 1  
+Уникальный идентификатор строки.
 
-и  
+**id BIGSERIAL PRIMARY KEY**
 
-WHERE user_id = 1 AND status = 'paid'  
+**Особенности**
 
-Но может плохо работать для:  
+уникальный;
+не может быть NULL;
+обычно по нему строится индекс.
+FOREIGN KEY
 
-WHERE status = 'paid'  
+Связь с другой таблицей.
 
-Потому что status — второй столбец в индексе.  
+```bash
+CREATE TABLE orders (
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT REFERENCES users(id),
+    total NUMERIC(10, 2)
+);
+```
 
-Правило:  
+**NOT NULL**
+email TEXT NOT NULL
 
-В составном индексе важен порядок колонок.  
+Поле обязательно.
 
-### Частичный индекс
+**UNIQUE**
+email TEXT UNIQUE
 
-PostgreSQL:  
+Значение должно быть уникальным.
 
-CREATE INDEX idx_active_users_email  
-ON users(email)  
-WHERE is_active = true;  
+**CHECK**
+age INT CHECK (age >= 0)
 
-Полезно, если часто ищем только активных пользователей.  
+Проверяет условие.
 
-Типы индексов  
+**DEFAULT**
+created_at TIMESTAMP DEFAULT NOW()
 
-В PostgreSQL часто встречаются:  
+Значение по умолчанию.
 
-B-tree  -- основной индекс по умолчанию  
-Hash    -- equality-поиск  
-GIN     -- массивы, JSONB, полнотекстовый поиск  
-GiST    -- геоданные, специфичные структуры  
-BRIN    -- большие таблицы, где данные физически упорядочены  
+### 35. Foreign key actions
 
-На обычном собеседовании достаточно уверенно знать B-tree.  
+**ON DELETE CASCADE**
+ON DELETE SET NULL
+ON DELETE RESTRICT
+ON DELETE CASCADE
 
-## 37. EXPLAIN
+Если удаляем пользователя, удаляются его заказы.
 
-EXPLAIN показывает план выполнения запроса.  
+```bash
+CREATE TABLE orders (
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT REFERENCES users(id) ON DELETE CASCADE
+);
+```
 
-EXPLAIN  
-SELECT *  
-FROM users  
-WHERE email = 'alex@test.com';  
+**ON DELETE SET NULL**
 
-В PostgreSQL:  
+Если пользователь удалён, в заказе user_id станет NULL.
 
-EXPLAIN ANALYZE  
-SELECT *  
-FROM users  
-WHERE email = 'alex@test.com';  
+user_id BIGINT REFERENCES users(id) ON DELETE SET NULL
+ON DELETE RESTRICT
 
-EXPLAIN ANALYZE реально выполняет запрос и показывает фактическое время.  
+Нельзя удалить пользователя, если на него есть ссылки.
 
-Осторожно с:  
+user_id BIGINT REFERENCES users(id) ON DELETE RESTRICT
 
-EXPLAIN ANALYZE DELETE ...  
-EXPLAIN ANALYZE UPDATE ...  
+## Производительность, транзакции и архитектура БД
 
-Они реально выполнят изменение.  
+### 36. Индексы
 
-Что можно увидеть в плане  
-Seq Scan  
-Index Scan  
-Bitmap Index Scan  
-Nested Loop  
-Hash Join  
-Merge Join  
-Sort  
-Aggregate  
-Seq Scan  
+Индекс — структура данных, которая ускоряет поиск, сортировку и JOIN.
 
-Полный проход по таблице.  
+#### Пример:
 
-Это не всегда плохо.  
+```sql
+CREATE INDEX idx_users_email ON users(email);
+```
 
-Если таблица маленькая или нужно прочитать большую часть строк, Seq Scan нормален.  
+**Когда индекс полезен**
 
-Index Scan  
+```sql
+SELECT *
+FROM users
+WHERE email = 'alex@test.com';
+```
 
-Использование индекса.  
+Если по email есть индекс, БД может быстро найти строку.
 
-### Хорошо, когда выбирается небольшая часть таблицы.
+Когда индекс может не помочь
 
-Nested Loop  
+```sql
+SELECT *
+FROM users
+WHERE LOWER(email) = 'alex@test.com';
+```
 
-Вложенный цикл.  
+Обычный индекс по email может не использоваться, потому что применена функция.
 
-Может быть нормально для маленьких выборок, но плохо для больших.  
+**Можно создать функциональный индекс**
 
-Hash Join  
+```sql
+CREATE INDEX idx_users_lower_email ON users(LOWER(email));
+```
 
-БД строит хеш-таблицу по одной таблице и джойнится с другой.  
+**Индекс замедляет запись**
 
-### Часто хорошо для больших таблиц.
+Индексы ускоряют чтение, но замедляют:
 
-Merge Join  
+```sql
+INSERT;
+UPDATE;
+DELETE.
+```
 
-Обе выборки сортируются и соединяются.  
+Потому что БД должна обновлять не только таблицу, но и индексы.
 
-Полезно, если данные уже отсортированы или есть подходящие индексы.  
+> **Короткий ответ для собеседования**
+>
+> Индекс — это компромисс между скоростью чтения и стоимостью записи/хранения.
 
-## 38. Транзакции
+**Уникальный индекс**
 
-Транзакция — группа операций, которая выполняется как единое целое.  
+```sql
+CREATE UNIQUE INDEX idx_users_email_unique ON users(email);
+```
 
-BEGIN;  
+Похож на UNIQUE constraint.
 
-UPDATE accounts  
-SET balance = balance - 100  
-WHERE id = 1;  
+**Составной индекс**
 
-UPDATE accounts  
-SET balance = balance + 100  
-WHERE id = 2;  
+```sql
+CREATE INDEX idx_orders_user_status ON orders(user_id, status);
+```
 
-COMMIT;  
+#### Хорошо работает для:
 
-Если ошибка:  
+```sql
+WHERE user_id = 1
+```
 
-ROLLBACK;  
+**и**
 
-## 39. ACID
+```sql
+WHERE user_id = 1 AND status = 'paid'
+```
 
-Atomicity — атомарность  
+Но может плохо работать для:
 
-Либо выполняется всё, либо ничего.  
+```sql
+WHERE status = 'paid'
+```
 
-### Пример: перевод денег.
+Потому что status — второй столбец в индексе.
 
-Нельзя списать деньги с одного счёта и не зачислить на другой.  
+**Правило**
 
-Consistency — согласованность  
+В составном индексе важен порядок колонок.
 
-База переходит из одного корректного состояния в другое.  
+#### Частичный индекс
 
-Например, constraint не должен нарушаться.  
+**PostgreSQL**
 
-Isolation — изолированность  
+```sql
+CREATE INDEX idx_active_users_email
+```
 
-Параллельные транзакции не должны некорректно влиять друг на друга.  
+ON users(email)
 
-Durability — долговечность  
+```sql
+WHERE is_active = true;
+```
 
-После COMMIT данные не должны потеряться даже при сбое.  
+Полезно, если часто ищем только активных пользователей.
 
-## 40. Уровни изоляции транзакций
+**Типы индексов**
 
-### Основные:
+**В PostgreSQL часто встречаются**
 
-READ UNCOMMITTED  
-READ COMMITTED  
-REPEATABLE READ  
-SERIALIZABLE  
+B-tree  -- основной индекс по умолчанию
+Hash    -- equality-поиск
+GIN     -- массивы, JSONB, полнотекстовый поиск
+GiST    -- геоданные, специфичные структуры
+BRIN    -- большие таблицы, где данные физически упорядочены
 
-В PostgreSQL фактически READ UNCOMMITTED работает как READ COMMITTED.  
+На обычном собеседовании достаточно уверенно знать B-tree.
 
-Dirty read  
+### 37. EXPLAIN
 
-Транзакция читает незакоммиченные данные другой транзакции.  
+```sql
+EXPLAIN показывает план выполнения запроса.
 
-### Пример:
+EXPLAIN
+SELECT *
+FROM users
+WHERE email = 'alex@test.com';
+```
 
-Транзакция A изменила баланс, но не сделала COMMIT.  
-Транзакция B прочитала это изменение.  
-Транзакция A сделала ROLLBACK.  
-Транзакция B прочитала данные, которых как бы никогда не было.  
-Non-repeatable read  
+**В PostgreSQL**
 
-В рамках одной транзакции один и тот же запрос возвращает разные данные.  
+```sql
+EXPLAIN ANALYZE
+SELECT *
+FROM users
+WHERE email = 'alex@test.com';
 
-Транзакция A читает пользователя.  
-Транзакция B обновляет пользователя и делает COMMIT.  
-Транзакция A снова читает пользователя и видит другое значение.  
-Phantom read  
+EXPLAIN ANALYZE реально выполняет запрос и показывает фактическое время.
+```
 
-В рамках одной транзакции повторный запрос возвращает новый набор строк.  
+**Осторожно с**
 
-Транзакция A ищет все заказы total > 1000.  
-Транзакция B добавляет новый такой заказ и делает COMMIT.  
-Транзакция A повторяет запрос и видит новую строку.  
-Таблица уровней изоляции  
-Уровень	Dirty read	Non-repeatable read	Phantom read  
-READ UNCOMMITTED	возможно	возможно	возможно  
-READ COMMITTED	нет	возможно	возможно  
-REPEATABLE READ	нет	нет	зависит от СУБД  
-SERIALIZABLE	нет	нет	нет  
+```sql
+EXPLAIN ANALYZE DELETE ...
+EXPLAIN ANALYZE UPDATE ...
+```
 
-## 41. Блокировки
+Они реально выполнят изменение.
 
-Блокировки нужны для конкурентного доступа.  
+Что можно увидеть в плане
+Seq Scan
+Index Scan
+Bitmap Index Scan
+Nested Loop
+Hash Join
+Merge Join
+Sort
+Aggregate
+Seq Scan
 
-### Пример:
+Полный проход по таблице.
 
-SELECT *  
-FROM accounts  
-WHERE id = 1  
-FOR UPDATE;  
+Это не всегда плохо.
 
-FOR UPDATE блокирует выбранные строки для изменения другими транзакциями.  
+Если таблица маленькая или нужно прочитать большую часть строк, Seq Scan нормален.
 
-Deadlock  
+**Index Scan**
 
-Deadlock — взаимная блокировка.  
+Использование индекса.
 
-### Пример:
+#### Хорошо, когда выбирается небольшая часть таблицы.
 
-Транзакция A заблокировала строку 1.  
-Транзакция B заблокировала строку 2.  
-Транзакция A хочет строку 2.  
-Транзакция B хочет строку 1.  
-Обе ждут друг друга.  
+**Nested Loop**
 
-БД обычно обнаруживает deadlock и отменяет одну транзакцию.  
+Вложенный цикл.
 
-## 42. MVCC
+Может быть нормально для маленьких выборок, но плохо для больших.
 
-MVCC — Multi-Version Concurrency Control.  
+**Hash Join**
 
-### Идея:
+БД строит хеш-таблицу по одной таблице и джойнится с другой.
 
-БД хранит несколько версий строк, чтобы читающие транзакции не блокировали пишущие и наоборот.  
+#### Часто хорошо для больших таблиц.
 
-В PostgreSQL MVCC — важная часть работы транзакций.  
+**Merge Join**
 
-### На собеседовании можно сказать:
+Обе выборки сортируются и соединяются.
 
-За счёт MVCC одна транзакция может видеть свой согласованный снимок данных, пока другая уже изменила строки.  
+Полезно, если данные уже отсортированы или есть подходящие индексы.
 
-## 43. Нормализация
+### 38. Транзакции
 
-Нормализация — способ проектирования таблиц, чтобы уменьшить дублирование и избежать аномалий данных.  
+Транзакция — группа операций, которая выполняется как единое целое.
 
-1NF — первая нормальная форма  
-В ячейке одно значение.  
-Нет списков внутри одного поля.  
+```sql
+BEGIN;
 
-### Плохо:
+UPDATE accounts
+SET balance = balance - 100
+WHERE id = 1;
 
-user_id | phones  
---------+---------------------  
-1       | 123, 456, 789  
+UPDATE accounts
+SET balance = balance + 100
+WHERE id = 2;
 
-Лучше:  
+COMMIT;
+```
 
-user_phones  
+**Если ошибка**
 
-user_id | phone  
---------+------  
-1       | 123  
-1       | 456  
-1       | 789  
-2NF — вторая нормальная форма  
-Таблица в 1NF.  
-Неключевые поля зависят от всего составного ключа, а не от его части.  
-3NF — третья нормальная форма  
-Таблица во 2NF.  
-Неключевые поля не зависят от других неключевых полей.  
+```sql
+ROLLBACK;
+```
 
-### Пример плохой таблицы:
+### 39. ACID
 
-orders  
+**Atomicity — атомарность**
 
-order_id | user_id | user_name | user_email  
+Либо выполняется всё, либо ничего.
 
-user_name и user_email зависят от user_id, а не от order_id.  
+#### Пример: перевод денег.
 
-Лучше:  
+Нельзя списать деньги с одного счёта и не зачислить на другой.
 
-users  
-orders  
-Денормализация  
+**Consistency — согласованность**
 
-Денормализация — осознанное добавление дублирования ради производительности.  
+База переходит из одного корректного состояния в другое.
 
-Например, хранить orders.user_email, чтобы не делать JOIN при аналитике.  
+Например, constraint не должен нарушаться.
 
-### На собеседовании:
+**Isolation — изолированность**
 
-Нормализация уменьшает дублирование и повышает целостность данных, денормализация может ускорять чтение, но усложняет поддержку консистентности.  
+Параллельные транзакции не должны некорректно влиять друг на друга.
 
-## 44. Связи между таблицами
+**Durability — долговечность**
 
-One-to-one  
+После COMMIT данные не должны потеряться даже при сбое.
 
-Один пользователь — один профиль.  
+### 40. Уровни изоляции транзакций
 
-users  
-profiles  
-profiles.user_id UNIQUE REFERENCES users(id)  
-One-to-many  
+#### Основные:
 
-Один пользователь — много заказов.  
+**READ UNCOMMITTED**
+READ COMMITTED
+REPEATABLE READ
+SERIALIZABLE
 
-users  
-orders  
-orders.user_id REFERENCES users(id)  
-Many-to-many  
+В PostgreSQL фактически READ UNCOMMITTED работает как READ COMMITTED.
 
-Пользователи и роли.  
+**Dirty read**
 
-Один пользователь может иметь много ролей.  
+Транзакция читает незакоммиченные данные другой транзакции.
 
-Одна роль может быть у многих пользователей.  
+#### Пример:
 
-Нужна промежуточная таблица:  
+Транзакция A изменила баланс, но не сделала COMMIT.
+Транзакция B прочитала это изменение.
+Транзакция A сделала ROLLBACK.
+Транзакция B прочитала данные, которых как бы никогда не было.
+Non-repeatable read
 
-CREATE TABLE user_roles (  
-    user_id BIGINT REFERENCES users(id),  
-    role_id BIGINT REFERENCES roles(id),  
-    PRIMARY KEY (user_id, role_id)  
-);  
+В рамках одной транзакции один и тот же запрос возвращает разные данные.
 
-## 45. Views — представления
+Транзакция A читает пользователя.
+Транзакция B обновляет пользователя и делает COMMIT.
+Транзакция A снова читает пользователя и видит другое значение.
+Phantom read
 
-View — сохранённый SQL-запрос.  
+В рамках одной транзакции повторный запрос возвращает новый набор строк.
 
-CREATE VIEW active_users AS  
-SELECT *  
-FROM users  
-WHERE is_active = true;  
+Транзакция A ищет все заказы total > 1000.
+Транзакция B добавляет новый такой заказ и делает COMMIT.
+Транзакция A повторяет запрос и видит новую строку.
+Таблица уровней изоляции
+| Уровень | Dirty read | Non-repeatable read | Phantom read |
+|---|---|---|---|
+| READ UNCOMMITTED | возможно | возможно | возможно |
+| READ COMMITTED | нет | возможно | возможно |
+| REPEATABLE READ | нет | нет | зависит от СУБД |
+| SERIALIZABLE | нет | нет | нет |
 
-Использование:  
+### 41. Блокировки
 
-SELECT *  
-FROM active_users;  
-Materialized view  
+Блокировки нужны для конкурентного доступа.
 
-Материализованное представление хранит результат физически.  
+#### Пример:
 
-CREATE MATERIALIZED VIEW user_order_stats AS  
-SELECT user_id, COUNT(*) AS orders_count, SUM(total) AS total_sum  
-FROM orders  
-GROUP BY user_id;  
+```sql
+SELECT *
+FROM accounts
+WHERE id = 1
+```
 
-Обновление:  
+FOR UPDATE;
 
-REFRESH MATERIALIZED VIEW user_order_stats;  
+FOR UPDATE блокирует выбранные строки для изменения другими транзакциями.
 
-Обычный VIEW каждый раз выполняет запрос.  
+**Deadlock**
 
-MATERIALIZED VIEW хранит результат, но его надо обновлять.  
+Deadlock — взаимная блокировка.
 
-## 46. Stored Procedures / Functions
+#### Пример:
 
-В БД можно хранить функции и процедуры.  
+Транзакция A заблокировала строку 1.
+Транзакция B заблокировала строку 2.
+Транзакция A хочет строку 2.
+Транзакция B хочет строку 1.
+Обе ждут друг друга.
 
-### Пример идеи:
+БД обычно обнаруживает deadlock и отменяет одну транзакцию.
 
-CREATE FUNCTION get_user_orders_count(user_id_param BIGINT)  
-RETURNS INT AS $$  
-BEGIN  
-    RETURN (  
-        SELECT COUNT(*)  
-        FROM orders  
-        WHERE user_id = user_id_param  
-    );  
-END;  
-$$ LANGUAGE plpgsql;  
+### 42. MVCC
 
-### На собеседовании достаточно:
+MVCC — Multi-Version Concurrency Control.
 
-Хранимые процедуры и функции позволяют переносить часть бизнес-логики в БД, но это может усложнять тестирование, версионирование и поддержку.  
+#### Идея:
 
-## 47. Триггеры
+БД хранит несколько версий строк, чтобы читающие транзакции не блокировали пишущие и наоборот.
 
-Триггер — автоматическое действие при событии:  
+В PostgreSQL MVCC — важная часть работы транзакций.
 
-INSERT;  
-UPDATE;  
-DELETE.  
+> **Короткий ответ для собеседования**
+>
+> За счёт MVCC одна транзакция может видеть свой согласованный снимок данных, пока другая уже изменила строки.
 
-### Пример использования:
+### 43. Нормализация
 
-обновить updated_at;  
-записать аудит;  
-проверить сложное правило.  
+Нормализация — способ проектирования таблиц, чтобы уменьшить дублирование и избежать аномалий данных.
 
-### Минусы:
+1NF — первая нормальная форма
+В ячейке одно значение.
+Нет списков внутри одного поля.
 
-неочевидная логика;  
-сложнее дебажить;  
-можно получить неожиданные сайд-эффекты.  
+#### Плохо:
 
-## 48. SQL Injection
+**user_id | phones**
+--------+---------------------
+1       | 123, 456, 789
 
-SQL-инъекция — уязвимость, когда пользовательский ввод напрямую вставляется в SQL.  
+**Лучше**
 
-### Плохо:
+**user_phones**
 
-query = f"SELECT * FROM users WHERE email = '{email}'"  
+**user_id | phone**
+--------+------
+1       | 123
+1       | 456
+1       | 789
+2NF — вторая нормальная форма
+Таблица в 1NF.
+Неключевые поля зависят от всего составного ключа, а не от его части.
+3NF — третья нормальная форма
+Таблица во 2NF.
+Неключевые поля не зависят от других неключевых полей.
 
-Если пользователь введёт:  
+#### Пример плохой таблицы:
 
-' OR '1' = '1  
+**orders**
 
-запрос может сломаться или вернуть лишние данные.  
+order_id | user_id | user_name | user_email
 
-Правильно использовать параметризованные запросы:  
+user_name и user_email зависят от user_id, а не от order_id.
 
-cursor.execute(  
-    "SELECT * FROM users WHERE email = %s",  
-    (email,)  
-)  
+**Лучше**
 
-### На собеседовании:
+**users**
+orders
+Денормализация
 
-Данные пользователя нельзя конкатенировать в SQL. Нужно использовать параметры/плейсхолдеры ORM или драйвера.  
+Денормализация — осознанное добавление дублирования ради производительности.
 
-## 49. Полезные функции
+Например, хранить orders.user_email, чтобы не делать JOIN при аналитике.
 
-Работа со строками  
-LOWER(name)  
-UPPER(name)  
-LENGTH(name)  
-TRIM(name)  
-SUBSTRING(name FROM 1 FOR 3)  
-CONCAT(first_name, ' ', last_name)  
+> **Короткий ответ для собеседования**
+>
+> Нормализация уменьшает дублирование и повышает целостность данных, денормализация может ускорять чтение, но усложняет поддержку консистентности.
 
-### Примеры:
+### 44. Связи между таблицами
 
-SELECT LOWER(email)  
-FROM users;  
-SELECT TRIM(name)  
-FROM users;  
-Работа с датами  
+**One-to-one**
 
-PostgreSQL:  
+Один пользователь — один профиль.
 
-NOW()  
-CURRENT_DATE  
-CURRENT_TIMESTAMP  
-DATE_TRUNC('day', created_at)  
-created_at + INTERVAL '1 day'  
-created_at - INTERVAL '1 hour'  
+**users**
+profiles
+profiles.user_id UNIQUE REFERENCES users(id)
+One-to-many
 
-### Пример группировки по дням:
+Один пользователь — много заказов.
 
-SELECT DATE_TRUNC('day', created_at) AS day,  
-       COUNT(*) AS orders_count  
-FROM orders  
-GROUP BY day  
-ORDER BY day;  
-CAST  
-SELECT CAST('123' AS INT);  
+**users**
+orders
+orders.user_id REFERENCES users(id)
+Many-to-many
 
-Или PostgreSQL-стиль:  
+Пользователи и роли.
 
-SELECT '123'::INT;  
+Один пользователь может иметь много ролей.
 
-## 50. Типовые задачи на собеседовании
+Одна роль может быть у многих пользователей.
 
-Ниже набор задач, которые часто дают QA Automation / Backend / Data-ish кандидатам.  
+**Нужна промежуточная таблица**
 
-Задача 1. Найти дубликаты email  
-SELECT email, COUNT(*) AS cnt  
-FROM users  
-GROUP BY email  
-HAVING COUNT(*) > 1;  
-Задача 2. Найти пользователей без заказов  
-SELECT u.*  
-FROM users u  
-LEFT JOIN orders o ON u.id = o.user_id  
-WHERE o.id IS NULL;  
+```sql
+CREATE TABLE user_roles (
+    user_id BIGINT REFERENCES users(id),
+    role_id BIGINT REFERENCES roles(id),
+    PRIMARY KEY (user_id, role_id)
+);
+```
 
-Или:  
+### 45. Views — представления
 
-SELECT u.*  
-FROM users u  
-WHERE NOT EXISTS (  
-    SELECT 1  
-    FROM orders o  
-    WHERE o.user_id = u.id  
-);  
-Задача 3. Посчитать количество заказов по каждому пользователю  
-SELECT u.id,  
-       u.name,  
-       COUNT(o.id) AS orders_count  
-FROM users u  
-LEFT JOIN orders o ON u.id = o.user_id  
-GROUP BY u.id, u.name;  
+View — сохранённый SQL-запрос.
 
-### Почему COUNT(o.id), а не COUNT(*)?
+```sql
+CREATE VIEW active_users AS
+SELECT *
+FROM users
+WHERE is_active = true;
+```
 
-Потому что при LEFT JOIN пользователь без заказов всё равно даст одну строку, и COUNT(*) вернёт 1.  
+**Использование**
 
-COUNT(o.id) вернёт 0.  
+```sql
+SELECT *
+FROM active_users;
+```
 
-Задача 4. Найти пользователей с количеством заказов больше 3  
-SELECT u.id,  
-       u.name,  
-       COUNT(o.id) AS orders_count  
-FROM users u  
-JOIN orders o ON u.id = o.user_id  
-GROUP BY u.id, u.name  
-HAVING COUNT(o.id) > 3;  
-Задача 5. Найти последний заказ каждого пользователя  
+**Materialized view**
 
-Вариант через оконную функцию:  
+Материализованное представление хранит результат физически.
 
-WITH ranked_orders AS (  
-    SELECT o.*,  
-           ROW_NUMBER() OVER (  
-               PARTITION BY user_id  
-               ORDER BY created_at DESC  
-           ) AS rn  
-    FROM orders o  
-)  
-SELECT *  
-FROM ranked_orders  
-WHERE rn = 1;  
-Задача 6. Найти максимальный заказ каждого пользователя  
-SELECT user_id, MAX(total) AS max_total  
-FROM orders  
-GROUP BY user_id;  
+```sql
+CREATE MATERIALIZED VIEW user_order_stats AS
+SELECT user_id, COUNT(*) AS orders_count, SUM(total) AS total_sum
+FROM orders
+GROUP BY user_id;
+```
 
-Если нужны все поля заказа:  
+**Обновление**
 
-WITH ranked_orders AS (  
-    SELECT o.*,  
-           ROW_NUMBER() OVER (  
-               PARTITION BY user_id  
-               ORDER BY total DESC  
-           ) AS rn  
-    FROM orders o  
-)  
-SELECT *  
-FROM ranked_orders  
-WHERE rn = 1;  
-Задача 7. Найти второй максимальный заказ  
+REFRESH MATERIALIZED VIEW user_order_stats;
 
-Через DENSE_RANK:  
+Обычный VIEW каждый раз выполняет запрос.
 
-WITH ranked_orders AS (  
-    SELECT o.*,  
-           DENSE_RANK() OVER (  
-               ORDER BY total DESC  
-           ) AS rnk  
-    FROM orders o  
-)  
-SELECT *  
-FROM ranked_orders  
-WHERE rnk = 2;  
+MATERIALIZED VIEW хранит результат, но его надо обновлять.
 
-Если нужен второй максимум по каждому пользователю:  
+### 46. Stored Procedures / Functions
 
-WITH ranked_orders AS (  
-    SELECT o.*,  
-           DENSE_RANK() OVER (  
-               PARTITION BY user_id  
-               ORDER BY total DESC  
-           ) AS rnk  
-    FROM orders o  
-)  
-SELECT *  
-FROM ranked_orders  
-WHERE rnk = 2;  
-Задача 8. Посчитать выручку по дням  
-SELECT DATE_TRUNC('day', created_at) AS day,  
-       SUM(total) AS revenue  
-FROM orders  
-WHERE status = 'paid'  
-GROUP BY day  
-ORDER BY day;  
-Задача 9. Найти пользователей, которые сделали заказ в июле 2026  
-SELECT DISTINCT u.*  
-FROM users u  
-JOIN orders o ON u.id = o.user_id  
-WHERE o.created_at >= '2026-07-01'  
-  AND o.created_at <  '2026-08-01';  
-Задача 10. Найти заказы без существующего пользователя  
+В БД можно хранить функции и процедуры.
 
-Если нет foreign key или данные грязные:  
+#### Пример идеи:
 
-SELECT o.*  
-FROM orders o  
-LEFT JOIN users u ON o.user_id = u.id  
-WHERE u.id IS NULL;  
-Задача 11. Найти пользователей, у которых нет оплаченных заказов  
-SELECT u.*  
-FROM users u  
-WHERE NOT EXISTS (  
-    SELECT 1  
-    FROM orders o  
-    WHERE o.user_id = u.id  
-      AND o.status = 'paid'  
-);  
-Задача 12. Найти топ-3 пользователя по сумме заказов  
-SELECT u.id,  
-       u.name,  
-       SUM(o.total) AS total_sum  
-FROM users u  
-JOIN orders o ON u.id = o.user_id  
-GROUP BY u.id, u.name  
-ORDER BY total_sum DESC  
-LIMIT 3;  
-Задача 13. Найти топ-3 заказа каждого пользователя  
-WITH ranked_orders AS (  
-    SELECT o.*,  
-           ROW_NUMBER() OVER (  
-               PARTITION BY user_id  
-               ORDER BY total DESC  
-           ) AS rn  
-    FROM orders o  
-)  
-SELECT *  
-FROM ranked_orders  
-WHERE rn <= 3;  
-Задача 14. Найти пользователей с одинаковыми email  
-SELECT email, COUNT(*)  
-FROM users  
-GROUP BY email  
-HAVING COUNT(*) > 1;  
+```sql
+CREATE FUNCTION get_user_orders_count(user_id_param BIGINT)
+```
 
-Получить сами строки:  
+**RETURNS INT AS $$**
 
-SELECT *  
-FROM users  
-WHERE email IN (  
-    SELECT email  
-    FROM users  
-    GROUP BY email  
-    HAVING COUNT(*) > 1  
-);  
-Задача 15. Удалить дубликаты, оставив самую раннюю запись  
+```sql
+BEGIN
+    RETURN (
+        SELECT COUNT(*)
+        FROM orders
+        WHERE user_id = user_id_param
+    );
+```
 
-PostgreSQL:  
+END;
+$$ LANGUAGE plpgsql;
 
-WITH duplicates AS (  
-    SELECT id,  
-           ROW_NUMBER() OVER (  
-               PARTITION BY email  
-               ORDER BY created_at ASC  
-           ) AS rn  
-    FROM users  
-)  
-DELETE FROM users  
-WHERE id IN (  
-    SELECT id  
-    FROM duplicates  
-    WHERE rn > 1  
-);  
+> **Короткий ответ для собеседования**
+>
+> Хранимые процедуры и функции позволяют переносить часть бизнес-логики в БД, но это может усложнять тестирование, версионирование и поддержку.
 
-Перед удалением лучше сначала сделать SELECT:  
+### 47. Триггеры
 
-WITH duplicates AS (  
-    SELECT id,  
-           email,  
-           ROW_NUMBER() OVER (  
-               PARTITION BY email  
-               ORDER BY created_at ASC  
-           ) AS rn  
-    FROM users  
-)  
-SELECT *  
-FROM duplicates  
-WHERE rn > 1;  
+Триггер — автоматическое действие при событии:
 
-## 51. SQL для QA / SDET
+```sql
+INSERT;
+UPDATE;
+DELETE.
+```
 
-Для QA SQL нужен не только чтобы писать запросы, но и чтобы проверять состояние системы.  
+#### Пример использования:
 
-Что QA обычно проверяет через БД  
-создалась ли запись после API-запроса;  
-корректно ли обновился статус;  
-появилась ли запись в связанной таблице;  
-не создались ли дубликаты;  
-корректно ли записались даты;  
-правильно ли обработались nullable-поля;  
-очистка тестовых данных;  
-подготовка тестовых данных;  
-проверка миграций;  
-проверка прав доступа;  
-проверка консистентности после интеграций.  
-Пример: тестируем создание пользователя через API  
+обновить updated_at;
+записать аудит;
+проверить сложное правило.
 
-После запроса:  
+#### Минусы:
 
-POST /users  
+неочевидная логика;
+сложнее дебажить;
+можно получить неожиданные сайд-эффекты.
 
-Проверяем в БД:  
+### 48. SQL Injection
 
-SELECT id, email, name, created_at  
-FROM users  
-WHERE email = 'test_user@example.com';  
+SQL-инъекция — уязвимость, когда пользовательский ввод напрямую вставляется в SQL.
 
-Проверяем:  
+#### Плохо:
 
-запись есть;  
-email корректный;  
-name корректный;  
-created_at заполнен;  
-статус дефолтный;  
-пароль не хранится в открытом виде.  
-Проверить, что пароль не хранится plain text  
-SELECT password_hash  
-FROM users  
-WHERE email = 'test_user@example.com';  
+```sql
+query = f"SELECT * FROM users WHERE email = '{email}'"
+```
 
-Ожидание:  
+**Если пользователь введёт**
 
-поле не равно исходному паролю;  
-значение похоже на hash;  
-поле не NULL.  
-Проверить создание заказа  
-SELECT *  
-FROM orders  
-WHERE external_id = 'test-order-123';  
+' OR '1' = '1
 
-Проверить позиции заказа:  
+запрос может сломаться или вернуть лишние данные.
 
-SELECT *  
-FROM order_items  
-WHERE order_id = 123;  
-Проверить, что не создались дубликаты  
-SELECT external_id, COUNT(*)  
-FROM orders  
-WHERE external_id = 'test-order-123'  
-GROUP BY external_id  
-HAVING COUNT(*) > 1;  
+**Правильно использовать параметризованные запросы**
 
-Если запрос вернул строки — есть дубликат.  
+**cursor.execute(**
 
-Очистка тестовых данных  
-DELETE FROM order_items  
-WHERE order_id IN (  
-    SELECT id  
-    FROM orders  
-    WHERE external_id LIKE 'autotest-%'  
-);  
+```sql
+    "SELECT * FROM users WHERE email = %s",
+    (email,)
+)
+```
 
-DELETE FROM orders  
-WHERE external_id LIKE 'autotest-%';  
+> **Короткий ответ для собеседования**
+>
+> Данные пользователя нельзя конкатенировать в SQL. Нужно использовать параметры/плейсхолдеры ORM или драйвера.
 
-### Важно удалять в правильном порядке:
+## Практика SQL для QA/SDET
 
-сначала дочерние записи;  
-потом родительские.  
+### 49. Полезные функции
 
-Если настроен ON DELETE CASCADE, можно удалить родителя.  
+**Работа со строками**
 
-## 52. Миграции БД
+```sql
+LOWER(name)
+UPPER(name)
+LENGTH(name)
+TRIM(name)
+SUBSTRING(name FROM 1 FOR 3)
+CONCAT(first_name, ' ', last_name)
+```
 
-Миграция — изменение схемы БД:  
+#### Примеры:
 
-создать таблицу;  
-добавить колонку;  
-изменить тип;  
-добавить индекс;  
-добавить constraint;  
-заполнить данные;  
-удалить старое поле.  
-Что проверять QA при миграции  
-миграция накатывается на пустую БД;  
-миграция накатывается на БД с существующими данными;  
-rollback работает, если предусмотрен;  
-данные не теряются;  
-новые constraints не ломают старые данные;  
-индексы созданы;  
-дефолты работают;  
-приложение стартует после миграции;  
-старые API работают;  
-новые API работают;  
-нет сильной деградации по времени.  
-Пример проверки новой колонки  
+```sql
+SELECT LOWER(email)
+FROM users;
+SELECT TRIM(name)
+FROM users;
+```
 
-Была добавлена колонка:  
+**Работа с датами**
 
-ALTER TABLE users ADD COLUMN is_active BOOLEAN DEFAULT true;  
+**PostgreSQL**
 
-### Проверки:
+```sql
+NOW()
+```
 
-SELECT COUNT(*)  
-FROM users  
-WHERE is_active IS NULL;  
+**CURRENT_DATE**
+CURRENT_TIMESTAMP
 
-Ожидаем 0, если поле должно быть заполнено.  
+```sql
+DATE_TRUNC('day', created_at)
+```
 
-SELECT COUNT(*)  
-FROM users  
-WHERE is_active = false;  
+created_at + INTERVAL '1 day'
+created_at - INTERVAL '1 hour'
 
-Проверяем бизнес-логику, если старые пользователи должны быть активны.  
+#### Пример группировки по дням:
 
-## 53. Частые вопросы на собеседовании
+```sql
+SELECT DATE_TRUNC('day', created_at) AS day,
+       COUNT(*) AS orders_count
+FROM orders
+GROUP BY day
+ORDER BY day;
+```
 
-Чем WHERE отличается от HAVING?  
+**CAST**
 
-WHERE фильтрует строки до группировки.  
+```sql
+SELECT CAST('123' AS INT);
+```
 
-HAVING фильтрует группы после группировки.  
+**Или PostgreSQL-стиль**
 
-### Пример:
+```sql
+SELECT '123'::INT;
+```
 
-SELECT user_id, COUNT(*)  
-FROM orders  
-WHERE status = 'paid'  
-GROUP BY user_id  
-HAVING COUNT(*) > 5;  
+### 50. Типовые задачи на собеседовании
 
-Здесь:  
+Ниже набор задач, которые часто дают QA Automation / Backend / Data-ish кандидатам.
 
-WHERE status = 'paid' оставляет только оплаченные заказы;  
-GROUP BY user_id группирует по пользователю;  
-HAVING COUNT(*) > 5 оставляет пользователей с количеством заказов больше 5.  
-Чем INNER JOIN отличается от LEFT JOIN?  
+Задача 1. Найти дубликаты email
 
-INNER JOIN возвращает только совпавшие строки.  
+```sql
+SELECT email, COUNT(*) AS cnt
+FROM users
+GROUP BY email
+HAVING COUNT(*) > 1;
+```
 
-LEFT JOIN возвращает все строки из левой таблицы, даже если справа совпадений нет.  
+Задача 2. Найти пользователей без заказов
 
-Чем DELETE отличается от TRUNCATE?  
+```sql
+SELECT u.*
+FROM users u
+LEFT JOIN orders o ON u.id = o.user_id
+WHERE o.id IS NULL;
+```
 
-DELETE удаляет строки, может использовать WHERE.  
+**Или**
 
-TRUNCATE быстро очищает всю таблицу, без WHERE.  
+```sql
+SELECT u.*
+FROM users u
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM orders o
+    WHERE o.user_id = u.id
+);
+```
 
-Чем DROP отличается от DELETE?  
+Задача 3. Посчитать количество заказов по каждому пользователю
 
-DELETE удаляет данные из таблицы.  
+```sql
+SELECT u.id,
+       u.name,
+       COUNT(o.id) AS orders_count
+FROM users u
+LEFT JOIN orders o ON u.id = o.user_id
+GROUP BY u.id, u.name;
+```
 
-DROP удаляет саму таблицу.  
+#### Почему COUNT(o.id), а не COUNT(*)?
 
-Чем UNION отличается от UNION ALL?  
+Потому что при LEFT JOIN пользователь без заказов всё равно даст одну строку, и COUNT(*) вернёт 1.
 
-UNION убирает дубликаты.  
+COUNT(o.id) вернёт 0.
 
-UNION ALL не убирает дубликаты и обычно быстрее.  
+Задача 4. Найти пользователей с количеством заказов больше 3
 
-### Что такое индекс?
+```sql
+SELECT u.id,
+       u.name,
+       COUNT(o.id) AS orders_count
+FROM users u
+JOIN orders o ON u.id = o.user_id
+GROUP BY u.id, u.name
+HAVING COUNT(o.id) > 3;
+```
 
-Индекс — структура данных для ускорения поиска.  
+Задача 5. Найти последний заказ каждого пользователя
 
-Но он:  
+**Вариант через оконную функцию**
 
-занимает место;  
-замедляет вставку/обновление/удаление;  
-должен создаваться под конкретные запросы.  
-Что такое первичный ключ?  
+```sql
+WITH ranked_orders AS (
+    SELECT o.*,
+           ROW_NUMBER() OVER (
+               PARTITION BY user_id
+               ORDER BY created_at DESC
+           ) AS rn
+    FROM orders o
+)
+SELECT *
+FROM ranked_orders
+WHERE rn = 1;
+```
 
-PRIMARY KEY — уникальный идентификатор строки.  
+Задача 6. Найти максимальный заказ каждого пользователя
 
-Он:  
+```sql
+SELECT user_id, MAX(total) AS max_total
+FROM orders
+GROUP BY user_id;
+```
 
-уникален;  
-не может быть NULL;  
-часто используется для связей между таблицами.  
-Что такое внешний ключ?  
+Если нужны все поля заказа:
 
-FOREIGN KEY — ссылка на запись в другой таблице.  
+```sql
+WITH ranked_orders AS (
+    SELECT o.*,
+           ROW_NUMBER() OVER (
+               PARTITION BY user_id
+               ORDER BY total DESC
+           ) AS rn
+    FROM orders o
+)
+SELECT *
+FROM ranked_orders
+WHERE rn = 1;
+```
 
-Он помогает поддерживать ссылочную целостность.  
+Задача 7. Найти второй максимальный заказ
 
-### Что такое транзакция?
+**Через DENSE_RANK**
 
-Транзакция — набор операций, который выполняется целиком или не выполняется вообще.  
+```sql
+WITH ranked_orders AS (
+    SELECT o.*,
+           DENSE_RANK() OVER (
+               ORDER BY total DESC
+           ) AS rnk
+    FROM orders o
+)
+SELECT *
+FROM ranked_orders
+WHERE rnk = 2;
+```
 
-### Пример: перевод денег между счетами.
+Если нужен второй максимум по каждому пользователю:
 
-Что такое ACID?  
-Atomicity — атомарность;  
-Consistency — согласованность;  
-Isolation — изолированность;  
-Durability — долговечность.  
-Что такое нормализация?  
+```sql
+WITH ranked_orders AS (
+    SELECT o.*,
+           DENSE_RANK() OVER (
+               PARTITION BY user_id
+               ORDER BY total DESC
+           ) AS rnk
+    FROM orders o
+)
+SELECT *
+FROM ranked_orders
+WHERE rnk = 2;
+```
 
-Процесс проектирования структуры БД, чтобы уменьшить дублирование и повысить целостность данных.  
+Задача 8. Посчитать выручку по дням
 
-### Что такое денормализация?
+```sql
+SELECT DATE_TRUNC('day', created_at) AS day,
+       SUM(total) AS revenue
+FROM orders
+WHERE status = 'paid'
+GROUP BY day
+ORDER BY day;
+```
 
-Осознанное добавление избыточности ради ускорения чтения.  
+Задача 9. Найти пользователей, которые сделали заказ в июле 2026
 
-### Что такое оконные функции?
+```sql
+SELECT DISTINCT u.*
+FROM users u
+JOIN orders o ON u.id = o.user_id
+WHERE o.created_at >= '2026-07-01'
+```
 
-Функции, которые считают значения по группе строк, но не схлопывают результат, в отличие от GROUP BY.  
+  AND o.created_at <  '2026-08-01';
+Задача 10. Найти заказы без существующего пользователя
 
-### Пример:
+Если нет foreign key или данные грязные:
 
-ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY created_at DESC)  
+```sql
+SELECT o.*
+FROM orders o
+LEFT JOIN users u ON o.user_id = u.id
+WHERE u.id IS NULL;
+```
 
-## 54. PostgreSQL-specific полезности
+Задача 11. Найти пользователей, у которых нет оплаченных заказов
 
-SERIAL / BIGSERIAL  
-id SERIAL PRIMARY KEY  
-id BIGSERIAL PRIMARY KEY  
+```sql
+SELECT u.*
+FROM users u
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM orders o
+    WHERE o.user_id = u.id
+      AND o.status = 'paid'
+);
+```
 
-Автоинкремент.  
+Задача 12. Найти топ-3 пользователя по сумме заказов
 
-В новых версиях PostgreSQL часто рекомендуют стандартный вариант:  
+```sql
+SELECT u.id,
+       u.name,
+       SUM(o.total) AS total_sum
+FROM users u
+JOIN orders o ON u.id = o.user_id
+GROUP BY u.id, u.name
+ORDER BY total_sum DESC
+LIMIT 3;
+```
 
-id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY  
-RETURNING  
-INSERT INTO users (name, email)  
-VALUES ('Alex', 'alex@test.com')  
-RETURNING id;  
+Задача 13. Найти топ-3 заказа каждого пользователя
 
-Можно использовать и с UPDATE, DELETE.  
+```sql
+WITH ranked_orders AS (
+    SELECT o.*,
+           ROW_NUMBER() OVER (
+               PARTITION BY user_id
+               ORDER BY total DESC
+           ) AS rn
+    FROM orders o
+)
+SELECT *
+FROM ranked_orders
+WHERE rn <= 3;
+```
 
-UPDATE users  
-SET is_active = false  
-WHERE id = 1  
-RETURNING *;  
-UPSERT — ON CONFLICT  
-INSERT INTO users (email, name)  
-VALUES ('alex@test.com', 'Alex')  
-ON CONFLICT (email)  
-DO UPDATE SET name = EXCLUDED.name;  
+Задача 14. Найти пользователей с одинаковыми email
 
-Если email уже есть — обновит имя.  
+```sql
+SELECT email, COUNT(*)
+FROM users
+GROUP BY email
+HAVING COUNT(*) > 1;
+```
 
-Если нет — создаст запись.  
+**Получить сами строки**
 
-JSONB  
-CREATE TABLE events (  
-    id BIGSERIAL PRIMARY KEY,  
-    payload JSONB  
-);  
+```sql
+SELECT *
+FROM users
+WHERE email IN (
+    SELECT email
+    FROM users
+    GROUP BY email
+    HAVING COUNT(*) > 1
+);
+```
 
-Запрос:  
+Задача 15. Удалить дубликаты, оставив самую раннюю запись
 
-SELECT *  
-FROM events  
-WHERE payload->>'type' = 'user_created';  
+**PostgreSQL**
 
--> возвращает JSON.  
+```sql
+WITH duplicates AS (
+    SELECT id,
+           ROW_NUMBER() OVER (
+               PARTITION BY email
+               ORDER BY created_at ASC
+           ) AS rn
+    FROM users
+)
+DELETE FROM users
+WHERE id IN (
+    SELECT id
+    FROM duplicates
+    WHERE rn > 1
+);
+```
 
-->> возвращает текст.  
+Перед удалением лучше сначала сделать SELECT:
 
-## 55. Практические паттерны запросов
+```sql
+WITH duplicates AS (
+    SELECT id,
+           email,
+           ROW_NUMBER() OVER (
+               PARTITION BY email
+               ORDER BY created_at ASC
+           ) AS rn
+    FROM users
+)
+SELECT *
+FROM duplicates
+WHERE rn > 1;
+```
 
-Проверка существования записи  
-SELECT EXISTS (  
-    SELECT 1  
-    FROM users  
-    WHERE email = 'alex@test.com'  
-);  
-Безопасная проверка перед удалением  
+### 51. SQL для QA / SDET
 
-Сначала:  
+Для QA SQL нужен не только чтобы писать запросы, но и чтобы проверять состояние системы.
 
-SELECT *  
-FROM users  
-WHERE email LIKE 'autotest-%';  
+Что QA обычно проверяет через БД
+- создалась ли запись после API-запроса;
+- корректно ли обновился статус;
+- появилась ли запись в связанной таблице;
+- не создались ли дубликаты;
+- корректно ли записались даты;
+- правильно ли обработались nullable-поля;
+- очистка тестовых данных;
+- подготовка тестовых данных;
+- проверка миграций;
+- проверка прав доступа;
+- проверка консистентности после интеграций.
+Пример: тестируем создание пользователя через API
 
-Потом:  
+**После запроса**
 
-DELETE FROM users  
-WHERE email LIKE 'autotest-%';  
-Найти битые связи  
-SELECT o.*  
-FROM orders o  
-LEFT JOIN users u ON o.user_id = u.id  
-WHERE u.id IS NULL;  
-Найти записи с пустыми важными полями  
-SELECT *  
-FROM users  
-WHERE email IS NULL  
-   OR name IS NULL  
-   OR name = '';  
-Проверить уникальность  
-SELECT email, COUNT(*)  
-FROM users  
-GROUP BY email  
-HAVING COUNT(*) > 1;  
-Проверить распределение статусов  
-SELECT status, COUNT(*)  
-FROM orders  
-GROUP BY status  
-ORDER BY COUNT(*) DESC;  
-Найти долгие незавершённые операции  
-SELECT *  
-FROM operations  
-WHERE status = 'processing'  
-  AND created_at < NOW() - INTERVAL '1 hour';  
+```sql
+POST /users
+```
 
-## 56. Частые ошибки новичков
+**Проверяем в БД**
 
-Ошибка 1. Использовать = NULL  
+```sql
+SELECT id, email, name, created_at
+FROM users
+WHERE email = 'test_user@example.com';
+```
 
-Неправильно:  
+**Проверяем**
 
-WHERE field = NULL  
+- запись есть;
+- email корректный;
+- name корректный;
+- created_at заполнен;
+- статус дефолтный;
+- пароль не хранится в открытом виде.
+Проверить, что пароль не хранится plain text
 
-Правильно:  
+```sql
+SELECT password_hash
+FROM users
+WHERE email = 'test_user@example.com';
+```
 
-WHERE field IS NULL  
-Ошибка 2. Портить LEFT JOIN через WHERE  
+**Ожидание**
 
-### Плохо:
+поле не равно исходному паролю;
+значение похоже на hash;
+поле не NULL.
+Проверить создание заказа
 
-SELECT *  
-FROM users u  
-LEFT JOIN orders o ON u.id = o.user_id  
-WHERE o.status = 'paid';  
+```sql
+SELECT *
+FROM orders
+WHERE external_id = 'test-order-123';
+```
 
-Лучше:  
+**Проверить позиции заказа**
 
-SELECT *  
-FROM users u  
-LEFT JOIN orders o  
-    ON u.id = o.user_id  
-   AND o.status = 'paid';  
-Ошибка 3. Забыть WHERE в UPDATE/DELETE  
+```sql
+SELECT *
+FROM order_items
+WHERE order_id = 123;
+```
 
-Опасно:  
+Проверить, что не создались дубликаты
 
-DELETE FROM users;  
-UPDATE users  
-SET is_active = false;  
-Ошибка 4. Использовать COUNT(*) после LEFT JOIN  
-SELECT u.id, COUNT(*)  
-FROM users u  
-LEFT JOIN orders o ON u.id = o.user_id  
-GROUP BY u.id;  
+```sql
+SELECT external_id, COUNT(*)
+FROM orders
+WHERE external_id = 'test-order-123'
+GROUP BY external_id
+HAVING COUNT(*) > 1;
+```
 
-Пользователь без заказов получит 1.  
+Если запрос вернул строки — есть дубликат.
 
-Правильно:  
+**Очистка тестовых данных**
 
-SELECT u.id, COUNT(o.id)  
-FROM users u  
-LEFT JOIN orders o ON u.id = o.user_id  
-GROUP BY u.id;  
-Ошибка 5. Неправильная фильтрация по датам  
+```sql
+DELETE FROM order_items
+WHERE order_id IN (
+    SELECT id
+    FROM orders
+    WHERE external_id LIKE 'autotest-%'
+);
 
-Потенциально плохо:  
+DELETE FROM orders
+WHERE external_id LIKE 'autotest-%';
+```
 
-WHERE created_at BETWEEN '2026-07-01' AND '2026-07-31'  
+#### Важно удалять в правильном порядке:
 
-Лучше:  
+сначала дочерние записи;
+потом родительские.
 
-WHERE created_at >= '2026-07-01'  
-  AND created_at <  '2026-08-01'  
-Ошибка 6. Считать, что индекс всегда ускоряет  
+Если настроен ON DELETE CASCADE, можно удалить родителя.
 
-Индекс помогает не всегда.  
+### 52. Миграции БД
 
-Если запрос возвращает большую часть таблицы, БД может выбрать Seq Scan.  
+Миграция — изменение схемы БД:
 
-Ошибка 7. Путать WHERE и HAVING  
+- создать таблицу;
+- добавить колонку;
+- изменить тип;
+- добавить индекс;
+- добавить constraint;
+- заполнить данные;
+- удалить старое поле.
+Что проверять QA при миграции
+миграция накатывается на пустую БД;
+миграция накатывается на БД с существующими данными;
 
-### Плохо:
+- rollback работает, если предусмотрен;
+- данные не теряются;
+- новые constraints не ломают старые данные;
+- индексы созданы;
+- дефолты работают;
+- приложение стартует после миграции;
+- старые API работают;
+- новые API работают;
+- нет сильной деградации по времени.
+Пример проверки новой колонки
 
-WHERE COUNT(*) > 5  
+**Была добавлена колонка**
 
-Правильно:  
+```sql
+ALTER TABLE users ADD COLUMN is_active BOOLEAN DEFAULT true;
+```
 
-HAVING COUNT(*) > 5  
+#### Проверки:
 
-## 57. Мини-шпаргалка по синтаксису
+```sql
+SELECT COUNT(*)
+FROM users
+WHERE is_active IS NULL;
+```
 
-SELECT column1, column2  
-FROM table_name  
-WHERE condition  
-GROUP BY column1  
-HAVING aggregate_condition  
-ORDER BY column1 DESC  
-LIMIT 10 OFFSET 20;  
-SELECT u.name, o.total  
-FROM users u  
-JOIN orders o ON u.id = o.user_id;  
-SELECT user_id, COUNT(*)  
-FROM orders  
-GROUP BY user_id  
-HAVING COUNT(*) > 3;  
-WITH ranked AS (  
-    SELECT *,  
-           ROW_NUMBER() OVER (  
-               PARTITION BY user_id  
-               ORDER BY created_at DESC  
-           ) AS rn  
-    FROM orders  
-)  
-SELECT *  
-FROM ranked  
-WHERE rn = 1;  
+Ожидаем 0, если поле должно быть заполнено.
 
-## 58. Как отвечать на собеседовании
+```sql
+SELECT COUNT(*)
+FROM users
+WHERE is_active = false;
+```
 
-Если спрашивают: «Как оптимизировать медленный запрос?»  
+Проверяем бизнес-логику, если старые пользователи должны быть активны.
 
-### Хороший ответ:
+### 53. Частые вопросы на собеседовании
 
-Сначала посмотрю план выполнения через EXPLAIN или EXPLAIN ANALYZE. Проверю, используются ли индексы, нет ли полного сканирования большой таблицы, дорогих сортировок или неудачных JOIN. Потом посмотрю условия фильтрации, порядок JOIN, объём данных, селективность, наличие подходящих индексов. Также проверю, не используются ли функции поверх индексируемых колонок и не тянем ли лишние поля через SELECT *.  
+Чем WHERE отличается от HAVING?
 
-Если спрашивают: «Как проверить данные после API-запроса?»  
+```sql
+WHERE фильтрует строки до группировки.
 
-### Хороший ответ:
+HAVING фильтрует группы после группировки.
+```
 
-Я бы отправил API-запрос, проверил HTTP-ответ, а затем сходил в БД и проверил фактическое состояние: создана ли запись, корректны ли поля, есть ли связанные записи, не появились ли дубликаты, правильно ли выставлены статусы и timestamps. После теста удалил бы тестовые данные или использовал изолированную тестовую транзакцию/фикстуры.  
+#### Пример:
 
-Если спрашивают: «Что важнее — проверять через API или через БД?»  
+```sql
+SELECT user_id, COUNT(*)
+FROM orders
+WHERE status = 'paid'
+GROUP BY user_id
+HAVING COUNT(*) > 5;
+```
 
-### Хороший ответ:
+**Здесь**
 
-Основную бизнес-проверку лучше делать через публичный контракт системы — API. БД я использую дополнительно: для подготовки данных, проверки сайд-эффектов, диагностики, сложных интеграционных сценариев и проверки консистентности. Но тесты не должны чрезмерно завязываться на внутреннюю структуру БД, если она не является частью контракта.  
+```sql
+WHERE status = 'paid' оставляет только оплаченные заказы;
+GROUP BY user_id группирует по пользователю;
+HAVING COUNT(*) > 5 оставляет пользователей с количеством заказов больше 5.
+```
 
-## 59. Что обязательно повторить перед интервью
+Чем INNER JOIN отличается от LEFT JOIN?
 
-Самый важный минимум:  
+```sql
+INNER JOIN возвращает только совпавшие строки.
 
-SELECT, WHERE, ORDER BY, LIMIT.  
-JOIN: INNER, LEFT, FULL.  
-GROUP BY, HAVING.  
-COUNT, SUM, AVG, MIN, MAX.  
-NULL, IS NULL, COALESCE.  
-DISTINCT.  
-Подзапросы.  
-EXISTS, NOT EXISTS.  
-CTE через WITH.  
-Оконные функции: ROW_NUMBER, RANK, DENSE_RANK, LAG, LEAD.  
-Индексы.  
-Транзакции и ACID.  
-DELETE vs TRUNCATE vs DROP.  
-Первичные и внешние ключи.  
-Типовые задачи: дубликаты, последний заказ, пользователи без заказов, топ-N.  
+LEFT JOIN возвращает все строки из левой таблицы, даже если справа совпадений нет.
+```
 
-## 60. Самые частые live-задачи
+Чем DELETE отличается от TRUNCATE?
 
-1. Дубликаты  
-SELECT email, COUNT(*)  
-FROM users  
-GROUP BY email  
-HAVING COUNT(*) > 1;  
-2. Последняя запись в группе  
-WITH ranked AS (  
-    SELECT *,  
-           ROW_NUMBER() OVER (  
-               PARTITION BY user_id  
-               ORDER BY created_at DESC  
-           ) AS rn  
-    FROM orders  
-)  
-SELECT *  
-FROM ranked  
-WHERE rn = 1;  
-3. Записи без связи  
-SELECT u.*  
-FROM users u  
-LEFT JOIN orders o ON u.id = o.user_id  
-WHERE o.id IS NULL;  
-4. Агрегация по группе  
-SELECT user_id, SUM(total)  
-FROM orders  
-GROUP BY user_id;  
-5. Топ-N по группе  
-WITH ranked AS (  
-    SELECT *,  
-           ROW_NUMBER() OVER (  
-               PARTITION BY user_id  
-               ORDER BY total DESC  
-           ) AS rn  
-    FROM orders  
-)  
-SELECT *  
-FROM ranked  
-WHERE rn <= 3;  
+```sql
+DELETE удаляет строки, может использовать WHERE.
 
-## 61. Короткие формулировки для ответа голосом
+TRUNCATE быстро очищает всю таблицу, без WHERE.
+```
 
-JOIN:  
+Чем DROP отличается от DELETE?
 
-JOIN нужен, чтобы объединять строки из нескольких таблиц по условию связи.  
+```sql
+DELETE удаляет данные из таблицы.
 
-LEFT JOIN:  
+DROP удаляет саму таблицу.
+```
 
-LEFT JOIN возвращает все строки из левой таблицы и найденные совпадения из правой. Если совпадений нет, справа будут NULL.  
+Чем UNION отличается от UNION ALL?
 
-GROUP BY:  
+```sql
+UNION убирает дубликаты.
 
-GROUP BY группирует строки по указанным колонкам, после чего можно применять агрегатные функции.  
+UNION ALL не убирает дубликаты и обычно быстрее.
+```
 
-HAVING:  
+#### Что такое индекс?
 
-HAVING фильтрует уже сгруппированные данные, в отличие от WHERE, который фильтрует строки до группировки.  
+Индекс — структура данных для ускорения поиска.
 
-Индекс:  
+**Но он**
 
-Индекс ускоряет поиск и сортировку, но замедляет запись и занимает место.  
+занимает место;
+замедляет вставку/обновление/удаление;
+должен создаваться под конкретные запросы.
+Что такое первичный ключ?
 
-Транзакция:  
+PRIMARY KEY — уникальный идентификатор строки.
 
-Транзакция позволяет выполнить несколько операций атомарно: либо все изменения сохраняются, либо все откатываются.  
+**Он**
 
-Оконная функция:  
+уникален;
+не может быть NULL;
+часто используется для связей между таблицами.
+Что такое внешний ключ?
 
-Оконная функция считает значение по группе строк, но не уменьшает количество строк в результате.  
+FOREIGN KEY — ссылка на запись в другой таблице.
 
-Нормализация:  
+Он помогает поддерживать ссылочную целостность.
 
-Нормализация уменьшает дублирование данных и помогает поддерживать целостность.  
+#### Что такое транзакция?
 
-EXPLAIN:  
+Транзакция — набор операций, который выполняется целиком или не выполняется вообще.
 
-EXPLAIN показывает, как база планирует выполнить запрос: будет ли использовать индекс, какой JOIN выберет, будет ли сортировка или полный проход по таблице.  
+#### Пример: перевод денег между счетами.
 
-## 62. Мини-набор запросов, который надо уметь писать с закрытыми глазами
+Что такое ACID?
+- Atomicity — атомарность;
+- Consistency — согласованность;
+- Isolation — изолированность;
+- Durability — долговечность.
+Что такое нормализация?
 
-SELECT *  
-FROM users  
-WHERE email = 'test@example.com';  
-SELECT status, COUNT(*)  
-FROM orders  
-GROUP BY status;  
-SELECT user_id, SUM(total)  
-FROM orders  
-GROUP BY user_id  
-HAVING SUM(total) > 10000;  
-SELECT u.name, o.total  
-FROM users u  
-JOIN orders o ON u.id = o.user_id;  
-SELECT u.*  
-FROM users u  
-LEFT JOIN orders o ON u.id = o.user_id  
-WHERE o.id IS NULL;  
-WITH ranked AS (  
-    SELECT *,  
-           ROW_NUMBER() OVER (  
-               PARTITION BY user_id  
-               ORDER BY created_at DESC  
-           ) AS rn  
-    FROM orders  
-)  
-SELECT *  
-FROM ranked  
-WHERE rn = 1;  
-SELECT email, COUNT(*)  
-FROM users  
-GROUP BY email  
-HAVING COUNT(*) > 1;  
-EXPLAIN ANALYZE  
-SELECT *  
-FROM users  
-WHERE email = 'test@example.com';  
+Процесс проектирования структуры БД, чтобы уменьшить дублирование и повысить целостность данных.
 
-## 63. Что особенно важно для Senior QA Automation
+#### Что такое денормализация?
 
-Для твоего профиля лучше сделать акцент не только на синтаксисе, а на практическом применении SQL:  
+Осознанное добавление избыточности ради ускорения чтения.
 
-Нужно уверенно уметь  
-проверить данные после API-запроса;  
-подготовить тестовые данные;  
-почистить тестовые данные;  
-проверить связи между таблицами;  
-найти дубликаты;  
-проверить статусы бизнес-операций;  
-проверить миграции;  
-понимать индексы на базовом уровне;  
-читать простой EXPLAIN;  
-понимать транзакции;  
-не ломать данные опасными UPDATE/DELETE;  
-понимать, почему LEFT JOIN может внезапно превратиться в INNER JOIN;  
-писать запросы с GROUP BY, HAVING, оконными функциями.  
+#### Что такое оконные функции?
 
-## 64. Быстрая самопроверка
+Функции, которые считают значения по группе строк, но не схлопывают результат, в отличие от GROUP BY.
 
-Если можешь без подсказки написать эти запросы — для большинства QA/SDET собеседований по SQL база уже нормальная:  
+#### Пример:
 
-Найти пользователя по email.  
-Найти пользователей без заказов.  
-Посчитать заказы по пользователю.  
-Найти пользователей с количеством заказов больше 5.  
-Найти дубликаты email.  
-Найти последний заказ каждого пользователя.  
-Найти топ-3 заказа каждого пользователя.  
-Посчитать выручку по дням.  
-Найти заказы без пользователя.  
-Объяснить WHERE vs HAVING.  
-Объяснить INNER JOIN vs LEFT JOIN.  
-Объяснить DELETE vs TRUNCATE vs DROP.  
-Объяснить, зачем индекс.  
-Объяснить транзакцию и ACID.  
-Объяснить, что делает EXPLAIN.  
+```sql
+ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY created_at DESC)
+```
 
-Следующий логичный шаг — прорешать 30–50 SQL-задач в формате собеседования: сначала простые JOIN/GROUP BY, потом оконные функции и задачи на поиск ошибок в запросах.  
+### 54. PostgreSQL-specific полезности
+
+SERIAL / BIGSERIAL
+
+```bash
+id SERIAL PRIMARY KEY
+id BIGSERIAL PRIMARY KEY
+```
+
+Автоинкремент.
+
+В новых версиях PostgreSQL часто рекомендуют стандартный вариант:
+
+```bash
+id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY
+```
+
+RETURNING
+
+```sql
+INSERT INTO users (name, email)
+VALUES ('Alex', 'alex@test.com')
+```
+
+RETURNING id;
+
+Можно использовать и с UPDATE, DELETE.
+
+```sql
+UPDATE users
+SET is_active = false
+WHERE id = 1
+```
+
+RETURNING *;
+UPSERT — ON CONFLICT
+
+```sql
+INSERT INTO users (email, name)
+VALUES ('alex@test.com', 'Alex')
+```
+
+ON CONFLICT (email)
+
+```sql
+DO UPDATE SET name = EXCLUDED.name;
+```
+
+Если email уже есть — обновит имя.
+
+Если нет — создаст запись.
+
+**JSONB**
+
+```bash
+CREATE TABLE events (
+    id BIGSERIAL PRIMARY KEY,
+    payload JSONB
+);
+```
+
+**Запрос**
+
+```sql
+SELECT *
+FROM events
+WHERE payload->>'type' = 'user_created';
+```
+
+-> возвращает JSON.
+
+->> возвращает текст.
+
+### 55. Практические паттерны запросов
+
+**Проверка существования записи**
+
+```sql
+SELECT EXISTS (
+    SELECT 1
+    FROM users
+    WHERE email = 'alex@test.com'
+);
+```
+
+**Безопасная проверка перед удалением**
+
+**Сначала**
+
+```sql
+SELECT *
+FROM users
+WHERE email LIKE 'autotest-%';
+```
+
+**Потом**
+
+```sql
+DELETE FROM users
+WHERE email LIKE 'autotest-%';
+```
+
+**Найти битые связи**
+
+```sql
+SELECT o.*
+FROM orders o
+LEFT JOIN users u ON o.user_id = u.id
+WHERE u.id IS NULL;
+```
+
+Найти записи с пустыми важными полями
+
+```sql
+SELECT *
+FROM users
+WHERE email IS NULL
+```
+
+**OR name IS NULL**
+
+```sql
+   OR name = '';
+```
+
+**Проверить уникальность**
+
+```sql
+SELECT email, COUNT(*)
+FROM users
+GROUP BY email
+HAVING COUNT(*) > 1;
+```
+
+**Проверить распределение статусов**
+
+```sql
+SELECT status, COUNT(*)
+FROM orders
+GROUP BY status
+ORDER BY COUNT(*) DESC;
+```
+
+**Найти долгие незавершённые операции**
+
+```sql
+SELECT *
+FROM operations
+WHERE status = 'processing'
+```
+
+  AND created_at < NOW() - INTERVAL '1 hour';
+
+### 56. Частые ошибки новичков
+
+Ошибка 1. Использовать = NULL
+
+**Неправильно**
+
+```sql
+WHERE field = NULL
+```
+
+**Правильно**
+
+```sql
+WHERE field IS NULL
+```
+
+Ошибка 2. Портить LEFT JOIN через WHERE
+
+#### Плохо:
+
+```sql
+SELECT *
+FROM users u
+LEFT JOIN orders o ON u.id = o.user_id
+WHERE o.status = 'paid';
+```
+
+**Лучше**
+
+```sql
+SELECT *
+FROM users u
+LEFT JOIN orders o
+    ON u.id = o.user_id
+   AND o.status = 'paid';
+```
+
+Ошибка 3. Забыть WHERE в UPDATE/DELETE
+
+**Опасно**
+
+```sql
+DELETE FROM users;
+UPDATE users
+SET is_active = false;
+```
+
+Ошибка 4. Использовать COUNT(*) после LEFT JOIN
+
+```sql
+SELECT u.id, COUNT(*)
+FROM users u
+LEFT JOIN orders o ON u.id = o.user_id
+GROUP BY u.id;
+```
+
+Пользователь без заказов получит 1.
+
+**Правильно**
+
+```sql
+SELECT u.id, COUNT(o.id)
+FROM users u
+LEFT JOIN orders o ON u.id = o.user_id
+GROUP BY u.id;
+```
+
+Ошибка 5. Неправильная фильтрация по датам
+
+**Потенциально плохо**
+
+```sql
+WHERE created_at BETWEEN '2026-07-01' AND '2026-07-31'
+```
+
+**Лучше**
+
+```sql
+WHERE created_at >= '2026-07-01'
+```
+
+  AND created_at <  '2026-08-01'
+Ошибка 6. Считать, что индекс всегда ускоряет
+
+Индекс помогает не всегда.
+
+Если запрос возвращает большую часть таблицы, БД может выбрать Seq Scan.
+
+Ошибка 7. Путать WHERE и HAVING
+
+#### Плохо:
+
+```sql
+WHERE COUNT(*) > 5
+```
+
+**Правильно**
+
+```sql
+HAVING COUNT(*) > 5
+```
+
+## Собеседование и самопроверка
+
+### 57. Мини-шпаргалка по синтаксису
+
+```sql
+SELECT column1, column2
+FROM table_name
+WHERE condition
+GROUP BY column1
+HAVING aggregate_condition
+ORDER BY column1 DESC
+LIMIT 10 OFFSET 20;
+SELECT u.name, o.total
+FROM users u
+JOIN orders o ON u.id = o.user_id;
+SELECT user_id, COUNT(*)
+FROM orders
+GROUP BY user_id
+HAVING COUNT(*) > 3;
+WITH ranked AS (
+    SELECT *,
+           ROW_NUMBER() OVER (
+               PARTITION BY user_id
+               ORDER BY created_at DESC
+           ) AS rn
+    FROM orders
+)
+SELECT *
+FROM ranked
+WHERE rn = 1;
+```
+
+### 58. Как отвечать на собеседовании
+
+Если спрашивают: «Как оптимизировать медленный запрос?»
+
+> **Короткий ответ для собеседования**
+>
+> Сначала посмотрю план выполнения через EXPLAIN или EXPLAIN ANALYZE. Проверю, используются ли индексы, нет ли полного сканирования большой таблицы, дорогих сортировок или неудачных JOIN. Потом посмотрю условия фильтрации, порядок JOIN, объём данных, селективность, наличие подходящих индексов. Также проверю, не используются ли функции поверх индексируемых колонок и не тянем ли лишние поля через SELECT *.
+
+Если спрашивают: «Как проверить данные после API-запроса?»
+
+> **Короткий ответ для собеседования**
+>
+> Я бы отправил API-запрос, проверил HTTP-ответ, а затем сходил в БД и проверил фактическое состояние: создана ли запись, корректны ли поля, есть ли связанные записи, не появились ли дубликаты, правильно ли выставлены статусы и timestamps. После теста удалил бы тестовые данные или использовал изолированную тестовую транзакцию/фикстуры.
+
+Если спрашивают: «Что важнее — проверять через API или через БД?»
+
+> **Короткий ответ для собеседования**
+>
+> Основную бизнес-проверку лучше делать через публичный контракт системы — API. БД я использую дополнительно: для подготовки данных, проверки сайд-эффектов, диагностики, сложных интеграционных сценариев и проверки консистентности. Но тесты не должны чрезмерно завязываться на внутреннюю структуру БД, если она не является частью контракта.
+
+### 59. Что обязательно повторить перед интервью
+
+**Самый важный минимум**
+
+- `SELECT`, `WHERE`, `ORDER BY`, `LIMIT`, `DISTINCT`;
+- `JOIN`: `INNER`, `LEFT`, `FULL`;
+- `GROUP BY`, `HAVING`;
+- `COUNT`, `SUM`, `AVG`, `MIN`, `MAX`;
+- `NULL`, `IS NULL`, `COALESCE`;
+- подзапросы, `EXISTS`, `NOT EXISTS`, CTE через `WITH`;
+- оконные функции: `ROW_NUMBER`, `RANK`, `DENSE_RANK`, `LAG`, `LEAD`;
+- индексы, транзакции и ACID;
+- `DELETE` против `TRUNCATE` и `DROP`;
+- первичные и внешние ключи;
+- типовые задачи: дубликаты, последняя запись в группе, записи без связи и топ-N.
+
+### 60. Самые частые live-задачи
+
+#### 1. Дубликаты
+
+```sql
+SELECT email, COUNT(*)
+FROM users
+GROUP BY email
+HAVING COUNT(*) > 1;
+```
+
+#### 2. Последняя запись в группе
+
+```sql
+WITH ranked AS (
+    SELECT *,
+           ROW_NUMBER() OVER (
+               PARTITION BY user_id
+               ORDER BY created_at DESC
+           ) AS rn
+    FROM orders
+)
+SELECT *
+FROM ranked
+WHERE rn = 1;
+```
+
+#### 3. Записи без связи
+
+```sql
+SELECT u.*
+FROM users u
+LEFT JOIN orders o ON u.id = o.user_id
+WHERE o.id IS NULL;
+```
+
+#### 4. Агрегация по группе
+
+```sql
+SELECT user_id, SUM(total)
+FROM orders
+GROUP BY user_id;
+```
+
+#### 5. Топ-N по группе
+
+```sql
+WITH ranked AS (
+    SELECT *,
+           ROW_NUMBER() OVER (
+               PARTITION BY user_id
+               ORDER BY total DESC
+           ) AS rn
+    FROM orders
+)
+SELECT *
+FROM ranked
+WHERE rn <= 3;
+```
+
+### 61. Короткие формулировки для ответа голосом
+
+**JOIN:** нужен, чтобы объединять строки из нескольких таблиц по условию связи.
+
+**LEFT JOIN:** возвращает все строки из левой таблицы и найденные совпадения из правой. Если совпадений нет, справа будут `NULL`.
+
+**GROUP BY:** группирует строки по указанным колонкам, после чего можно применять агрегатные функции.
+
+**HAVING:** фильтрует уже сгруппированные данные, в отличие от `WHERE`, который фильтрует строки до группировки.
+
+**Индекс**
+
+Индекс ускоряет поиск и сортировку, но замедляет запись и занимает место.
+
+**Транзакция**
+
+Транзакция позволяет выполнить несколько операций атомарно: либо все изменения сохраняются, либо все откатываются.
+
+**Оконная функция**
+
+Оконная функция считает значение по группе строк, но не уменьшает количество строк в результате.
+
+**Нормализация**
+
+Нормализация уменьшает дублирование данных и помогает поддерживать целостность.
+
+**EXPLAIN:** показывает, как база планирует выполнить запрос: будет ли использовать индекс, какой `JOIN` выберет, потребуется ли сортировка или полный проход по таблице.
+
+### 62. Мини-набор запросов, который надо уметь писать с закрытыми глазами
+
+```sql
+SELECT *
+FROM users
+WHERE email = 'test@example.com';
+SELECT status, COUNT(*)
+FROM orders
+GROUP BY status;
+SELECT user_id, SUM(total)
+FROM orders
+GROUP BY user_id
+HAVING SUM(total) > 10000;
+SELECT u.name, o.total
+FROM users u
+JOIN orders o ON u.id = o.user_id;
+SELECT u.*
+FROM users u
+LEFT JOIN orders o ON u.id = o.user_id
+WHERE o.id IS NULL;
+WITH ranked AS (
+    SELECT *,
+           ROW_NUMBER() OVER (
+               PARTITION BY user_id
+               ORDER BY created_at DESC
+           ) AS rn
+    FROM orders
+)
+SELECT *
+FROM ranked
+WHERE rn = 1;
+SELECT email, COUNT(*)
+FROM users
+GROUP BY email
+HAVING COUNT(*) > 1;
+EXPLAIN ANALYZE
+SELECT *
+FROM users
+WHERE email = 'test@example.com';
+```
+
+### 63. Что особенно важно для Senior QA Automation
+
+Для твоего профиля лучше сделать акцент не только на синтаксисе, а на практическом применении SQL:
+
+**Нужно уверенно уметь**
+- проверить данные после API-запроса;
+- подготовить тестовые данные;
+- почистить тестовые данные;
+- проверить связи между таблицами;
+- найти дубликаты;
+- проверить статусы бизнес-операций;
+- проверить миграции;
+- понимать индексы на базовом уровне;
+- читать простой EXPLAIN;
+- понимать транзакции;
+- не ломать данные опасными UPDATE/DELETE;
+- понимать, почему LEFT JOIN может внезапно превратиться в INNER JOIN;
+- писать запросы с GROUP BY, HAVING, оконными функциями.
+
+### 64. Быстрая самопроверка
+
+Если можешь без подсказки написать эти запросы — для большинства QA/SDET собеседований по SQL база уже нормальная:
+
+Найти пользователя по email.
+Найти пользователей без заказов.
+Посчитать заказы по пользователю.
+Найти пользователей с количеством заказов больше 5.
+Найти дубликаты email.
+Найти последний заказ каждого пользователя.
+Найти топ-3 заказа каждого пользователя.
+Посчитать выручку по дням.
+Найти заказы без пользователя.
+Объяснить WHERE vs HAVING.
+Объяснить INNER JOIN vs LEFT JOIN.
+Объяснить DELETE vs TRUNCATE vs DROP.
+Объяснить, зачем индекс.
+Объяснить транзакцию и ACID.
+Объяснить, что делает EXPLAIN.
+
+Следующий логичный шаг — прорешать 30–50 SQL-задач в формате собеседования: сначала простые JOIN/GROUP BY, потом оконные функции и задачи на поиск ошибок в запросах.
