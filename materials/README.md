@@ -16,6 +16,7 @@
 | Linux | [Полный конспект](linux.md) | [Шпаргалка](../cheatsheets/linux.md) |
 | Теория тестирования | [Полный конспект](testing.md) | [Шпаргалка](../cheatsheets/testing.md) |
 | Архитектура тестового фреймворка | [Полный конспект](test-framework-architecture.md) | [Шпаргалка](../cheatsheets/test-framework-architecture.md) |
+| Процессы и поведенческие вопросы | [Полный конспект](processes-behavioral.md) | [Шпаргалка](../cheatsheets/processes-behavioral.md) |
 
 ## Принцип редактирования
 
