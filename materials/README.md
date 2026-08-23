@@ -15,6 +15,7 @@
 | SQL | [Полный конспект](sql.md) | [Шпаргалка](../cheatsheets/sql.md) |
 | Linux | [Полный конспект](linux.md) | [Шпаргалка](../cheatsheets/linux.md) |
 | Теория тестирования | [Полный конспект](testing.md) | [Шпаргалка](../cheatsheets/testing.md) |
+| Архитектура тестового фреймворка | [Полный конспект](test-framework-architecture.md) | [Шпаргалка](../cheatsheets/test-framework-architecture.md) |
 
 ## Принцип редактирования
 
